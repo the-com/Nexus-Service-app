@@ -564,15 +564,19 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
     <!-- MAP -->
     <div id="tab-map">
      <div class="card">
-      <div class="sec-hd">ที่ตั้งลูกค้า
-       <button class="sm-btn" onclick="loadAllPins()">โหลด</button>
-      </div>
+      <div class="sec-hd">ที่ตั้งลูกค้า</div>
       <div style="margin-bottom:6px;">
        <select id="map-cust-sel" style="width:100%;background:var(--bar);border:1px solid var(--border2);border-radius:var(--r-sm);color:var(--fg);font-size:12px;padding:7px 9px;outline:none;" onchange="focusMapCust()">
-        <option value="">— เลือกลูกค้าเพื่อโฟกัส —</option>
+        <option value="">— เลือกลูกค้าเพื่อเปิดแผนที่ —</option>
        </select>
       </div>
-      <div id="mapFrame" style="height:340px;border-radius:var(--r-sm);border:1px solid var(--border);overflow:hidden;"></div>
+      <!-- Map: Google Maps embed via iframe -->
+      <div id="mapFrame" style="height:340px;border-radius:var(--r-sm);border:1px solid var(--border);overflow:hidden;background:var(--bar2);display:flex;align-items:center;justify-content:center;">
+       <div style="text-align:center;color:var(--dim);">
+        <div style="font-size:28px;margin-bottom:8px;">🗺</div>
+        <div style="font-size:11px;font-family:'DM Mono',monospace;">เลือกลูกค้าด้านบน<br>หรือกดปุ่ม Maps ในรายการ</div>
+       </div>
+      </div>
      </div>
      <div class="card">
       <div class="sec-hd">ลูกค้าพร้อม GPS</div>
@@ -607,8 +611,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
         </select>
        </div>
       </div>
-      <button class="bigbtn accent" onclick="buildReport()">Preview</button>
-      <button class="bigbtn go" onclick="printPDF()">Print / บันทึก PDF</button>
+      <button class="bigbtn accent" onclick="buildReport()">Preview ใบเสร็จ</button>
+      <button class="bigbtn go" onclick="printPDF()">Print / PDF</button>
+      <button class="bigbtn" style="border-color:var(--blue);color:var(--blue);" onclick="saveReportAsImage()">บันทึกเป็นรูปภาพ (PNG)</button>
      </div>
      <div id="rpt-wrap" style="background:#fff;color:#111;border-radius:var(--r);padding:0;overflow:hidden;">
       <div style="padding:30px;text-align:center;color:#bbb;font-size:13px;">เลือกลูกค้าและงานเพื่อ Preview</div>
@@ -693,7 +698,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
   <!-- Job Photos -->
   <div class="sec-hd" style="margin-top:8px;">รูปภาพงาน <span id="sj-photo-count" style="color:var(--dim);font-size:9px;"></span></div>
   <div id="sj-photos" class="photo-grid"></div>
-  <input type="file" id="sj-photo-input" accept="image/*" multiple style="display:none;" onchange="handleJobPhotos(this)">
+  <!-- Use label to trigger file input - works on all mobile browsers -->
+  <label for="sj-photo-input" style="display:none;"></label>
+  <input type="file" id="sj-photo-input" accept="image/*" multiple capture="environment" style="display:none;" onchange="handleJobPhotos(this)">
   <!-- Signatures -->
   <div class="sec-hd" style="margin-top:12px;">ลายมือชื่อ</div>
   <div class="frow g2" style="gap:8px;margin-bottom:10px;">
@@ -905,9 +912,10 @@ function renderJobPhotos(){
   const cnt=document.getElementById('sj-photo-count');
   if(cnt)cnt.textContent=_jobPhotos.length?`(${_jobPhotos.length} รูป)`:'';
   grid.innerHTML=_jobPhotos.map((d,i)=>
-    `<div class="photo-item"><img src="${d}"><button class="photo-del" onclick="removeJobPhoto(${i})">×</button></div>`
+    `<div class="photo-item"><img src="${d}" loading="lazy"><button class="photo-del" onclick="removeJobPhoto(${i})">×</button></div>`
   ).join('')+
-  `<div class="photo-add" onclick="document.getElementById('sj-photo-input').click()"><span>+</span><small>เพิ่มรูป</small></div>`;
+  // Use label for file input - most reliable on iOS/Android
+  `<label for="sj-photo-input" class="photo-add" style="cursor:pointer;"><span>+</span><small>เพิ่มรูป</small></label>`;
 }
 function removeJobPhoto(i){_jobPhotos.splice(i,1);renderJobPhotos();}
 function handleJobPhotos(input){
@@ -2421,59 +2429,54 @@ function schedTab(m,el){
 }
 
 // ══════════════════════════════════════════════════════════════════
-// MAP (OpenStreetMap via Leaflet)
+// MAP — Google Maps iframe (no external CDN needed)
 // ══════════════════════════════════════════════════════════════════
 let _map=null,_mapMarkers=[];
 function initMap(){
- if(_map)return;
- const el=document.getElementById('mapFrame');if(!el)return;
- // Load Leaflet
- const css=document.createElement('link');
- css.rel='stylesheet';css.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
- document.head.appendChild(css);
- const s=document.createElement('script');
- s.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
- s.onload=()=>{
-  _map=L.map('mapFrame').setView([13.76,100.50],11);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-   attribution:'© OpenStreetMap',maxZoom:19}).addTo(_map);
-  loadAllPins();
- };
- document.head.appendChild(s);
+ // No-op: using iframe approach instead of Leaflet
+ loadMapCustSel();
 }
 
 function loadAllPins(){
- if(!_map){initMap();return;}
- _mapMarkers.forEach(m=>m.remove());_mapMarkers=[];
- DB.customers.filter(c=>c.lat&&c.lng).forEach(c=>{
-  const m=L.marker([c.lat,c.lng]).addTo(_map)
-   .bindPopup(`<b>${c.fn} ${c.ln}</b><br>${c.ph}<br>${c.ad||''}`);
-  _mapMarkers.push(m);
- });
- if(_mapMarkers.length){
-  const g=L.latLngBounds(_mapMarkers.map(m=>m.getLatLng()));
-  _map.fitBounds(g,{padding:[30,30]});
- }
+ loadMapCustSel();
 }
 
 function loadMapCustSel(){
  const sel=document.getElementById('map-cust-sel');if(!sel)return;
- sel.innerHTML='<option value="">— เลือกลูกค้า —</option>'
-  +DB.customers.filter(c=>c.lat&&c.lng).map(c=>`<option value="${c.id}">${c.fn} ${c.ln}</option>`).join('');
+ const withGPS=DB.customers.filter(c=>c.lat&&c.lng);
+ sel.innerHTML='<option value="">— เลือกลูกค้าเพื่อเปิดแผนที่ —</option>'
+  +withGPS.map(c=>`<option value="${c.id}">${c.fn} ${c.ln}</option>`).join('');
  // List
- document.getElementById('map-cust-list').innerHTML=DB.customers.filter(c=>c.lat&&c.lng).map(c=>`
+ const listEl=document.getElementById('map-cust-list');
+ if(!listEl)return;
+ listEl.innerHTML=withGPS.map(c=>`
   <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;margin-bottom:5px;">
-   <div><div style="font-size:12px;font-weight:600;">${c.fn} ${c.ln}</div>
-    <div style="font-size:10px;color:var(--dim);">${c.ph}</div></div>
-   <button class="sm-btn" onclick="openGmap(${c.lat},${c.lng})">Maps</button>
-  </div>`).join('')||'<div style="color:var(--dim);font-size:11px;">ยังไม่มีลูกค้าที่มีพิกัด GPS</div>';
+   <div>
+    <div style="font-size:12px;font-weight:600;">${c.fn} ${c.ln}</div>
+    <div style="font-size:10px;color:var(--dim);">${c.ph||''}${c.ad?' · '+c.ad.slice(0,30)+'…':''}</div>
+    <div style="font-size:9px;color:var(--dim);font-family:'DM Mono',monospace;">${c.lat?.toFixed(5)}, ${c.lng?.toFixed(5)}</div>
+   </div>
+   <div style="display:flex;flex-direction:column;gap:4px;">
+    <button class="sm-btn" onclick="showMapFrame(${c.lat},${c.lng},'${c.fn} ${c.ln}')">แผนที่</button>
+    <button class="sm-btn" onclick="openGmap(${c.lat},${c.lng})">นำทาง</button>
+   </div>
+  </div>`).join('')||'<div style="color:var(--dim);font-size:11px;padding:10px 0;">ยังไม่มีลูกค้าที่มีพิกัด GPS<br><span style="font-size:10px;">เพิ่ม Latitude/Longitude ในข้อมูลลูกค้า</span></div>';
+}
+
+function showMapFrame(lat,lng,name){
+ const frame=document.getElementById('mapFrame');if(!frame)return;
+ // Use Google Maps embed - works without API key for basic view
+ frame.innerHTML=`<iframe
+   src="https://maps.google.com/maps?q=${lat},${lng}&z=16&output=embed&hl=th"
+   width="100%" height="340" style="border:none;border-radius:var(--r-sm);"
+   loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+   title="${name}"></iframe>`;
 }
 
 function focusMapCust(){
- const id=+document.getElementById('map-cust-sel').value;
- const c=DB.customers.find(x=>x.id===id);
- if(!c||!_map)return;
- _map.setView([c.lat,c.lng],17);
+ const id=+document.getElementById('map-cust-sel').value;if(!id)return;
+ const c=DB.customers.find(x=>x.id===id);if(!c||!c.lat||!c.lng)return;
+ showMapFrame(c.lat,c.lng,`${c.fn} ${c.ln}`);
 }
 
 function moreTab(t,el){
@@ -2655,8 +2658,46 @@ function printPDF(){
   }
  },400);
 }
-// ══════════════════════════════════════════════════════════════════
-// HELPERS & SELECTS
+function saveReportAsImage(){
+ buildReport();
+ setTimeout(()=>{
+  const wrap=document.getElementById('rpt-wrap');
+  if(!wrap||wrap.innerHTML.includes('เลือกลูกค้า')){showToast('เลือกลูกค้าและงานก่อน');return;}
+  showToast('กำลังสร้างรูป...',5000);
+  const loadLib=()=>new Promise((res,rej)=>{
+   if(window.html2canvas){res();return;}
+   const s=document.createElement('script');
+   s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+   s.onload=res;s.onerror=rej;
+   document.head.appendChild(s);
+  });
+  loadLib().then(()=>{
+   // Clone into a fixed off-screen container for clean rendering
+   const clone=wrap.cloneNode(true);
+   clone.style.cssText='position:fixed;top:0;left:-9999px;width:640px;background:#ffffff;z-index:-999;padding:0;border-radius:0;';
+   document.body.appendChild(clone);
+   html2canvas(clone,{
+    scale:2,useCORS:true,allowTaint:true,
+    backgroundColor:'#ffffff',logging:false,width:640,
+   }).then(canvas=>{
+    document.body.removeChild(clone);
+    const cid=+document.getElementById('rpt-cust').value;
+    const jid=+document.getElementById('rpt-job').value;
+    const c=DB.customers.find(x=>x.id===cid);
+    const j=DB.jobs.find(x=>x.id===jid);
+    const fname=`nexus_${(c?.fn||'report').replace(/\s/g,'_')}_JOB${String(j?.id||0).padStart(4,'0')}.png`;
+    const a=document.createElement('a');
+    a.href=canvas.toDataURL('image/png');
+    a.download=fname;
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    showToast('บันทึกรูปสำเร็จ');
+   }).catch(err=>{
+    document.body.removeChild(clone);
+    showToast('เกิดข้อผิดพลาด: '+err.message);
+   });
+  }).catch(()=>showToast('โหลด html2canvas ไม่ได้ — ตรวจสอบอินเตอร์เน็ต'));
+ },600);
+}
 // ══════════════════════════════════════════════════════════════════
 function jLbl(t){return{install:'ติดตั้ง',service:'ล้างแอร์',repair:'ซ่อม',refill:'เติมน้ำยา',check:'ตรวจเช็ค'}[t]||t;}
 function sLbl(s){return{pending:'รอ',inprogress:'กำลังทำ',done:'เสร็จ',cancel:'ยกเลิก'}[s]||s;}
