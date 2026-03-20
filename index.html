@@ -6,24 +6,202 @@
 <meta name="theme-color" content="#ffffff">
 <title>NEXUS SERVICE</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
 :root{
- --bg:#f4f4f2;--bar:#ffffff;--bar2:#eeeeec;--border:#ddddd9;--border2:#c8c8c4;
- --fg:#111111;--fg2:#444444;--dim:#999999;
- --acc:#8b2020;--red:#8b2020;--green:#2d7a4e;--yellow:#7a5800;--blue:#1a5c8b;
- --r:12px;--r-sm:8px;
+ --bg:#f9f8f6;--bar:#ffffff;--bar2:#f4f3f0;--border:#e8e6e1;--border2:#d5d2ca;
+ --fg:#1a1917;--fg2:#4a4845;--dim:#9a9690;
+ --acc:#2c2c2c;--gold:#9a7c4a;--green:#2d6b4a;--red:#8b2020;--blue:#2a4a6e;
+ --r:14px;--r-sm:10px;--r-xs:6px;
  --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
+ --shadow:0 1px 4px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;height:100dvh;overflow:hidden;}
-body{background:var(--bg);color:var(--fg);font-family:'DM Sans',sans-serif;font-size:15px;}
+body{background:var(--bg);color:var(--fg);font-family:'Sarabun',sans-serif;font-size:15px;-webkit-font-smoothing:antialiased;}
+#shell{display:flex;height:100dvh;flex-direction:column;overflow:hidden;}
+
+/* ── TOPBAR ── */
+#topbar{background:var(--bar);border-bottom:1px solid var(--border);padding:0 16px;padding-top:var(--st);
+ height:calc(56px + var(--st));display:flex;align-items:flex-end;gap:10px;padding-bottom:10px;flex-shrink:0;}
+.topbar-brand{display:flex;align-items:center;gap:10px;flex:1;}
+.topbar-logo{font-family:'Sarabun',sans-serif;font-size:22px;font-weight:600;color:var(--fg);letter-spacing:.08em;}
+.topbar-divider{width:1px;height:14px;background:var(--border2);}
+#pg-title{font-size:14px;font-weight:400;color:var(--dim);letter-spacing:.02em;}
+.tbtn{background:none;border:1px solid var(--border);color:var(--fg2);font-family:'Sarabun',sans-serif;
+ font-size:11px;padding:5px 12px;border-radius:20px;cursor:pointer;white-space:nowrap;transition:all .15s;letter-spacing:.01em;}
+.tbtn:active,.tbtn.on{border-color:var(--acc);color:var(--acc);}
+.tbtn.icon{padding:5px 10px;font-size:15px;border-color:transparent;color:var(--fg2);}
+
+/* ── BOTTOM NAV ── */
+#bnav{background:var(--bar);border-top:1px solid var(--border);display:flex;align-items:stretch;
+ flex-shrink:0;padding-bottom:var(--sb);}
+.bni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+ padding:10px 2px 8px;cursor:pointer;transition:all .15s;border:none;background:none;gap:3px;position:relative;}
+.bni-icon{width:22px;height:22px;display:block;transition:transform .15s;color:var(--dim);}
+.bni-lbl{font-size:10px;font-family:'Sarabun',sans-serif;font-weight:500;color:var(--dim);transition:color .15s;letter-spacing:.02em;}
+.bni.active .bni-lbl{color:var(--acc);}
+.bni.active .bni-icon{transform:translateY(-1px);color:var(--acc);}
+.bni.active::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+ width:20px;height:2px;background:var(--acc);border-radius:2px 2px 0 0;}
+
+/* ── PAGES ── */
+#pages{flex:1;overflow:hidden;position:relative;min-height:0;}
+.pg{position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden;opacity:0;pointer-events:none;transition:opacity .2s;}
+.pg.active{opacity:1;pointer-events:all;}
+.scr{flex:1;overflow-y:auto;padding:14px 16px;padding-bottom:24px;min-height:0;
+ -webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.scr::-webkit-scrollbar{display:none;}
+
+/* ── CARDS ── */
+.card{background:var(--bar);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px;box-shadow:var(--shadow);}
+.sec-hd{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--dim);letter-spacing:.14em;text-transform:uppercase;
+ margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+
+/* ── FORMS ── */
+.frow{display:grid;gap:10px;margin-bottom:10px;}
+.frow.g2{grid-template-columns:1fr 1fr;}
+.frow.g3{grid-template-columns:1fr 1fr 1fr;}
+.frow.g4{grid-template-columns:1fr 1fr 1fr 1fr;}
+.fld{display:flex;flex-direction:column;gap:4px;}
+.fld label{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--dim);letter-spacing:.08em;text-transform:uppercase;}
+.fld input,.fld select,.fld textarea{background:var(--bar2);border:1px solid var(--border);border-radius:var(--r-xs);
+ color:var(--fg);font-size:14px;padding:10px 12px;font-family:'Sarabun',sans-serif;outline:none;width:100%;transition:border-color .15s;}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--fg2);background:var(--bar);}
+.fld select option{background:var(--bar);}
+.fld textarea{resize:vertical;min-height:60px;}
+input[type=range]{-webkit-appearance:none;height:2px;background:var(--border2);border-radius:2px;outline:none;cursor:pointer;border:none;padding:0;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--acc);cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.2);}
+
+/* ── BUTTONS ── */
+.bigbtn{width:100%;background:transparent;border:1px solid var(--border2);color:var(--fg2);
+ font-family:'Sarabun',sans-serif;font-size:14px;padding:12px;border-radius:var(--r-sm);cursor:pointer;
+ margin-bottom:8px;transition:all .15s;font-weight:500;letter-spacing:.01em;}
+.bigbtn:active{opacity:.7;}
+.bigbtn.accent{border-color:var(--acc);color:var(--acc);}
+.bigbtn.go{background:var(--acc);color:#ffffff;border-color:var(--acc);font-weight:600;}
+.bigbtn.gold{background:var(--gold);color:#ffffff;border-color:var(--gold);font-weight:600;}
+.bigbtn.red{border-color:var(--red);color:var(--red);}
+.bigbtn.green{border-color:var(--green);color:var(--green);}
+.bigbtn.blue{border-color:var(--blue);color:var(--blue);}
+.sm-btn{font-size:11px;padding:5px 13px;border-radius:20px;border:1px solid var(--border);
+ background:none;color:var(--fg2);cursor:pointer;font-family:'Sarabun',sans-serif;font-weight:500;transition:all .15s;}
+.sm-btn:active{border-color:var(--acc);color:var(--acc);}
+
+/* ── STATS ── */
+.stats-row{display:grid;gap:8px;margin-bottom:10px;}
+.stats-row.g4{grid-template-columns:repeat(4,1fr);}
+.stats-row.g3{grid-template-columns:repeat(3,1fr);}
+.stats-row.g2{grid-template-columns:repeat(2,1fr);}
+.stat{background:var(--bar);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 11px;box-shadow:var(--shadow);}
+.stat-l{font-size:8px;font-family:'IBM Plex Mono',monospace;color:var(--dim);margin-bottom:4px;text-transform:uppercase;letter-spacing:.08em;}
+.stat-v{font-size:24px;font-weight:600;font-family:'Sarabun',sans-serif;line-height:1;}
+.stat-u{font-size:10px;color:var(--fg2);margin-left:2px;}
+.stat.acc .stat-v{color:var(--acc);}
+.stat.gold .stat-v{color:var(--gold);}
+.stat.green .stat-v{color:var(--green);}
+.stat.red .stat-v{color:var(--red);}
+
+/* ── BADGE ── */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:4px;font-size:10px;font-family:'IBM Plex Mono',monospace;font-weight:500;letter-spacing:.04em;}
+.badge-g{background:rgba(45,107,74,.08);color:var(--green);border:1px solid rgba(45,107,74,.18);}
+.badge-y{background:rgba(154,124,74,.08);color:var(--gold);border:1px solid rgba(154,124,74,.2);}
+.badge-r{background:rgba(139,32,32,.08);color:var(--red);border:1px solid rgba(139,32,32,.18);}
+.badge-b{background:rgba(42,74,110,.08);color:var(--blue);border:1px solid rgba(42,74,110,.18);}
+.badge-a{background:rgba(44,44,44,.06);color:var(--acc);border:1px solid rgba(44,44,44,.14);}
+
+/* ── SHEET / MODAL ── */
+.sheet-ov{position:fixed;inset:0;z-index:300;pointer-events:none;}
+.sheet-ov.open{pointer-events:all;}
+.sheet-bd{position:absolute;inset:0;background:rgba(0,0,0,0);transition:background .25s;}
+.sheet-ov.open .sheet-bd{background:rgba(0,0,0,.5);}
+.sheet-box{position:absolute;bottom:0;left:0;right:0;background:var(--bar);
+ border-radius:20px 20px 0 0;padding:0 18px calc(24px + var(--sb));max-height:90dvh;overflow-y:auto;
+ transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);}
+.sheet-ov.open .sheet-box{transform:translateY(0);}
+.sh-handle{width:32px;height:3px;background:var(--border2);border-radius:2px;margin:14px auto 18px;}
+.sh-title{font-size:16px;font-weight:600;font-family:'Sarabun',sans-serif;color:var(--fg);
+ margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;}
+
+/* ── TABS ── */
+.tab-row{display:flex;gap:0;background:var(--bar2);border-radius:var(--r-sm);padding:3px;margin-bottom:12px;border:1px solid var(--border);}
+.tab-btn{flex:1;padding:7px;text-align:center;border-radius:8px;font-size:11px;font-family:'Sarabun',sans-serif;font-weight:500;
+ cursor:pointer;color:var(--dim);background:none;border:none;transition:all .15s;letter-spacing:.01em;}
+.tab-btn.active{background:var(--bar);color:var(--acc);box-shadow:0 1px 3px rgba(0,0,0,.08);}
+
+/* ── CALENDAR ── */
+.cal-day{background:var(--bar);border:1px solid var(--border);border-radius:8px;padding:5px 4px;min-height:52px;}
+.cal-day.today{border-color:var(--acc);}
+.cal-dn{font-size:8px;font-family:'IBM Plex Mono',monospace;color:var(--dim);margin-bottom:3px;}
+.cal-ev{background:rgba(42,74,110,.1);border-radius:3px;padding:1px 4px;font-size:8px;color:var(--blue);
+ margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* ── CANVAS ── */
+#simCv{display:block;width:100%;border-radius:var(--r-sm);background:#f8f8f6;border:1px solid var(--border);}
+#roomCv{display:block;width:100%;border-radius:var(--r-sm);background:#f5f4f1;border:1px solid var(--border);touch-action:none;cursor:crosshair;}
+#mapFrame{width:100%;height:300px;border-radius:var(--r);border:1px solid var(--border);overflow:hidden;}
+#rpt-wrap{background:#fff;color:#111;border-radius:var(--r);overflow:hidden;}
+.prog{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:4px;}
+.prog-fill{height:100%;border-radius:2px;transition:width .4s;}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.anim{animation:fadeUp .2s ease;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.pls{animation:pulse 1.4s infinite;}
+
+/* ── LOGIN ── */
+#login-screen{position:fixed;inset:0;z-index:9000;background:var(--fg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+#login-screen.hidden{display:none;}
+.login-logo{font-family:'Sarabun',sans-serif;font-size:42px;font-weight:500;color:#ffffff;letter-spacing:.15em;margin-bottom:4px;}
+.login-sub{font-size:10px;font-family:'IBM Plex Mono',monospace;color:rgba(255,255,255,.35);letter-spacing:.2em;text-transform:uppercase;margin-bottom:48px;}
+.login-box{width:100%;max-width:320px;}
+.login-box .fld{margin-bottom:12px;}
+.login-box .fld label{color:rgba(255,255,255,.4);}
+.login-box .fld input{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:10px;}
+.login-box .fld input:focus{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.1);}
+.login-pin{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px;}
+.pin-btn{height:60px;border-radius:14px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;font-size:22px;font-weight:400;font-family:'Sarabun',sans-serif;cursor:pointer;transition:all .15s;}
+.pin-btn:active{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3);}
+.pin-dots{display:flex;gap:10px;justify-content:center;margin-bottom:24px;height:14px;}
+.pin-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.2);transition:background .15s;}
+.pin-dot.filled{background:#fff;}
+
+/* ── SIGNATURE ── */
+.sig-canvas{width:100%;height:110px;border:1px solid var(--border);border-radius:var(--r-sm);background:#fafaf8;touch-action:none;cursor:crosshair;display:block;}
+.sig-wrap{position:relative;}
+.sig-clear{position:absolute;top:5px;right:5px;font-size:9px;padding:3px 8px;border:1px solid var(--border2);border-radius:4px;background:var(--bar);color:var(--dim);cursor:pointer;font-family:'IBM Plex Mono',monospace;}
+
+/* ── PHOTOS ── */
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px;}
+.photo-item{aspect-ratio:1;border-radius:var(--r-sm);overflow:hidden;position:relative;background:var(--bar2);border:1px solid var(--border);}
+.photo-item img{width:100%;height:100%;object-fit:cover;}
+.photo-del{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;border:none;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}
+.photo-add{aspect-ratio:1;border-radius:var(--r-sm);border:1.5px dashed var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer;background:transparent;flex-direction:column;gap:3px;transition:border-color .15s;}
+.photo-add:hover{border-color:var(--fg2);}
+.photo-add span{font-size:18px;color:var(--dim);}
+.photo-add small{font-size:8px;color:var(--dim);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.06em;}
+
+/* ── SETTINGS ROWS ── */
+.setting-row{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid var(--border);}
+.setting-row:last-child{border-bottom:none;}
+.setting-label{font-size:13px;font-weight:500;}
+.setting-sub{font-size:10px;color:var(--dim);margin-top:2px;font-family:'IBM Plex Mono',monospace;}
+
+/* ── POINTS BADGE ── */
+.pts-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;
+ background:rgba(154,124,74,.1);border:1px solid rgba(154,124,74,.25);color:var(--gold);
+ font-size:10px;font-weight:600;font-family:'IBM Plex Mono',monospace;}
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;height:100dvh;overflow:hidden;}
+body{background:var(--bg);color:var(--fg);font-family:'Sarabun',sans-serif;font-size:15px;}
 #shell{display:flex;height:100dvh;flex-direction:column;overflow:hidden;}
 
 /* TOPBAR */
 #topbar{background:var(--bar);border-bottom:1px solid var(--border);padding:0 14px;padding-top:var(--st);
  height:calc(48px + var(--st));display:flex;align-items:flex-end;gap:8px;padding-bottom:9px;flex-shrink:0;}
 #pg-title{font-size:15px;font-weight:600;color:var(--fg);flex:1;letter-spacing:.04em;}
-.tbtn{background:none;border:1px solid var(--border2);color:var(--fg2);font-family:'DM Sans',sans-serif;
+.tbtn{background:none;border:1px solid var(--border2);color:var(--fg2);font-family:'Sarabun',sans-serif;
  font-size:11px;padding:5px 11px;border-radius:20px;cursor:pointer;white-space:nowrap;transition:all .12s;}
 .tbtn:active,.tbtn.on{border-color:var(--acc);color:var(--acc);}
 
@@ -33,7 +211,7 @@ body{background:var(--bg);color:var(--fg);font-family:'DM Sans',sans-serif;font-
 .bni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
  padding:8px 4px 6px;cursor:pointer;transition:all .12s;border:none;background:none;gap:2px;}
 .bni-ic{font-size:10px;line-height:1;letter-spacing:.05em;}
-.bni-lbl{font-size:9px;font-family:'DM Mono',monospace;color:var(--dim);transition:color .12s;}
+.bni-lbl{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--dim);transition:color .12s;}
 .bni.active .bni-lbl{color:var(--acc);}
 .bni.active .bni-ic{color:var(--acc);}
 
@@ -46,8 +224,8 @@ body{background:var(--bg);color:var(--fg);font-family:'DM Sans',sans-serif;font-
 .scr::-webkit-scrollbar{width:2px;}
 
 /* CARDS */
-.card{background:var(--bar);border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
-.sec-hd{font-size:9px;font-family:'DM Mono',monospace;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;
+.card{background:var(--bar);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.sec-hd{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;
  margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
 
 /* FORM */
@@ -56,9 +234,9 @@ body{background:var(--bg);color:var(--fg);font-family:'DM Sans',sans-serif;font-
 .frow.g3{grid-template-columns:1fr 1fr 1fr;}
 .frow.g4{grid-template-columns:1fr 1fr 1fr 1fr;}
 .fld{display:flex;flex-direction:column;gap:3px;}
-.fld label{font-size:9px;font-family:'DM Mono',monospace;color:var(--dim);}
+.fld label{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--dim);}
 .fld input,.fld select,.fld textarea{background:var(--bar);border:1px solid var(--border2);border-radius:var(--r-sm);
- color:var(--fg);font-size:12px;padding:7px 9px;font-family:'DM Sans',sans-serif;outline:none;width:100%;transition:border-color .13s;}
+ color:var(--fg);font-size:12px;padding:7px 9px;font-family:'Sarabun',sans-serif;outline:none;width:100%;transition:border-color .13s;}
 .fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--fg2);}
 .fld select option{background:var(--bar);}
 .fld textarea{resize:vertical;min-height:56px;}
@@ -67,7 +245,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 
 /* BUTTONS */
 .bigbtn{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border2);color:var(--fg2);
- font-family:'DM Sans',sans-serif;font-size:12px;padding:10px;border-radius:var(--r-sm);cursor:pointer;
+ font-family:'Sarabun',sans-serif;font-size:12px;padding:10px;border-radius:var(--r-sm);cursor:pointer;
  margin-bottom:6px;transition:all .11s;font-weight:500;}
 .bigbtn:active{opacity:.6;}
 .bigbtn.accent{border-color:var(--acc);color:var(--acc);}
@@ -75,7 +253,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .bigbtn.red{border-color:var(--red);color:var(--red);}
 .bigbtn.green{border-color:var(--green);color:var(--green);}
 .sm-btn{font-size:10px;padding:4px 10px;border-radius:20px;border:1px solid var(--border2);
- background:none;color:var(--fg2);cursor:pointer;font-family:'DM Mono',monospace;transition:all .11s;}
+ background:none;color:var(--fg2);cursor:pointer;font-family:'IBM Plex Mono',monospace;transition:all .11s;}
 .sm-btn:active{border-color:var(--acc);color:var(--acc);}
 
 /* STATS ROW */
@@ -84,8 +262,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .stats-row.g3{grid-template-columns:repeat(3,1fr);}
 .stats-row.g2{grid-template-columns:repeat(2,1fr);}
 .stat{background:var(--bar);border:1px solid var(--border);border-radius:var(--r-sm);padding:9px 10px;box-shadow:0 1px 2px rgba(0,0,0,.05);}
-.stat-l{font-size:8px;font-family:'DM Mono',monospace;color:var(--dim);margin-bottom:3px;}
-.stat-v{font-size:18px;font-weight:700;font-family:'DM Mono',monospace;line-height:1;}
+.stat-l{font-size:8px;font-family:'IBM Plex Mono',monospace;color:var(--dim);margin-bottom:3px;}
+.stat-v{font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;line-height:1;}
 .stat-u{font-size:9px;color:var(--fg2);margin-left:2px;}
 .stat.acc .stat-v{color:var(--acc);}
 .stat.blue .stat-v{color:var(--blue);}
@@ -94,7 +272,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .stat.yellow .stat-v{color:var(--yellow);}
 
 /* BADGE */
-.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:20px;font-size:9px;font-family:'DM Mono',monospace;font-weight:500;}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:20px;font-size:9px;font-family:'IBM Plex Mono',monospace;font-weight:500;}
 .badge-g{background:rgba(58,158,110,.1);color:var(--green);border:1px solid rgba(58,158,110,.2);}
 .badge-y{background:rgba(184,146,14,.1);color:var(--yellow);border:1px solid rgba(184,146,14,.2);}
 .badge-r{background:rgba(200,85,85,.1);color:var(--red);border:1px solid rgba(200,85,85,.2);}
@@ -103,7 +281,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 
 /* TABLE */
 .tbl{width:100%;border-collapse:collapse;}
-.tbl th{text-align:left;font-size:8px;font-family:'DM Mono',monospace;color:var(--dim);padding:6px 8px;
+.tbl th{text-align:left;font-size:8px;font-family:'IBM Plex Mono',monospace;color:var(--dim);padding:6px 8px;
  border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.05em;}
 .tbl td{font-size:11px;padding:7px 8px;border-bottom:1px solid rgba(39,39,41,.5);vertical-align:middle;}
 .tbl tr:last-child td{border-bottom:none;}
@@ -130,7 +308,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 
 /* TABS */
 .tab-row{display:flex;gap:2px;background:var(--bar);border-radius:var(--r-sm);padding:3px;margin-bottom:10px;}
-.tab-btn{flex:1;padding:6px;text-align:center;border-radius:8px;font-size:10px;font-family:'DM Mono',monospace;
+.tab-btn{flex:1;padding:6px;text-align:center;border-radius:8px;font-size:10px;font-family:'IBM Plex Mono',monospace;
  cursor:pointer;color:var(--dim);background:none;border:none;transition:all .13s;}
 .tab-btn.active{background:var(--bar2);color:var(--acc);border:1px solid var(--border2);}
 
@@ -138,7 +316,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
 .cal-day{background:var(--bar2);border:1px solid var(--border);border-radius:6px;padding:5px 4px;min-height:52px;}
 .cal-day.today{border-color:var(--acc);}
-.cal-dn{font-size:8px;font-family:'DM Mono',monospace;color:var(--dim);margin-bottom:3px;}
+.cal-dn{font-size:8px;font-family:'IBM Plex Mono',monospace;color:var(--dim);margin-bottom:3px;}
 .cal-ev{background:rgba(74,143,212,.15);border-radius:3px;padding:1px 4px;font-size:8px;color:var(--blue);
  margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
@@ -158,8 +336,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 /* LOGIN */
 #login-screen{position:fixed;inset:0;z-index:9000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
 #login-screen.hidden{display:none;}
-.login-logo{font-family:'DM Mono',monospace;font-size:28px;font-weight:700;letter-spacing:.2em;color:var(--acc);margin-bottom:4px;}
-.login-sub{font-size:11px;font-family:'DM Mono',monospace;color:var(--dim);letter-spacing:.15em;margin-bottom:36px;}
+.login-logo{font-family:'IBM Plex Mono',monospace;font-size:28px;font-weight:700;letter-spacing:.2em;color:var(--acc);margin-bottom:4px;}
+.login-sub{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--dim);letter-spacing:.15em;margin-bottom:36px;}
 .login-box{width:100%;max-width:340px;background:var(--bar);border:1px solid var(--border2);border-radius:16px;padding:22px;}
 .login-box .fld{margin-bottom:12px;}
 .login-pin{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;}
@@ -172,7 +350,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 /* SIGNATURE */
 .sig-canvas{width:100%;height:120px;border:1px solid var(--border2);border-radius:var(--r-sm);background:#fafaf8;touch-action:none;cursor:crosshair;display:block;}
 .sig-wrap{position:relative;}
-.sig-clear{position:absolute;top:4px;right:4px;font-size:9px;padding:3px 8px;border:1px solid var(--border2);border-radius:4px;background:var(--bar);color:var(--fg2);cursor:pointer;font-family:'DM Mono',monospace;}
+.sig-clear{position:absolute;top:4px;right:4px;font-size:9px;padding:3px 8px;border:1px solid var(--border2);border-radius:4px;background:var(--bar);color:var(--fg2);cursor:pointer;font-family:'IBM Plex Mono',monospace;}
 
 /* PHOTOS */
 .photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px;}
@@ -181,25 +359,24 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .photo-del{position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;background:rgba(139,32,32,.85);color:#fff;border:none;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}
 .photo-add{aspect-ratio:1;border-radius:var(--r-sm);border:1px dashed var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--bar2);flex-direction:column;gap:3px;}
 .photo-add span{font-size:20px;color:var(--dim);}
-.photo-add small{font-size:8px;color:var(--dim);font-family:'DM Mono',monospace;}
+.photo-add small{font-size:8px;color:var(--dim);font-family:'IBM Plex Mono',monospace;}
 
 /* SETTINGS SHEET */
 #sh-settings .sh-title{font-size:15px;}
 .setting-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--border);}
 .setting-row:last-child{border-bottom:none;}
 .setting-label{font-size:13px;font-weight:500;}
-.setting-sub{font-size:10px;color:var(--dim);margin-top:1px;font-family:'DM Mono',monospace;}
+.setting-sub{font-size:10px;color:var(--dim);margin-top:1px;font-family:'IBM Plex Mono',monospace;}
 </style>
 </head>
 <body>
 <!-- ═══ LOGIN SCREEN ═══════════════════════════════════════════ -->
 <div id="login-screen">
- <div class="login-logo">NEXUS</div>
- <div class="login-sub">SERVICE MANAGEMENT</div>
+ <div class="login-logo">Nexus</div>
+ <div class="login-sub">Service Management</div>
  <div class="login-box">
   <div id="login-mode-pin">
-   <div style="font-size:13px;font-weight:600;margin-bottom:4px;text-align:center;">ใส่ PIN เข้าใช้งาน</div>
-   <div style="font-size:10px;color:var(--dim);text-align:center;margin-bottom:16px;font-family:'DM Mono',monospace;">PIN เริ่มต้น: 1234</div>
+   <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:rgba(255,255,255,.3);text-align:center;margin-bottom:20px;letter-spacing:.1em;text-transform:uppercase;">Enter PIN</div>
    <div class="pin-dots" id="pin-dots">
     <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
     <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
@@ -214,32 +391,36 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
     <button class="pin-btn" onclick="pinPress('7')">7</button>
     <button class="pin-btn" onclick="pinPress('8')">8</button>
     <button class="pin-btn" onclick="pinPress('9')">9</button>
-    <button class="pin-btn" onclick="pinPress('C')" style="font-size:14px;color:var(--dim);">CLR</button>
+    <button class="pin-btn" onclick="pinPress('C')" style="font-size:11px;font-family:'IBM Plex Mono',monospace;letter-spacing:.05em;">CLR</button>
     <button class="pin-btn" onclick="pinPress('0')">0</button>
-    <button class="pin-btn" onclick="pinPress('⌫')" style="font-size:16px;color:var(--dim);">⌫</button>
+    <button class="pin-btn" onclick="pinPress('⌫')" style="font-size:18px;">⌫</button>
    </div>
-   <div id="pin-err" style="text-align:center;font-size:10px;color:var(--red);margin-top:10px;min-height:14px;font-family:'DM Mono',monospace;"></div>
-   <button class="bigbtn" style="margin-top:12px;font-size:11px;" onclick="showLoginMode('pass')">ล็อกอินด้วยรหัสผ่าน</button>
+   <div id="pin-err" style="text-align:center;font-size:10px;color:rgba(255,80,80,.8);margin-top:12px;min-height:14px;font-family:'IBM Plex Mono',monospace;"></div>
+   <button onclick="showLoginMode('pass')" style="width:100%;margin-top:16px;padding:10px;background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:10px;color:rgba(255,255,255,.3);font-family:'Sarabun',sans-serif;font-size:12px;cursor:pointer;">ใช้รหัสผ่านแทน</button>
   </div>
   <div id="login-mode-pass" style="display:none;">
-   <div style="font-size:13px;font-weight:600;margin-bottom:14px;text-align:center;">เข้าสู่ระบบ</div>
-   <div class="fld" style="margin-bottom:10px;"><label>ชื่อผู้ใช้</label><input id="l-user" placeholder="admin" autocomplete="username"></div>
-   <div class="fld" style="margin-bottom:14px;"><label>รหัสผ่าน</label><input id="l-pass" type="password" placeholder="••••••" autocomplete="current-password"></div>
-   <button class="bigbtn go" onclick="loginPass()">เข้าสู่ระบบ</button>
-   <div id="pass-err" style="text-align:center;font-size:10px;color:var(--red);margin-top:8px;min-height:14px;"></div>
-   <button class="bigbtn" style="margin-top:8px;font-size:11px;" onclick="showLoginMode('pin')">ใช้ PIN แทน</button>
+   <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:rgba(255,255,255,.3);text-align:center;margin-bottom:20px;letter-spacing:.1em;text-transform:uppercase;">Sign In</div>
+   <div class="fld" style="margin-bottom:12px;"><label>Username</label><input id="l-user" placeholder="admin" autocomplete="username"></div>
+   <div class="fld" style="margin-bottom:20px;"><label>Password</label><input id="l-pass" type="password" placeholder="••••••" autocomplete="current-password"></div>
+   <button onclick="loginPass()" style="width:100%;padding:13px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:10px;color:#fff;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">เข้าสู่ระบบ</button>
+   <div id="pass-err" style="text-align:center;font-size:10px;color:rgba(255,80,80,.8);margin-top:8px;min-height:14px;"></div>
+   <button onclick="showLoginMode('pin')" style="width:100%;margin-top:10px;padding:10px;background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:10px;color:rgba(255,255,255,.3);font-family:'Sarabun',sans-serif;font-size:12px;cursor:pointer;">ใช้ PIN แทน</button>
   </div>
  </div>
- <div style="margin-top:20px;font-size:9px;color:var(--dim);font-family:'DM Mono',monospace;text-align:center;">NEXUS © 2025 · จำลองแอร์</div>
+ <div style="margin-top:32px;font-size:9px;color:rgba(255,255,255,.18);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.15em;">Nexus © 2025</div>
 </div>
 
 <div id="shell">
  <div id="topbar">
-  <div style="display:flex;align-items:center;gap:8px;flex:1;"><div style="font-size:13px;font-weight:700;letter-spacing:.15em;color:var(--fg);font-family:'DM Mono',monospace;">NEXUS</div><div style="width:1px;height:16px;background:var(--border2);"></div><div id="pg-title" style="font-size:13px;font-weight:500;">SERVICE</div></div>
-  <div id="tb-acts" style="display:flex;gap:5px;align-items:center;">
+  <div class="topbar-brand">
+   <span class="topbar-logo">Nexus</span>
+   <span class="topbar-divider"></span>
+   <span id="pg-title">Dashboard</span>
+  </div>
+  <div id="tb-acts" style="display:flex;gap:4px;align-items:center;">
    <button class="tbtn" onclick="openSheet('sh-cust','add')">+ ลูกค้า</button>
    <button class="tbtn" onclick="openSheet('sh-job','add')">+ งาน</button>
-   <button class="tbtn" onclick="openSheet('sh-settings')" style="padding:5px 9px;font-size:13px;border-color:transparent;">⚙</button>
+   <button class="tbtn icon" onclick="openSheet('sh-settings')" title="ตั้งค่า" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;border-radius:50%;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></button>
   </div>
  </div>
 
@@ -317,7 +498,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
       <div class="fld"><label>อายุ (ปี)</label><input id="s-age" type="number" value="3" min="0" max="20"></div>
      </div>
      <div class="fld" style="margin-bottom:8px;">
-      <label>Setpoint <span id="s-setv" style="color:var(--acc);font-family:'DM Mono',monospace;">25°C</span></label>
+      <label>Setpoint <span id="s-setv" style="color:var(--acc);font-family:'IBM Plex Mono',monospace;">25°C</span></label>
       <input type="range" id="s-set" min="16" max="30" value="25" oninput="document.getElementById('s-setv').textContent=this.value+'°C'">
      </div>
     </div>
@@ -376,23 +557,23 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
     <!-- Realtime sim panel -->
     <div id="sim-live-panel" style="display:none;margin-bottom:8px;">
      <div id="sim-type-bar" style="background:rgba(45,122,78,.08);border:1px solid rgba(45,122,78,.25);border-radius:var(--r-sm);padding:7px 12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">
-      <span id="sim-type-lbl" style="font-size:10px;font-weight:700;font-family:'DM Mono',monospace;color:var(--green);letter-spacing:.08em;">AC SIMULATION — RUNNING</span>
-      <button onclick="stopSim()" style="font-size:9px;padding:3px 9px;border:1px solid var(--green);border-radius:4px;background:transparent;color:var(--green);cursor:pointer;font-family:'DM Mono',monospace;">STOP</button>
+      <span id="sim-type-lbl" style="font-size:10px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--green);letter-spacing:.08em;">AC SIMULATION — RUNNING</span>
+      <button onclick="stopSim()" style="font-size:9px;padding:3px 9px;border:1px solid var(--green);border-radius:4px;background:transparent;color:var(--green);cursor:pointer;font-family:'IBM Plex Mono',monospace;">STOP</button>
      </div>
      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-radius:var(--r-sm);overflow:hidden;margin-bottom:5px;">
-      <div style="background:var(--bar);padding:8px 4px;text-align:center;"><div style="font-size:7px;color:var(--dim);font-family:'DM Mono',monospace;margin-bottom:2px;">TEMP</div><div id="s-Troom" style="font-size:17px;font-weight:700;font-family:'DM Mono',monospace;color:var(--red);line-height:1;">—</div><div style="font-size:7px;color:var(--dim);">°C</div></div>
-      <div style="background:var(--bar);padding:8px 4px;text-align:center;"><div style="font-size:7px;color:var(--dim);font-family:'DM Mono',monospace;margin-bottom:2px;">RH</div><div id="s-RH" style="font-size:17px;font-weight:700;font-family:'DM Mono',monospace;color:var(--blue);line-height:1;">—</div><div style="font-size:7px;color:var(--dim);">%</div></div>
-      <div style="background:var(--bar);padding:8px 4px;text-align:center;"><div style="font-size:7px;color:var(--dim);font-family:'DM Mono',monospace;margin-bottom:2px;">POWER</div><div id="s-Pw" style="font-size:17px;font-weight:700;font-family:'DM Mono',monospace;color:var(--green);line-height:1;">—</div><div style="font-size:7px;color:var(--dim);">W</div></div>
-      <div style="background:var(--bar);padding:8px 4px;text-align:center;"><div style="font-size:7px;color:var(--dim);font-family:'DM Mono',monospace;margin-bottom:2px;">COP</div><div id="s-COPr" style="font-size:17px;font-weight:700;font-family:'DM Mono',monospace;color:var(--yellow);line-height:1;">—</div><div style="font-size:7px;color:var(--dim);"></div></div>
+      <div style="background:var(--bar);padding:8px 4px;text-align:center;"><div style="font-size:7px;color:var(--dim);font-family:'IBM Plex Mono',monospace;margin-bottom:2px;">TEMP</div><div id="s-Troom" style="font-size:17px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--red);line-height:1;">—</div><div style="font-size:7px;color:var(--dim);">°C</div></div>
+      <div style="background:var(--bar);padding:8px 4px;text-align:center;"><div style="font-size:7px;color:var(--dim);font-family:'IBM Plex Mono',monospace;margin-bottom:2px;">RH</div><div id="s-RH" style="font-size:17px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--blue);line-height:1;">—</div><div style="font-size:7px;color:var(--dim);">%</div></div>
+      <div style="background:var(--bar);padding:8px 4px;text-align:center;"><div style="font-size:7px;color:var(--dim);font-family:'IBM Plex Mono',monospace;margin-bottom:2px;">POWER</div><div id="s-Pw" style="font-size:17px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--green);line-height:1;">—</div><div style="font-size:7px;color:var(--dim);">W</div></div>
+      <div style="background:var(--bar);padding:8px 4px;text-align:center;"><div style="font-size:7px;color:var(--dim);font-family:'IBM Plex Mono',monospace;margin-bottom:2px;">COP</div><div id="s-COPr" style="font-size:17px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--yellow);line-height:1;">—</div><div style="font-size:7px;color:var(--dim);"></div></div>
      </div>
      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-radius:var(--r-sm);overflow:hidden;margin-bottom:5px;">
-      <div style="background:var(--bar);padding:6px 4px;text-align:center;"><div style="font-size:7px;color:var(--dim);font-family:'DM Mono',monospace;">PLR</div><div id="s-PLR" style="font-size:12px;font-weight:700;font-family:'DM Mono',monospace;color:var(--green);">—</div></div>
-      <div style="background:var(--bar);padding:6px 4px;text-align:center;"><div style="font-size:7px;color:var(--dim);font-family:'DM Mono',monospace;">COMP</div><div id="s-Comp" style="font-size:12px;font-weight:700;font-family:'DM Mono',monospace;">—</div></div>
-      <div style="background:var(--bar);padding:6px 4px;text-align:center;"><div style="font-size:7px;color:var(--dim);font-family:'DM Mono',monospace;">ENERGY</div><div id="s-Ekwh" style="font-size:12px;font-weight:700;font-family:'DM Mono',monospace;color:var(--yellow);">—</div><div style="font-size:6px;color:var(--dim);">kWh</div></div>
-      <div style="background:var(--bar);padding:6px 4px;text-align:center;"><div style="font-size:7px;color:var(--dim);font-family:'DM Mono',monospace;">TIME</div><div id="s-Tmin" style="font-size:12px;font-weight:700;font-family:'DM Mono',monospace;color:var(--dim);">—</div><div style="font-size:6px;color:var(--dim);">min</div></div>
+      <div style="background:var(--bar);padding:6px 4px;text-align:center;"><div style="font-size:7px;color:var(--dim);font-family:'IBM Plex Mono',monospace;">PLR</div><div id="s-PLR" style="font-size:12px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--green);">—</div></div>
+      <div style="background:var(--bar);padding:6px 4px;text-align:center;"><div style="font-size:7px;color:var(--dim);font-family:'IBM Plex Mono',monospace;">COMP</div><div id="s-Comp" style="font-size:12px;font-weight:700;font-family:'IBM Plex Mono',monospace;">—</div></div>
+      <div style="background:var(--bar);padding:6px 4px;text-align:center;"><div style="font-size:7px;color:var(--dim);font-family:'IBM Plex Mono',monospace;">ENERGY</div><div id="s-Ekwh" style="font-size:12px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--yellow);">—</div><div style="font-size:6px;color:var(--dim);">kWh</div></div>
+      <div style="background:var(--bar);padding:6px 4px;text-align:center;"><div style="font-size:7px;color:var(--dim);font-family:'IBM Plex Mono',monospace;">TIME</div><div id="s-Tmin" style="font-size:12px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--dim);">—</div><div style="font-size:6px;color:var(--dim);">min</div></div>
      </div>
      <div style="padding:6px 10px;background:var(--bar);border:1px solid var(--border);border-radius:var(--r-sm);margin-bottom:5px;">
-      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--dim);font-family:'DM Mono',monospace;margin-bottom:3px;">
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--dim);font-family:'IBM Plex Mono',monospace;margin-bottom:3px;">
        <span id="s-status">กำลังทำความเย็น</span><span id="s-eta">—</span>
       </div>
       <div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden;">
@@ -423,7 +604,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
         <div class="card" id="sim-summary-card" style="display:none;">
           <div class="sec-hd">SUMMARY — สรุปผล</div>
           <canvas id="sumCv" height="200" style="width:100%;display:block;border-radius:var(--r-sm);background:#f8f8f6;border:1px solid var(--border);"></canvas>
-          <div id="sum-text" style="margin-top:8px;font-size:11px;line-height:1.8;color:var(--fg2);font-family:'DM Mono',monospace;white-space:pre-line;"></div>
+          <div id="sum-text" style="margin-top:8px;font-size:11px;line-height:1.8;color:var(--fg2);font-family:'IBM Plex Mono',monospace;white-space:pre-line;"></div>
         </div>
     </div>
    </div>
@@ -457,7 +638,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
       <div class="fld"><label>T Compressor Shell (°C)</label><input id="t-comp" type="number" placeholder="70–90°C" oninput="analyzeTest()"></div>
       <div class="fld"><label>T Condenser Coil (°C)</label><input id="t-cond" type="number" placeholder="40–55°C" oninput="analyzeTest()"></div>
      </div>
-     <div style="font-size:9px;color:var(--dim);margin-top:4px;font-family:'DM Mono',monospace;">
+     <div style="font-size:9px;color:var(--dim);margin-top:4px;font-family:'IBM Plex Mono',monospace;">
       ประตูเปิด/ปิด:
       <select id="t-door-state" onchange="analyzeTest()" style="font-size:10px;background:var(--bar2);border:1px solid var(--border2);border-radius:4px;padding:2px 6px;color:var(--fg);">
        <option value="closed">ปิด (Closed)</option>
@@ -573,8 +754,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
       <!-- Map: Google Maps embed via iframe -->
       <div id="mapFrame" style="height:340px;border-radius:var(--r-sm);border:1px solid var(--border);overflow:hidden;background:var(--bar2);display:flex;align-items:center;justify-content:center;">
        <div style="text-align:center;color:var(--dim);">
-        <div style="font-size:28px;margin-bottom:8px;">🗺</div>
-        <div style="font-size:11px;font-family:'DM Mono',monospace;">เลือกลูกค้าด้านบน<br>หรือกดปุ่ม Maps ในรายการ</div>
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:8px;color:var(--dim);"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3V6z"/><path d="M9 3v15M15 6v15"/></svg>
+        <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;">เลือกลูกค้าด้านบน<br>หรือกดปุ่ม Maps ในรายการ</div>
        </div>
       </div>
      </div>
@@ -626,13 +807,27 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 
  <!-- BOTTOM NAV -->
  <div id="bnav">
-  <button class="bni active" onclick="goNav('home')" id="nav-home"><div class="bni-ic" style="font-size:11px;font-family:'DM Mono',monospace;font-weight:700;">HOME</div></button>
-  <button class="bni" onclick="goNav('custs')" id="nav-custs"><div class="bni-ic" style="font-size:11px;font-family:'DM Mono',monospace;font-weight:700;">CUST</div></button>
-  <button class="bni" onclick="goNav('jobs')" id="nav-jobs"><div class="bni-ic" style="font-size:11px;font-family:'DM Mono',monospace;font-weight:700;">JOBS</div></button>
-  <button class="bni" onclick="goNav('sim')" id="nav-sim"><div class="bni-ic" style="font-size:11px;font-family:'DM Mono',monospace;font-weight:700;">SIM</div></button>
-  <button class="bni" onclick="goNav('test')" id="nav-test"><div class="bni-ic" style="font-size:11px;font-family:'DM Mono',monospace;font-weight:700;">TEST</div></button>
-  <button class="bni" onclick="goNav('sched')" id="nav-sched"><div class="bni-ic" style="font-size:11px;font-family:'DM Mono',monospace;font-weight:700;">SCHED</div></button>
-  <button class="bni" onclick="goNav('more')" id="nav-more"><div class="bni-ic" style="font-size:11px;font-family:'DM Mono',monospace;font-weight:700;">MAP</div></button>
+  <button class="bni active" onclick="goNav('home')" id="nav-home">
+   <svg class="bni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1z"/><path d="M9 21V12h6v9"/></svg>
+   <div class="bni-lbl">หน้าหลัก</div></button>
+  <button class="bni" onclick="goNav('custs')" id="nav-custs">
+   <svg class="bni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+   <div class="bni-lbl">ลูกค้า</div></button>
+  <button class="bni" onclick="goNav('jobs')" id="nav-jobs">
+   <svg class="bni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6M9 11h6M9 15h4"/></svg>
+   <div class="bni-lbl">งาน</div></button>
+  <button class="bni" onclick="goNav('sim')" id="nav-sim">
+   <svg class="bni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 017 7c0 3.5-2 6-5 7.5V18H10v-1.5C7 15 5 12.5 5 9a7 7 0 017-7z"/><path d="M10 22h4"/></svg>
+   <div class="bni-lbl">SIM</div></button>
+  <button class="bni" onclick="goNav('test')" id="nav-test">
+   <svg class="bni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2h-3"/><path d="M9 3a3 3 0 006 0"/><path d="M9 12l2 2 4-4"/></svg>
+   <div class="bni-lbl">ทดสอบ</div></button>
+  <button class="bni" onclick="goNav('sched')" id="nav-sched">
+   <svg class="bni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h2v2H8z M11 14h2v2h-2z M14 14h2v2h-2z"/></svg>
+   <div class="bni-lbl">ตาราง</div></button>
+  <button class="bni" onclick="goNav('more')" id="nav-more">
+   <svg class="bni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+   <div class="bni-lbl">เพิ่มเติม</div></button>
  </div>
 </div><!-- /shell -->
 
@@ -705,11 +900,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
   <div class="sec-hd" style="margin-top:12px;">ลายมือชื่อ</div>
   <div class="frow g2" style="gap:8px;margin-bottom:10px;">
    <div>
-    <div style="font-size:9px;font-family:'DM Mono',monospace;color:var(--dim);margin-bottom:3px;">ลายมือชื่อลูกค้า</div>
+    <div style="font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--dim);margin-bottom:3px;">ลายมือชื่อลูกค้า</div>
     <div class="sig-wrap"><canvas id="sig-cust" class="sig-canvas"></canvas><button class="sig-clear" onclick="clearSig('sig-cust')">ล้าง</button></div>
    </div>
    <div>
-    <div style="font-size:9px;font-family:'DM Mono',monospace;color:var(--dim);margin-bottom:3px;">ลายมือชื่อช่าง</div>
+    <div style="font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--dim);margin-bottom:3px;">ลายมือชื่อช่าง</div>
     <div class="sig-wrap"><canvas id="sig-tech" class="sig-canvas"></canvas><button class="sig-clear" onclick="clearSig('sig-tech')">ล้าง</button></div>
    </div>
   </div>
@@ -783,17 +978,59 @@ function saveSettings(){
   if(pin&&/^\d{4}$/.test(pin))localStorage.setItem('nx_pin',pin);
   if(user)localStorage.setItem('nx_user',user);
   if(pass)localStorage.setItem('nx_pass',pass);
+  const qrNew=document.getElementById('set-qr-url').value.trim();
+  const g=n=>{const e=document.getElementById(n);return e?e.value.trim():''};
+  const gc=n=>{const e=document.getElementById(n);return e?e.checked:true};
   DB.settings={
-    company:document.getElementById('set-company').value.trim(),
-    tel:document.getElementById('set-tel').value.trim(),
-    addr:document.getElementById('set-addr').value.trim(),
-    techTel:document.getElementById('set-tech-tel').value.trim(),
-    techName:document.getElementById('set-tech-name').value.trim(),
-    qrUrl:document.getElementById('set-qr-url').value.trim()||(DB.settings?.qrUrl||''),
+    company:g('set-company'),tel:g('set-tel'),addr:g('set-addr'),
+    techTel:g('set-tech-tel'),techName:g('set-tech-name'),
+    qrUrl:qrNew||(DB.settings?.qrUrl||''),
+    lineId:g('set-line-id'),
+    social:g('set-social'),
+    ptsEnabled:gc('set-pts-on'),
+    ptsPer:+g('set-pts-per')||1,
+    ptsUnit:g('set-pts-unit')||'บาท',
+    ptsReward:g('set-pts-reward')||'100 แต้ม = ส่วนลด 100 บาท',
+    ptsExpire:+g('set-pts-expire')||365,
+    rptShowPoints:gc('rpt-show-pts'),
+    rptShowQR:gc('rpt-show-qr'),
+    rptShowSig:gc('rpt-show-sig'),
+    rptShowPhotos:gc('rpt-show-photos'),
+    rptShowTest:gc('rpt-show-test'),
   };
   sDB();
   closeSheet('sh-settings');
   showToast('บันทึกการตั้งค่าแล้ว');
+}
+// ══════════════════════════════════════════════════════════
+// POINTS SYSTEM
+// ══════════════════════════════════════════════════════════
+function calcPoints(price){
+  const s=DB.settings||{};
+  if(s.ptsEnabled===false)return 0;
+  return Math.floor((price||0)/(s.ptsPer||1));
+}
+function getCustomerPoints(cid){
+  return (DB.jobs||[]).filter(j=>j.cid===cid&&j.status==='done')
+    .reduce((sum,j)=>sum+calcPoints(j.price||0),0);
+}
+function renderPointsBadge(cid){
+  const s=DB.settings||{};
+  if(s.ptsEnabled===false)return '';
+  const pts=getCustomerPoints(cid);
+  if(!pts)return '';
+  return '<span class="pts-badge">&#9733; '+pts.toLocaleString()+' แต้ม</span>';
+}
+function updatePtsToggle(){
+  const cb=document.getElementById('set-pts-on');
+  const ui=document.getElementById('pts-toggle-ui');
+  const knob=document.getElementById('pts-toggle-knob');
+  const cfg=document.getElementById('pts-config');
+  if(!cb)return;
+  const on=cb.checked;
+  if(ui){ui.style.background=on?'var(--gold)':'var(--border2)';}
+  if(knob){knob.style.left=on?'23px':'3px';}
+  if(cfg){cfg.style.opacity=on?'1':'0.4';cfg.style.pointerEvents=on?'':'none';}
 }
 function loadQRFile(input){
   const file=input.files[0];if(!file)return;
@@ -1001,13 +1238,13 @@ function renderDash(){
   const c=DB.customers.find(x=>x.id===j.cid)||{fn:'?',ln:''};
   return`<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)33;">
    <div><div style="font-size:12px;">${jLbl(j.type)} — ${c.fn} ${c.ln}</div>
-    <div style="font-size:9px;color:var(--dim);font-family:'DM Mono',monospace;">${j.date} · ${j.tech||'—'}</div></div>
+    <div style="font-size:9px;color:var(--dim);font-family:'IBM Plex Mono',monospace;">${j.date} · ${j.tech||'—'}</div></div>
    <span class="badge ${sBadge(j.status)}">${sLbl(j.status)}</span></div>`;
  }).join('')||'<div style="color:var(--dim)">ยังไม่มีงาน</div>';
  // Recent custs
  document.getElementById('d-custs').innerHTML=DB.customers.slice(-4).reverse().map(c=>
   `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)33;font-size:11px;">
-   <span>${c.fn} ${c.ln}</span><span style="color:var(--dim);font-family:'DM Mono',monospace;">${c.ph}</span></div>`
+   <span>${c.fn} ${c.ln}</span><span style="color:var(--dim);font-family:'IBM Plex Mono',monospace;">${c.ph}</span></div>`
  ).join('')||'<div style="color:var(--dim)">ยังไม่มีลูกค้า</div>';
  drawDashChart();
 }
@@ -1033,9 +1270,9 @@ function drawDashChart(){
   ctx.quadraticCurveTo(x+bw-pad*2,y,x+bw-pad*2,y+rr);
   ctx.lineTo(x+bw-pad*2,H-14*dpr);ctx.lineTo(x,H-14*dpr);ctx.lineTo(x,y+rr);
   ctx.quadraticCurveTo(x,y,x+rr,y);ctx.fill();
-  ctx.fillStyle='#888888';ctx.font=`${5.5*dpr}px 'DM Mono',monospace`;
+  ctx.fillStyle='#888888';ctx.font=`${5.5*dpr}px 'IBM Plex Mono',monospace`;
   ctx.textAlign='center';ctx.fillText(d.slice(5),x+(bw-pad*2)/2,H-2*dpr);
-  if(counts[i]){{ctx.fillStyle='#8b2020';ctx.font=`bold ${7*dpr}px 'DM Mono',monospace`;ctx.fillText(counts[i],x+(bw-pad*2)/2,y-3*dpr);}}
+  if(counts[i]){{ctx.fillStyle='#8b2020';ctx.font=`bold ${7*dpr}px 'IBM Plex Mono',monospace`;ctx.fillText(counts[i],x+(bw-pad*2)/2,y-3*dpr);}}
  });
 }
 
@@ -1047,18 +1284,22 @@ function renderCusts(){
  const list=DB.customers.filter(c=>(c.fn+' '+c.ln+c.ph+(c.ad||'')).toLowerCase().includes(q));
  document.getElementById('cust-list').innerHTML=list.length?list.map(c=>{
   const jobCount=DB.jobs.filter(j=>j.cid===c.id).length;
-  return`<div class="card anim" style="padding:10px 12px;margin-bottom:6px;">
+  const ptsBadge=renderPointsBadge(c.id);
+  return`<div class="card anim" style="padding:12px 14px;margin-bottom:8px;">
    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-    <div style="flex:1;min-width:0;" onclick="viewCust(${c.id})" style="cursor:pointer;">
-     <div style="font-weight:600;font-size:13px;">${c.fn} ${c.ln}</div>
-     <div style="font-size:11px;color:var(--dim);font-family:'DM Mono',monospace;">${c.ph}${c.li?' · '+c.li:''}</div>
-     <div style="font-size:10px;color:var(--dim);margin-top:2px;">${(c.acs||[]).length} เครื่อง · ${jobCount} งาน · ${c.ad||'ไม่ระบุที่อยู่'}</div>
+    <div style="flex:1;min-width:0;cursor:pointer;" onclick="viewCust(${c.id})">
+     <div style="display:flex;align-items:center;gap:7px;margin-bottom:3px;">
+      <div style="font-weight:600;font-size:14px;">${c.fn} ${c.ln}</div>
+      ${ptsBadge}
+     </div>
+     <div style="font-size:11px;color:var(--dim);">${c.ph||''}${c.li?' · '+c.li:''}</div>
+     <div style="font-size:10px;color:var(--dim);margin-top:2px;">${(c.acs||[]).length} เครื่อง · ${jobCount} งาน${c.ad?' · '+c.ad.slice(0,25):''}${c.ad&&c.ad.length>25?'…':''}</div>
     </div>
-    <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;flex-shrink:0;margin-left:8px;">
-     <button class="sm-btn" onclick="viewCust(${c.id})">View</button>
-     <button class="sm-btn" onclick="editCust(${c.id})">Edit</button>
-     ${c.lat&&c.lng?`<button class="sm-btn" onclick="openGmap(${c.lat},${c.lng})">Map</button>`:''}
-     <button class="sm-btn" style="border-color:var(--red);color:var(--red);" onclick="deleteCust(${c.id})">Del</button>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;flex-shrink:0;margin-left:8px;">
+     <button class="sm-btn" onclick="viewCust(${c.id})">ดู</button>
+     <button class="sm-btn" onclick="editCust(${c.id})">แก้ไข</button>
+     ${c.lat&&c.lng?`<button class="sm-btn" onclick="openGmap(${c.lat},${c.lng})">แผนที่</button>`:''}
+     <button class="sm-btn" style="border-color:var(--red);color:var(--red);" onclick="deleteCust(${c.id})">ลบ</button>
     </div>
    </div>
   </div>`;
@@ -1115,13 +1356,13 @@ function viewCust(id){
  document.getElementById('sh-cd-name').textContent=`${c.fn} ${c.ln}`;
  document.getElementById('sh-cd-body').innerHTML=`
   <div class="frow g2" style="margin-bottom:10px;">
-   <div class="stat"><div class="stat-l">โทรศัพท์</div><div style="font-size:14px;font-family:'DM Mono',monospace;color:var(--blue);">${c.ph}</div></div>
+   <div class="stat"><div class="stat-l">โทรศัพท์</div><div style="font-size:14px;font-family:'IBM Plex Mono',monospace;color:var(--blue);">${c.ph}</div></div>
    <div class="stat"><div class="stat-l">LINE</div><div style="font-size:13px;color:var(--dim);">${c.li||'—'}</div></div>
   </div>
   <div class="card" style="background:var(--bg);margin-bottom:8px;">
    <div style="font-size:9px;color:var(--dim);margin-bottom:4px;"> ที่อยู่</div>
    <div style="font-size:12px;">${c.ad||'ไม่ระบุ'}</div>
-   ${c.lat&&c.lng?`<div style="font-size:9px;color:var(--dim);font-family:'DM Mono',monospace;margin-top:4px;">${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}</div>
+   ${c.lat&&c.lng?`<div style="font-size:9px;color:var(--dim);font-family:'IBM Plex Mono',monospace;margin-top:4px;">${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}</div>
    <button class="sm-btn" style="margin-top:6px;" onclick="openGmap(${c.lat},${c.lng})">เปิดใน Google Maps</button>`:''}
   </div>
   <div class="sec-hd">Test เครื่องแอร์ (${(c.acs||[]).length})</div>
@@ -1142,6 +1383,13 @@ function viewCust(id){
    <button class="bigbtn" style="flex:1;margin:0;min-width:100px;" onclick="goNav('more');setTimeout(()=>{moreTab('report',document.querySelector('#pg-more .tab-btn:nth-child(2)'));document.getElementById('rpt-cust').value=${id};loadRptJobs();buildReport();},200);closeSheet('sh-cust-detail')">ใบเสร็จ</button>
    <button class="bigbtn red" style="flex:1;margin:0;min-width:100px;" onclick="deleteCust(${id})">ลบลูกค้า</button>
   </div>
+  <button class="bigbtn" style="margin-top:8px;border-color:var(--gold);color:var(--gold);" onclick="closeSheet('sh-cust-detail');openPortal(${id})">
+   ดูหน้าพอร์ทัลลูกค้า
+  </button>
+  <button class="bigbtn" style="border-color:var(--acc);color:var(--acc);" onclick="showQRSheet(${id})">
+   แสดง QR สำหรับลูกค้า
+  </button>
+  </div>
   ${c.lat&&c.lng?`<a href="https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lng}" target="_blank" class="bigbtn green" style="display:block;text-align:center;text-decoration:none;margin-bottom:6px;">📍 นำทางไปบ้านลูกค้า</a>`:''}
 `;
  openSheet('sh-cust-detail');
@@ -1153,18 +1401,31 @@ function openSheet(id,mode){
  if(id==='sh-settings'){
   const s=DB.settings||{};
   const se=n=>document.getElementById(n);
-  if(se('set-company'))se('set-company').value=s.company||'';
-  if(se('set-tel'))se('set-tel').value=s.tel||'';
-  if(se('set-addr'))se('set-addr').value=s.addr||'';
-  if(se('set-tech-tel'))se('set-tech-tel').value=s.techTel||'';
-  if(se('set-tech-name'))se('set-tech-name').value=s.techName||'';
-  if(se('set-qr-url'))se('set-qr-url').value=s.qrUrl||'';
-  if(s.qrUrl&&se('set-qr-preview')&&se('set-qr-img')){
-    se('set-qr-img').src=s.qrUrl;se('set-qr-preview').style.display='block';
-  }
-  if(se('set-user'))se('set-user').value=localStorage.getItem('nx_user')||'admin';
+  const sv=(n,v)=>{const e=se(n);if(e)e.value=v;};
+  const sc=(n,v)=>{const e=se(n);if(e)e.checked=v;};
+  sv('set-company',s.company||'');sv('set-tel',s.tel||'');sv('set-addr',s.addr||'');
+  sv('set-tech-name',s.techName||'');sv('set-tech-tel',s.techTel||'');
+  sv('set-qr-url',s.qrUrl||'');
+  sv('set-line-id',s.lineId||'');
+  sv('set-social',s.social||'');
+  if(s.qrUrl&&se('set-qr-preview')&&se('set-qr-img')){se('set-qr-img').src=s.qrUrl;se('set-qr-preview').style.display='block';}
+  sv('set-user',localStorage.getItem('nx_user')||'admin');
+  // Points
+  const pon=s.ptsEnabled!==false;
+  sc('set-pts-on',pon);
+  sv('set-pts-per',s.ptsPer||1);sv('set-pts-unit',s.ptsUnit||'บาท');
+  sv('set-pts-reward',s.ptsReward||'100 แต้ม = ส่วนลด 100 บาท');
+  sv('set-pts-expire',s.ptsExpire||365);
+  setTimeout(updatePtsToggle,50);
+  // Receipt toggles
+  sc('rpt-show-pts',s.rptShowPoints!==false);
+  sc('rpt-show-qr',s.rptShowQR!==false);
+  sc('rpt-show-sig',s.rptShowSig!==false);
+  sc('rpt-show-photos',s.rptShowPhotos!==false);
+  sc('rpt-show-test',s.rptShowTest!==false);
+  // DB info
   const bytes=JSON.stringify(DB).length;
-  if(se('set-db-info'))se('set-db-info').textContent=`ลูกค้า ${DB.customers.length} | งาน ${DB.jobs.length} | Tests ${(DB.tests||[]).length} | ขนาด ${(bytes/1024).toFixed(1)} KB`;
+  if(se('set-db-info'))se('set-db-info').textContent=`ลูกค้า ${DB.customers.length} · งาน ${DB.jobs.length} · ขนาด ${(bytes/1024).toFixed(1)} KB`;
  }
  const el=document.getElementById(id);if(!el)return;
  el.classList.add('open');
@@ -1217,7 +1478,7 @@ function renderAcRows(){
  document.getElementById('sc-acs').innerHTML=_shACs.map((ac,i)=>`
   <div class="card" style="background:var(--bg);margin-bottom:6px;padding:8px;">
    <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-    <span style="font-size:9px;color:var(--dim);font-family:'DM Mono',monospace;">เครื่องที่ ${i+1}</span>
+    <span style="font-size:9px;color:var(--dim);font-family:'IBM Plex Mono',monospace;">เครื่องที่ ${i+1}</span>
     <button class="sm-btn" onclick="_shACs.splice(${i},1);renderAcRows()">ปิด</button>
    </div>
    <div class="frow g2" style="gap:5px;">
@@ -1278,7 +1539,7 @@ function renderJobs(){
    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
     <div>
      <div style="font-weight:600;font-size:13px;">${jLbl(j.type)} — ${c.fn} ${c.ln}</div>
-     <div style="font-size:9px;color:var(--dim);font-family:'DM Mono',monospace;">${j.date} ${j.time} · ${j.tech||'—'}</div>
+     <div style="font-size:9px;color:var(--dim);font-family:'IBM Plex Mono',monospace;">${j.date} ${j.time} · ${j.tech||'—'}</div>
      ${ac?`<div style="font-size:10px;color:var(--dim);">Test ${ac.br} ${ac.md}</div>`:''}
     </div>
     <div style="text-align:right;">
@@ -1572,7 +1833,7 @@ function drawRoom(){
   // Compass rose
   const compass=[['N',r.px+r.pw/2,r.py-14],['S',r.px+r.pw/2,r.py+r.ph+14],
                   ['W',r.px-16,r.py+r.ph/2],['E',r.px+r.pw+16,r.py+r.ph/2]];
-  ctx.font='bold 10px "DM Mono",monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.font='bold 10px "IBM Plex Mono",monospace';ctx.textAlign='center';ctx.textBaseline='middle';
   compass.forEach(([lbl,x,y])=>{
     const isN=lbl==='N';
     ctx.fillStyle=isN?'#8b2020':'#888888';
@@ -1580,7 +1841,7 @@ function drawRoom(){
   });
 
   // Room dimension labels
-  ctx.fillStyle='#aaaaaa';ctx.font='8px "DM Mono",monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillStyle='#aaaaaa';ctx.font='8px "IBM Plex Mono",monospace';ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.fillText(r.L.toFixed(1)+'m',r.px+r.pw/2,r.py+r.ph+26);
   ctx.save();ctx.translate(r.px-28,r.py+r.ph/2);ctx.rotate(-Math.PI/2);
   ctx.fillText(r.W.toFixed(1)+'m',0,0);ctx.restore();
@@ -1617,7 +1878,7 @@ function drawRoom(){
       }
       // Label
       const lx=ox+ow/2,ly=o.data._wall==='top'?oy-8:o.data._wall==='bottom'?oy+oh+8:o.data._wall==='left'?ox-12:ox+ow+12;
-      ctx.fillStyle=col;ctx.font='bold 8px "DM Mono",monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillStyle=col;ctx.font='bold 8px "IBM Plex Mono",monospace';ctx.textAlign='center';ctx.textBaseline='middle';
       ctx.fillText((o.data.isOpen?'[O]':'[W]'),lx,ly);
 
     } else if(o.type==='door'){
@@ -1684,7 +1945,7 @@ function drawRoom(){
       else if(wall==='left')   dlx=ox+ow+10;
       else                     dlx=ox-10;
       ctx.fillStyle=o.data.isOpen?'#2d7a4e':'#555';
-      ctx.font='bold 8px "DM Mono",monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.font='bold 8px "IBM Plex Mono",monospace';ctx.textAlign='center';ctx.textBaseline='middle';
       ctx.fillText((o.data.isOpen?'○':'□')+inwardDir[wall],dlx,dly);
 
     } else if(o.type==='ac'){
@@ -1712,7 +1973,7 @@ function drawRoom(){
       ctx.closePath();ctx.fill();
       // BTU label
       const alx=ox+ow/2,aly=wall==='top'?oy-8:wall==='bottom'?oy+oh+8:wall==='left'?ox-14:ox+ow+14;
-      ctx.fillStyle=col;ctx.font='bold 7px "DM Mono",monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillStyle=col;ctx.font='bold 7px "IBM Plex Mono",monospace';ctx.textAlign='center';ctx.textBaseline='middle';
       ctx.fillText((o.data.btu/1000).toFixed(0)+'kBTU',alx,aly);
 
     } else if(o.type==='person'){
@@ -1723,17 +1984,17 @@ function drawRoom(){
       // Head
       ctx.beginPath();ctx.arc(ox+ow/2,oy+oh*0.28,ow*0.18,0,Math.PI*2);
       ctx.fillStyle=col+'44';ctx.fill();ctx.strokeStyle=col;ctx.stroke();
-      ctx.fillStyle=col;ctx.font='bold 8px "DM Mono",monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillStyle=col;ctx.font='bold 8px "IBM Plex Mono",monospace';ctx.textAlign='center';ctx.textBaseline='middle';
       ctx.fillText('×'+(o.data.count||1),ox+ow/2,oy+oh+8);
 
     } else {
       // Generic: light/equip
       ctx.fillStyle=col+'22';ctx.strokeStyle=sel?'#8b2020':col;ctx.lineWidth=sel?2:1.5;
       ctx.beginPath();ctx.rect(ox,oy,ow,oh);ctx.fill();ctx.stroke();
-      ctx.fillStyle=col;ctx.font='bold 8px "DM Mono",monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillStyle=col;ctx.font='bold 8px "IBM Plex Mono",monospace';ctx.textAlign='center';ctx.textBaseline='middle';
       const icons={light:'L',equip:'E'};
       ctx.fillText(icons[o.type]||'?',ox+ow/2,oy+oh/2);
-      if(o.data.watts){ctx.font='6px "DM Mono",monospace';ctx.fillText(o.data.watts+'W',ox+ow/2,oy+oh+7);}
+      if(o.data.watts){ctx.font='6px "IBM Plex Mono",monospace';ctx.fillText(o.data.watts+'W',ox+ow/2,oy+oh+7);}
     }
 
     // Selection highlight
@@ -1839,9 +2100,9 @@ function showObjEd(){
     </select></div>`;
 
   let h=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-    <span style="font-size:10px;font-weight:700;color:${col};font-family:'DM Mono',monospace;letter-spacing:.06em;">${o.type.toUpperCase()} #${o.id%1000}</span>
+    <span style="font-size:10px;font-weight:700;color:${col};font-family:'IBM Plex Mono',monospace;letter-spacing:.06em;">${o.type.toUpperCase()} #${o.id%1000}</span>
     <div style="display:flex;gap:4px;">
-      <span style="font-size:9px;color:var(--dim);font-family:'DM Mono',monospace;padding:2px 6px;border:1px solid var(--border2);border-radius:4px;">${o.type==='door'?{top:'→S',bottom:'→N',left:'→E',right:'→W'}[o.data._wall||'top']:(o.data._wall||o.data.dir||'—')}</span>
+      <span style="font-size:9px;color:var(--dim);font-family:'IBM Plex Mono',monospace;padding:2px 6px;border:1px solid var(--border2);border-radius:4px;">${o.type==='door'?{top:'→S',bottom:'→N',left:'→E',right:'→W'}[o.data._wall||'top']:(o.data._wall||o.data.dir||'—')}</span>
       <button class="sm-btn" style="border-color:var(--red);color:var(--red);" onclick="simObjs=simObjs.filter(x=>x!==simSel);simSel=null;drawRoom();document.getElementById('obj-editor').style.display='none'">Del</button>
     </div>
    </div><div class="frow g2" style="gap:5px;">`;
@@ -1851,12 +2112,12 @@ function showObjEd(){
       <button onclick="simSel.data.isOpen=!simSel.data.isOpen;showObjEd();drawRoom()"
        style="width:100%;padding:5px;border:1px solid ${o.data.isOpen?'var(--green)':'var(--dim)'};border-radius:5px;
               background:${o.data.isOpen?'rgba(45,122,78,.1)':'transparent'};color:${o.data.isOpen?'var(--green)':'var(--dim)'};
-              font-size:11px;font-family:'DM Mono',monospace;cursor:pointer;">
+              font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;">
         ${o.data.isOpen?'OPEN — คลิกปิด':'CLOSED — คลิกเปิด'}
       </button></div>`;
     h+=inp('winW','กว้าง (m)',o.data.winW||1.2,'number');
     h+=inp('winH','สูง (m)',o.data.winH||1.0,'number');
-    h+=`<div class="fld"><label>ทิศ (auto)</label><span style="font-size:12px;font-weight:700;font-family:'DM Mono',monospace;color:var(--acc);padding:6px 8px;border:1px solid var(--border2);border-radius:5px;display:block;text-align:center;">${o.data.dir||o.data._wall||'N'}</span></div>`;
+    h+=`<div class="fld"><label>ทิศ (auto)</label><span style="font-size:12px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--acc);padding:6px 8px;border:1px solid var(--border2);border-radius:5px;display:block;text-align:center;">${o.data.dir||o.data._wall||'N'}</span></div>`;
 
   } else if(o.type==='door'){
     const inwardDirLabel={top:'S (เปิดเข้าใต้)',bottom:'N (เปิดเข้าเหนือ)',left:'E (เปิดเข้าตะวันออก)',right:'W (เปิดเข้าตะวันตก)'};
@@ -1866,21 +2127,21 @@ function showObjEd(){
       <button onclick="simSel.data.isOpen=!simSel.data.isOpen;showObjEd();drawRoom()"
        style="width:100%;padding:5px;border:1px solid ${o.data.isOpen?'var(--green)':'var(--dim)'};border-radius:5px;
               background:${o.data.isOpen?'rgba(45,122,78,.1)':'transparent'};color:${o.data.isOpen?'var(--green)':'var(--dim)'};
-              font-size:11px;font-family:'DM Mono',monospace;cursor:pointer;">
+              font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;">
         ${o.data.isOpen?'OPEN — กำลังปล่อยความร้อนเข้า':'CLOSED — ปิดสนิท'}
       </button></div>`;
     h+=inp('wW','กว้าง (m)',o.data.wW||0.9,'number');
-    h+=`<div class="fld"><label>ทิศเปิดเข้าห้อง</label><span style="font-size:11px;font-weight:700;font-family:'DM Mono',monospace;color:var(--acc);padding:5px 8px;border:1px solid var(--border2);border-radius:5px;display:block;text-align:center;">${inwardDirLabel[wall2]||wall2}</span></div>`;
+    h+=`<div class="fld"><label>ทิศเปิดเข้าห้อง</label><span style="font-size:11px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--acc);padding:5px 8px;border:1px solid var(--border2);border-radius:5px;display:block;text-align:center;">${inwardDirLabel[wall2]||wall2}</span></div>`;
     h+=`<div class="fld" style="grid-column:span 2;"><label>บานพับอยู่ทาง</label>
       <div style="display:flex;gap:4px;">
         <button onclick="simSel.data.hingeSide='left';showObjEd();drawRoom()"
           style="flex:1;padding:5px;border:1px solid ${hs==='left'?'var(--acc)':'var(--border2)'};border-radius:5px;
                  background:${hs==='left'?'rgba(139,32,32,.1)':'transparent'};color:${hs==='left'?'var(--acc)':'var(--fg2)'};
-                 font-size:11px;font-family:'DM Mono',monospace;cursor:pointer;">← ซ้าย</button>
+                 font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;">← ซ้าย</button>
         <button onclick="simSel.data.hingeSide='right';showObjEd();drawRoom()"
           style="flex:1;padding:5px;border:1px solid ${hs==='right'?'var(--acc)':'var(--border2)'};border-radius:5px;
                  background:${hs==='right'?'rgba(139,32,32,.1)':'transparent'};color:${hs==='right'?'var(--acc)':'var(--fg2)'};
-                 font-size:11px;font-family:'DM Mono',monospace;cursor:pointer;">ขวา →</button>
+                 font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;">ขวา →</button>
       </div></div>`;
 
   } else if(o.type==='ac'){
@@ -1888,7 +2149,7 @@ function showObjEd(){
     h+=inp('setT','Setpoint °C',o.data.setT||25);
     h+=inp('cop','COP',o.data.cop||3.5,'number','step=".1"');
     h+=sel2('acType','ประเภท',[['inverter','Inverter'],['fixed','Fixed Speed']],o.data.acType||'inverter');
-    h+=`<div class="fld"><label>ทิศเป่าลม (auto)</label><span style="font-size:12px;font-weight:700;font-family:'DM Mono',monospace;color:var(--red);padding:6px 8px;border:1px solid var(--border2);border-radius:5px;display:block;text-align:center;">${o.data.dir||'S'}</span></div>`;
+    h+=`<div class="fld"><label>ทิศเป่าลม (auto)</label><span style="font-size:12px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--red);padding:6px 8px;border:1px solid var(--border2);border-radius:5px;display:block;text-align:center;">${o.data.dir||'S'}</span></div>`;
 
   } else if(o.type==='person'){
     h+=inp('count','จำนวนคน',o.data.count||1);
@@ -1991,7 +2252,7 @@ function runSim(){
   ${[['ผนัง',ld.Q_wall,'#1a5c8b'],['หลังคา',ld.Q_roof,'#2d7a4e'],['หน้าต่าง/ประตู',ld.Q_win,'#7a5800'],['คน',ld.Q_ppl,'#8b2020'],['ไฟ/อุปกรณ์',ld.equip_total,'#5c2d8b'],['Infiltration',ld.Q_inf,'#666']].map(([l,v,c])=>
    `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
      <span style="font-size:9px;color:var(--dim);">${l}</span>
-     <span style="font-size:10px;font-family:'DM Mono',monospace;">${v.toFixed(0)} W</span></div>
+     <span style="font-size:10px;font-family:'IBM Plex Mono',monospace;">${v.toFixed(0)} W</span></div>
     <div style="height:4px;background:var(--border);border-radius:2px;margin-bottom:5px;overflow:hidden;">
      <div style="height:100%;width:${Math.min(100,Math.max(0,v/Math.max(ld.Q_total,1)*100)).toFixed(0)}%;background:${c};border-radius:2px;"></div></div>`
   ).join('')}`;
@@ -2114,22 +2375,22 @@ function simStep(){
    detEl.innerHTML=`
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;font-size:10px;">
      <div style="background:var(--bar);border:1px solid var(--border);border-radius:6px;padding:7px 9px;">
-      <div style="color:var(--dim);font-size:8px;font-family:'DM Mono',monospace;margin-bottom:2px;">ค่าไฟสะสม</div>
+      <div style="color:var(--dim);font-size:8px;font-family:'IBM Plex Mono',monospace;margin-bottom:2px;">ค่าไฟสะสม</div>
       <div style="font-weight:700;font-size:14px;color:var(--yellow);">฿${costSoFar}</div>
       <div style="font-size:8px;color:var(--dim);">${s.energyKWh.toFixed(3)} kWh</div>
      </div>
      <div style="background:var(--bar);border:1px solid var(--border);border-radius:6px;padding:7px 9px;">
-      <div style="color:var(--dim);font-size:8px;font-family:'DM Mono',monospace;margin-bottom:2px;">เวลาทำงาน</div>
+      <div style="color:var(--dim);font-size:8px;font-family:'IBM Plex Mono',monospace;margin-bottom:2px;">เวลาทำงาน</div>
       <div style="font-weight:700;font-size:14px;color:var(--blue);">${s.t} <span style="font-size:10px;font-weight:400;">นาที</span></div>
       <div style="font-size:8px;color:var(--dim);">${hrsRun} ชั่วโมง</div>
      </div>
      <div style="background:var(--bar);border:1px solid var(--border);border-radius:6px;padding:7px 9px;">
-      <div style="color:var(--dim);font-size:8px;font-family:'DM Mono',monospace;margin-bottom:2px;">Net Cooling</div>
+      <div style="color:var(--dim);font-size:8px;font-family:'IBM Plex Mono',monospace;margin-bottom:2px;">Net Cooling</div>
       <div style="font-weight:700;font-size:14px;color:var(--green);">${(Math.max(0,Q_net)/1000).toFixed(2)} <span style="font-size:10px;font-weight:400;">kW</span></div>
       <div style="font-size:8px;color:var(--dim);">Cooling − Load</div>
      </div>
      <div style="background:var(--bar);border:1px solid var(--border);border-radius:6px;padding:7px 9px;">
-      <div style="color:var(--dim);font-size:8px;font-family:'DM Mono',monospace;margin-bottom:2px;">อุณหภูมิห้อง</div>
+      <div style="color:var(--dim);font-size:8px;font-family:'IBM Plex Mono',monospace;margin-bottom:2px;">อุณหภูมิห้อง</div>
       <div style="font-weight:700;font-size:14px;color:${s.Troom>s.Tin_set+1?'var(--red)':'var(--green)'};">${s.Troom.toFixed(1)} <span style="font-size:10px;font-weight:400;">°C</span></div>
       <div style="font-size:8px;color:var(--dim);">เป้า ${s.Tin_set}°C</div>
      </div>
@@ -2156,14 +2417,14 @@ function drawSimChart(){
   const y=padT+ph*i/4;
   ctx.strokeStyle='#ddd';ctx.lineWidth=.5*dpr;
   ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(pad+pw,y);ctx.stroke();
-  ctx.fillStyle='#888';ctx.font=`${5.5*dpr}px 'DM Mono',monospace`;ctx.textAlign='right';
+  ctx.fillStyle='#888';ctx.font=`${5.5*dpr}px 'IBM Plex Mono',monospace`;ctx.textAlign='right';
   ctx.fillText((tMax-(tMax-tMin)*i/4).toFixed(1),pad-3*dpr,y+2*dpr);
  }
  // Setpoint line
  const sy=padT+ph*(1-(simState.Tin_set-tMin)/(tMax-tMin||1));
  ctx.strokeStyle='rgba(139,32,32,.3)';ctx.lineWidth=dpr;ctx.setLineDash([4*dpr,3*dpr]);
  ctx.beginPath();ctx.moveTo(pad,sy);ctx.lineTo(pad+pw,sy);ctx.stroke();ctx.setLineDash([]);
- ctx.fillStyle='#8b2020';ctx.font=`${5.5*dpr}px 'DM Mono',monospace`;ctx.textAlign='left';
+ ctx.fillStyle='#8b2020';ctx.font=`${5.5*dpr}px 'IBM Plex Mono',monospace`;ctx.textAlign='left';
  ctx.fillText(simState.Tin_set+'°C',pad+2*dpr,sy-3*dpr);
  // Compressor ON blocks
  simData.forEach((d,i)=>{
@@ -2191,10 +2452,10 @@ function drawSimChart(){
  // Current value label
  const last=simData[simData.length-1];
  const lx=pad+pw,ly=padT+ph*(1-(last.T-tMin)/(tMax-tMin||1));
- ctx.fillStyle='#1a5c8b';ctx.font=`bold ${7*dpr}px 'DM Mono',monospace`;ctx.textAlign='right';
+ ctx.fillStyle='#1a5c8b';ctx.font=`bold ${7*dpr}px 'IBM Plex Mono',monospace`;ctx.textAlign='right';
  ctx.fillText(last.T.toFixed(1)+'°C',lx,ly-4*dpr);
  // Legend
- ctx.font=`${5.5*dpr}px 'DM Mono',monospace`;ctx.fillStyle='#888';ctx.textAlign='left';
+ ctx.font=`${5.5*dpr}px 'IBM Plex Mono',monospace`;ctx.fillStyle='#888';ctx.textAlign='left';
  ctx.strokeStyle='#1a5c8b';ctx.lineWidth=1.5*dpr;ctx.setLineDash([]);
  ctx.beginPath();ctx.moveTo(pad+4*dpr,padT+7*dpr);ctx.lineTo(pad+18*dpr,padT+7*dpr);ctx.stroke();
  ctx.fillText('T Room',pad+20*dpr,padT+9*dpr);
@@ -2222,7 +2483,7 @@ function drawSummaryCanvas(ld,btu,acType,age){
   ['Infiltration',ld.Q_inf,       '#666666'],
  ];
  const maxQ=Math.max(...items.map(x=>x[1]),1);
- ctx.font=`${7.5*dpr}px 'DM Mono',monospace`;
+ ctx.font=`${7.5*dpr}px 'IBM Plex Mono',monospace`;
  items.forEach((it,i)=>{
   const y=pad+i*(barH+gap);
   ctx.fillStyle='#777';ctx.textAlign='right';ctx.textBaseline='middle';
@@ -2240,7 +2501,7 @@ function drawSummaryCanvas(ld,btu,acType,age){
  ctx.beginPath();ctx.moveTo(pad,ty);ctx.lineTo(W-pad,ty);ctx.stroke();
  const ratio=ld.Q_total*3.41/btu;
  const rc=ratio>1.2?'#8b2020':ratio<0.6?'#7a5800':'#2d7a4e';
- ctx.font=`bold ${8*dpr}px 'DM Mono',monospace`;
+ ctx.font=`bold ${8*dpr}px 'IBM Plex Mono',monospace`;
  ctx.fillStyle='#333';ctx.textAlign='left';
  ctx.fillText('Total: '+ld.Q_total.toFixed(0)+' W = '+(ld.Q_total*3.41).toFixed(0)+' BTU/hr',pad,ty+13*dpr);
  ctx.fillStyle=rc;
@@ -2402,7 +2663,7 @@ function renderSched(mode){
    return`<div class="card anim" style="display:flex;justify-content:space-between;padding:10px 12px;margin-bottom:5px;">
     <div><div style="font-weight:600;font-size:12px;">${c.fn} ${c.ln}</div>
      <div style="font-size:10px;color:var(--dim);">${jLbl(j.type)} · ${j.tech||'—'}</div></div>
-    <div style="text-align:right;"><div style="font-size:12px;font-family:'DM Mono',monospace;color:var(--acc);">${j.date}</div>
+    <div style="text-align:right;"><div style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--acc);">${j.date}</div>
      <div style="font-size:10px;color:var(--dim);">${j.time||''}</div></div></div>`;
   }).join('')||'<div style="text-align:center;color:var(--dim);padding:30px;">ไม่มีงานที่รอ</div>';
   return;
@@ -2454,7 +2715,7 @@ function loadMapCustSel(){
    <div>
     <div style="font-size:12px;font-weight:600;">${c.fn} ${c.ln}</div>
     <div style="font-size:10px;color:var(--dim);">${c.ph||''}${c.ad?' · '+c.ad.slice(0,30)+'…':''}</div>
-    <div style="font-size:9px;color:var(--dim);font-family:'DM Mono',monospace;">${c.lat?.toFixed(5)}, ${c.lng?.toFixed(5)}</div>
+    <div style="font-size:9px;color:var(--dim);font-family:'IBM Plex Mono',monospace;">${c.lat?.toFixed(5)}, ${c.lng?.toFixed(5)}</div>
    </div>
    <div style="display:flex;flex-direction:column;gap:4px;">
     <button class="sm-btn" onclick="showMapFrame(${c.lat},${c.lng},'${c.fn} ${c.ln}')">แผนที่</button>
@@ -2513,148 +2774,187 @@ function buildReport(){
  const test=(DB.tests||[]).filter(t=>t.cid===cid).pop()||null;
  const today=new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
  const s=DB.settings||{};
- const co=s.company||'NEXUS SERVICE';
+ const co=s.company||'Nexus Service';
  const coTel=s.tel||'';
  const coAddr=s.addr||'';
- const techTel=s.techTel||'';
  const techName=s.techName||j.tech||'';
+ const techTel=s.techTel||'';
  const qrUrl=s.qrUrl||'';
+ const showPts=s.rptShowPoints!==false&&s.ptsEnabled!==false;
+ const showQR=s.rptShowQR!==false;
+ const showSig=s.rptShowSig!==false;
+ const showPhotos=s.rptShowPhotos!==false;
+ const showTest=s.rptShowTest!==false;
+ const custPts=getCustomerPoints(cid);
+ const earnedPts=calcPoints(j.price||0);
+ const statusColor={done:'#2d6b4a',inprogress:'#2a4a6e',pending:'#7a6030',cancel:'#7a3030'}[j.status]||'#555';
 
  document.getElementById('rpt-wrap').innerHTML=`
- <div style="font-family:'IBM Plex Sans Thai','DM Sans',sans-serif;color:#111;padding:24px;max-width:640px;margin:0 auto;">
+ <div style="font-family:'Sarabun','Sarabun',sans-serif;color:#1a1917;background:#fff;max-width:600px;margin:0 auto;">
 
-  <!-- Header -->
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2.5px solid #8b2020;padding-bottom:14px;margin-bottom:18px;">
-   <div>
-    <div style="font-size:20px;font-weight:800;color:#8b2020;letter-spacing:.2em;font-family:'DM Mono',monospace;">${co}</div>
-    <div style="font-size:9px;color:#999;letter-spacing:.08em;text-transform:uppercase;margin-top:2px;">ใบรายงานการบริการเครื่องปรับอากาศ</div>
-    ${coTel?`<div style="font-size:10px;color:#555;margin-top:4px;">โทร. ${coTel}</div>`:''}
-    ${coAddr?`<div style="font-size:9px;color:#888;margin-top:1px;">${coAddr}</div>`:''}
-   </div>
-   <div style="text-align:right;">
-    <div style="font-size:11px;font-weight:700;color:#8b2020;font-family:'DM Mono',monospace;">JOB-${String(j.id).padStart(5,'0')}</div>
-    <div style="font-size:10px;color:#666;margin-top:2px;">${today}</div>
-    <div style="margin-top:6px;display:inline-block;padding:3px 9px;border:1px solid ${j.status==='done'?'#16a34a':j.status==='inprogress'?'#2563eb':'#ca8a04'};border-radius:4px;font-size:9px;font-weight:700;color:${j.status==='done'?'#16a34a':j.status==='inprogress'?'#2563eb':'#ca8a04'};">${sLbl(j.status).toUpperCase()}</div>
-   </div>
-  </div>
-
-  <!-- Customer + Job -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
-   <div style="background:#f8f9ff;border-radius:8px;padding:11px 12px;border:1px solid #e8eaf6;">
-    <div style="font-size:8px;color:#9e9e9e;text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px;font-family:'DM Mono',monospace;">ข้อมูลลูกค้า</div>
-    <div style="font-weight:700;font-size:13px;margin-bottom:2px;">${c.fn} ${c.ln}</div>
-    ${c.ph?`<div style="font-size:10px;color:#444;">โทร. ${c.ph}</div>`:''}
-    ${c.ad?`<div style="font-size:9px;color:#777;margin-top:3px;line-height:1.4;">${c.ad}</div>`:''}
-   </div>
-   <div style="background:#f0fdf4;border-radius:8px;padding:11px 12px;border:1px solid #d1fae5;">
-    <div style="font-size:8px;color:#9e9e9e;text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px;font-family:'DM Mono',monospace;">รายละเอียดงาน</div>
-    <div style="font-weight:700;font-size:13px;margin-bottom:2px;">${jLbl(j.type)}</div>
-    <div style="font-size:10px;color:#444;">วันที่ ${j.date}${j.time?' เวลา '+j.time:''}</div>
-    ${techName?`<div style="font-size:10px;color:#444;margin-top:2px;">ช่าง: ${techName}</div>`:''}
-    ${techTel?`<div style="font-size:9px;color:#666;">โทรช่าง: ${techTel}</div>`:''}
-   </div>
-  </div>
-
-  <!-- AC -->
-  ${ac.br?`<div style="background:#fff8f0;border:1px solid #ffe0b2;border-radius:8px;padding:11px 12px;margin-bottom:14px;">
-   <div style="font-size:8px;color:#9e9e9e;text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px;font-family:'DM Mono',monospace;">ข้อมูลเครื่องแอร์</div>
-   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:10px;">
-    <div><div style="color:#aaa;font-size:8px;">ยี่ห้อ / รุ่น</div><div style="font-weight:600;">${ac.br} ${ac.md}</div></div>
-    <div><div style="color:#aaa;font-size:8px;">ขนาด BTU</div><div style="font-weight:600;">${(ac.btu||0).toLocaleString()}</div></div>
-    <div><div style="color:#aaa;font-size:8px;">ประเภท</div><div style="font-weight:600;">${ac.type||'—'}</div></div>
-    <div><div style="color:#aaa;font-size:8px;">อายุการใช้งาน</div><div style="font-weight:600;">${ac.age||0} ปี</div></div>
-    <div><div style="color:#aaa;font-size:8px;">COP rated</div><div style="font-weight:600;">${ac.cop||'—'}</div></div>
-    <div><div style="color:#aaa;font-size:8px;">Serial No.</div><div style="font-weight:600;font-size:9px;">${ac.sn||'—'}</div></div>
-   </div></div>`:''}
-
-  <!-- Test results -->
-  ${test?`<div style="margin-bottom:14px;border:1px solid #e0e0e0;border-radius:8px;padding:12px;">
-   <div style="font-size:9px;font-weight:700;color:#8b2020;font-family:'DM Mono',monospace;letter-spacing:.08em;border-bottom:1px solid #eee;padding-bottom:6px;margin-bottom:10px;">ผลการตรวจวัด</div>
-   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:8px;font-size:10px;">
-    ${test.dis?`<div style="background:#f8f9ff;border-radius:5px;padding:6px;text-align:center;"><div style="color:#aaa;font-size:7px;">Discharge</div><div style="font-weight:700;">${test.dis}°C</div></div>`:''}
-    ${test.suc?`<div style="background:#f8f9ff;border-radius:5px;padding:6px;text-align:center;"><div style="color:#aaa;font-size:7px;">Suction</div><div style="font-weight:700;">${test.suc}°C</div></div>`:''}
-    ${test.sup?`<div style="background:#f0fdf4;border-radius:5px;padding:6px;text-align:center;"><div style="color:#aaa;font-size:7px;">Supply Air</div><div style="font-weight:700;">${test.sup}°C</div></div>`:''}
-    ${test.ret?`<div style="background:#f0fdf4;border-radius:5px;padding:6px;text-align:center;"><div style="color:#aaa;font-size:7px;">Return Air</div><div style="font-weight:700;">${test.ret}°C</div></div>`:''}
-    ${test.hp?`<div style="background:#fff8f0;border-radius:5px;padding:6px;text-align:center;"><div style="color:#aaa;font-size:7px;">HP (Bar)</div><div style="font-weight:700;">${test.hp}</div></div>`:''}
-    ${test.lp?`<div style="background:#f0fdf4;border-radius:5px;padding:6px;text-align:center;"><div style="color:#aaa;font-size:7px;">LP (Bar)</div><div style="font-weight:700;">${test.lp}</div></div>`:''}
-    ${test.tComp?`<div style="background:#fff8f0;border-radius:5px;padding:6px;text-align:center;"><div style="color:#aaa;font-size:7px;">Comp IR</div><div style="font-weight:700;">${test.tComp}°C</div></div>`:''}
-    ${test.tCond?`<div style="background:#fff8f0;border-radius:5px;padding:6px;text-align:center;"><div style="color:#aaa;font-size:7px;">Cond IR</div><div style="font-weight:700;">${test.tCond}°C</div></div>`:''}
-   </div>
-   ${test.note?`<div style="background:#fffbf0;border-radius:5px;padding:7px;margin-bottom:6px;font-size:10px;color:#666;">${test.note}</div>`:''}
-   ${(test.chk&&Object.keys(test.chk).length)?`<div style="font-size:9px;color:#666;margin-bottom:6px;">Checklist: ${Object.entries(test.chk).filter(([k,v])=>v).map(([k])=>k).join(' / ')||'—'}</div>`:''}
-   <div><span style="padding:3px 10px;border-radius:4px;font-size:9px;font-weight:700;${
-    test.status==='pass'?'background:#dcfce7;color:#16a34a':test.status==='warn'?'background:#fef9c3;color:#ca8a04':'background:#fee2e2;color:#dc2626'
-   };">${test.status==='pass'?'PASS — ทำงานปกติ':test.status==='warn'?'WARN — ควรติดตาม':'FAIL — ต้องซ่อมแซม'}</span></div>
-  </div>`:''}
-
-  <!-- Detail -->
-  ${j.detail?`<div style="background:#f8f9ff;border:1px solid #e8eaf6;border-radius:8px;padding:11px 12px;margin-bottom:14px;font-size:11px;line-height:1.6;">${j.detail}</div>`:''}
-
-  <!-- Photos -->
-  ${(j.photos&&j.photos.length)?`<div style="margin-bottom:14px;">
-   <div style="font-size:8px;font-weight:700;color:#555;font-family:'DM Mono',monospace;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">รูปภาพงาน (${j.photos.length} รูป)</div>
-   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
-    ${j.photos.map(p=>`<img src="${p}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;border:1px solid #eee;">`).join('')}
-   </div></div>`:''}
-
-  <!-- Price row -->
-  <div style="border-top:2px solid #8b2020;padding-top:12px;margin-bottom:16px;">
-   <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+  <!-- Header bar -->
+  <div style="background:#1a1917;padding:20px 24px 16px;color:#fff;">
+   <div style="display:flex;justify-content:space-between;align-items:flex-start;">
     <div>
-     ${qrUrl?`<div style="margin-bottom:4px;"><div style="font-size:8px;color:#999;margin-bottom:3px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.05em;">ชำระเงินผ่าน QR Code</div>
-      <img src="${qrUrl}" style="width:80px;height:80px;border:1px solid #ddd;border-radius:6px;object-fit:contain;"></div>`:''}
+     <div style="font-size:22px;font-weight:300;letter-spacing:.12em;font-family:'Sarabun',sans-serif;">${co}</div>
+     <div style="font-size:9px;color:rgba(255,255,255,.45);letter-spacing:.12em;text-transform:uppercase;margin-top:3px;">ใบรายงานการบริการ</div>
+     ${coTel?`<div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:5px;">โทร. ${coTel}</div>`:''}
+     ${coAddr?`<div style="font-size:9px;color:rgba(255,255,255,.4);margin-top:1px;">${coAddr}</div>`:''}
     </div>
     <div style="text-align:right;">
-     <div style="font-size:10px;color:#888;margin-bottom:2px;">ค่าบริการรวม</div>
-     <div style="font-size:28px;font-weight:800;color:#8b2020;line-height:1;">฿${(j.price||0).toLocaleString()}</div>
-     <div style="font-size:9px;color:#aaa;margin-top:2px;">รวม VAT แล้ว</div>
+     <div style="font-size:13px;font-weight:600;color:#fff;letter-spacing:.06em;">JOB-${String(j.id).padStart(5,'0')}</div>
+     <div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:3px;">${today}</div>
+     <div style="margin-top:8px;display:inline-block;padding:3px 10px;border:1px solid ${statusColor};border-radius:3px;font-size:9px;font-weight:600;color:${statusColor};letter-spacing:.06em;background:rgba(255,255,255,.06);">${sLbl(j.status).toUpperCase()}</div>
     </div>
    </div>
   </div>
 
-  <!-- Signatures -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;padding-top:14px;border-top:1px solid #eee;">
-   <div style="text-align:center;">
-    ${j.sigTech?`<img src="${j.sigTech}" style="height:64px;max-width:100%;object-fit:contain;display:block;margin:0 auto 6px;">`:`<div style="height:64px;border-bottom:1px solid #bbb;margin-bottom:6px;"></div>`}
-    <div style="font-size:9px;color:#888;">ลายมือชื่อช่าง</div>
-    <div style="font-size:10px;color:#444;font-weight:600;margin-top:1px;">${techName||'—'}</div>
-    ${techTel?`<div style="font-size:9px;color:#888;">โทร. ${techTel}</div>`:''}
-   </div>
-   <div style="text-align:center;">
-    ${j.sigCust?`<img src="${j.sigCust}" style="height:64px;max-width:100%;object-fit:contain;display:block;margin:0 auto 6px;">`:`<div style="height:64px;border-bottom:1px solid #bbb;margin-bottom:6px;"></div>`}
-    <div style="font-size:9px;color:#888;">ลายมือชื่อลูกค้า</div>
-    <div style="font-size:10px;color:#444;font-weight:600;margin-top:1px;">${c.fn} ${c.ln}</div>
-   </div>
-  </div>
+  <!-- Body -->
+  <div style="padding:20px 24px;">
 
-  <div style="margin-top:16px;padding-top:10px;border-top:1px solid #f0f0f0;text-align:center;font-size:8px;color:#bbb;font-family:'DM Mono',monospace;letter-spacing:.05em;">
-   ${co}${coTel?' · โทร. '+coTel:''} · ขอบคุณที่ใช้บริการ
+   <!-- Customer + Job -->
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+    <div style="border:1px solid #e8e6e1;border-radius:8px;padding:12px;">
+     <div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">ลูกค้า</div>
+     <div style="font-weight:600;font-size:14px;margin-bottom:3px;">${c.fn} ${c.ln}</div>
+     ${c.ph?`<div style="font-size:10px;color:#555;">โทร. ${c.ph}</div>`:''}
+     ${c.ad?`<div style="font-size:9px;color:#888;margin-top:3px;line-height:1.5;">${c.ad}</div>`:''}
+     ${showPts&&custPts?`<div style="margin-top:8px;display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:#fdf8ee;border:1px solid #e8d9b0;border-radius:4px;font-size:9px;color:#7a6030;font-weight:600;">&#9733; ${custPts.toLocaleString()} แต้มสะสม</div>`:''}
+    </div>
+    <div style="border:1px solid #e8e6e1;border-radius:8px;padding:12px;">
+     <div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">งาน</div>
+     <div style="font-weight:600;font-size:14px;margin-bottom:3px;">${jLbl(j.type)}</div>
+     <div style="font-size:10px;color:#555;">${j.date}${j.time?' · '+j.time:''}</div>
+     ${techName?`<div style="font-size:10px;color:#555;margin-top:2px;">ช่าง: ${techName}</div>`:''}
+     ${techTel?`<div style="font-size:9px;color:#888;">โทร. ${techTel}</div>`:''}
+    </div>
+   </div>
+
+   <!-- AC Info -->
+   ${ac.br?`<div style="border:1px solid #e8e6e1;border-radius:8px;padding:12px;margin-bottom:16px;">
+    <div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">เครื่องแอร์</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+     <div><div style="font-size:8px;color:#aaa;">ยี่ห้อ / รุ่น</div><div style="font-weight:600;font-size:11px;margin-top:1px;">${ac.br} ${ac.md}</div></div>
+     <div><div style="font-size:8px;color:#aaa;">BTU</div><div style="font-weight:600;font-size:11px;margin-top:1px;">${(ac.btu||0).toLocaleString()}</div></div>
+     <div><div style="font-size:8px;color:#aaa;">ประเภท</div><div style="font-weight:600;font-size:11px;margin-top:1px;">${ac.type||'—'}</div></div>
+     <div><div style="font-size:8px;color:#aaa;">อายุ</div><div style="font-weight:600;font-size:11px;margin-top:1px;">${ac.age||0} ปี</div></div>
+     <div><div style="font-size:8px;color:#aaa;">COP</div><div style="font-weight:600;font-size:11px;margin-top:1px;">${ac.cop||'—'}</div></div>
+     <div><div style="font-size:8px;color:#aaa;">Serial</div><div style="font-weight:600;font-size:10px;margin-top:1px;">${ac.sn||'—'}</div></div>
+    </div>
+   </div>`:''}
+
+   <!-- Test results -->
+   ${(showTest&&test)?`<div style="border:1px solid #e8e6e1;border-radius:8px;padding:12px;margin-bottom:16px;">
+    <div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:.1em;border-bottom:1px solid #f0ede8;padding-bottom:7px;margin-bottom:10px;">ผลการตรวจวัด</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;font-size:10px;margin-bottom:8px;">
+     ${test.dis?`<div style="background:#f7f8ff;border-radius:5px;padding:6px;text-align:center;"><div style="color:#aaa;font-size:7px;">Discharge</div><div style="font-weight:600;">${test.dis}°C</div></div>`:''}
+     ${test.suc?`<div style="background:#f7f8ff;border-radius:5px;padding:6px;text-align:center;"><div style="color:#aaa;font-size:7px;">Suction</div><div style="font-weight:600;">${test.suc}°C</div></div>`:''}
+     ${test.sup?`<div style="background:#f2fbf6;border-radius:5px;padding:6px;text-align:center;"><div style="color:#aaa;font-size:7px;">Supply</div><div style="font-weight:600;">${test.sup}°C</div></div>`:''}
+     ${test.ret?`<div style="background:#f2fbf6;border-radius:5px;padding:6px;text-align:center;"><div style="color:#aaa;font-size:7px;">Return</div><div style="font-weight:600;">${test.ret}°C</div></div>`:''}
+     ${test.hp?`<div style="background:#fdf7f0;border-radius:5px;padding:6px;text-align:center;"><div style="color:#aaa;font-size:7px;">HP</div><div style="font-weight:600;">${test.hp} Bar</div></div>`:''}
+     ${test.lp?`<div style="background:#f2fbf6;border-radius:5px;padding:6px;text-align:center;"><div style="color:#aaa;font-size:7px;">LP</div><div style="font-weight:600;">${test.lp} Bar</div></div>`:''}
+    </div>
+    ${test.note?`<div style="font-size:10px;color:#555;padding:8px;background:#fafaf8;border-radius:5px;margin-bottom:6px;">${test.note}</div>`:''}
+    <div style="display:inline-block;padding:3px 10px;border-radius:3px;font-size:9px;font-weight:600;${
+     test.status==='pass'?'background:#ecfdf5;color:#2d6b4a':test.status==='warn'?'background:#fefce8;color:#7a6030':'background:#fef2f2;color:#7a3030'
+    };">${test.status==='pass'?'PASS — ทำงานปกติ':test.status==='warn'?'WARN — ควรติดตาม':'FAIL — ต้องซ่อมแซม'}</div>
+   </div>`:''}
+
+   <!-- Detail note -->
+   ${j.detail?`<div style="font-size:11px;color:#444;line-height:1.7;padding:12px;border:1px solid #e8e6e1;border-radius:8px;margin-bottom:16px;">${j.detail}</div>`:''}
+
+   <!-- Photos -->
+   ${(showPhotos&&j.photos&&j.photos.length)?`<div style="margin-bottom:16px;">
+    <div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">รูปภาพงาน</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
+     ${j.photos.map(p=>`<img src="${p}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;border:1px solid #e8e6e1;">`).join('')}
+    </div>
+   </div>`:''}
+
+   <!-- Price + QR -->
+   <div style="border-top:1px solid #e8e6e1;padding-top:14px;display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;">
+    ${(showQR&&qrUrl)?`<div>
+     <div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">ชำระเงิน</div>
+     <img src="${qrUrl}" style="width:72px;height:72px;border:1px solid #e8e6e1;border-radius:6px;object-fit:contain;">
+    </div>`:'<div></div>'}
+    <div style="text-align:right;">
+     <div style="font-size:9px;color:#aaa;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">ค่าบริการรวม</div>
+     <div style="font-size:32px;font-weight:300;color:#1a1917;letter-spacing:-.01em;font-family:'Sarabun',sans-serif;">฿${(j.price||0).toLocaleString()}</div>
+    </div>
+   </div>
+
+   <!-- Points earned -->
+   ${(showPts&&earnedPts)?`<div style="background:#fdf8ee;border:1px solid #e8d9b0;border-radius:8px;padding:12px;margin-bottom:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+     <div style="font-size:11px;font-weight:600;color:#7a6030;">แต้มที่ได้รับจากงานนี้</div>
+     <div style="font-size:16px;font-weight:700;color:#7a6030;">+${earnedPts.toLocaleString()} แต้ม</div>
+    </div>
+    <div style="font-size:9px;color:#9a8050;margin-bottom:2px;">แต้มสะสมรวม: ${custPts.toLocaleString()} แต้ม (${(custPts+earnedPts).toLocaleString()} แต้ม หลังงานนี้)</div>
+    ${s.ptsReward?`<div style="font-size:9px;color:#9a8050;margin-top:4px;border-top:1px solid #e8d9b0;padding-top:4px;white-space:pre-line;">${s.ptsReward}</div>`:''}
+    ${s.ptsExpire?`<div style="font-size:8px;color:#bba870;margin-top:3px;">* แต้มมีอายุ ${s.ptsExpire} วันนับจากวันที่ได้รับ</div>`:''}
+   </div>`:''}
+
+   <!-- Signatures -->
+   ${showSig?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;padding-top:14px;border-top:1px solid #e8e6e1;">
+    <div style="text-align:center;">
+     ${j.sigTech?`<img src="${j.sigTech}" style="height:56px;max-width:100%;object-fit:contain;display:block;margin:0 auto 6px;">`:`<div style="height:56px;border-bottom:1px solid #ccc;margin-bottom:6px;"></div>`}
+     <div style="font-size:9px;color:#aaa;">ลายมือชื่อช่าง</div>
+     <div style="font-size:10px;color:#555;font-weight:500;margin-top:1px;">${techName||'—'}</div>
+    </div>
+    <div style="text-align:center;">
+     ${j.sigCust?`<img src="${j.sigCust}" style="height:56px;max-width:100%;object-fit:contain;display:block;margin:0 auto 6px;">`:`<div style="height:56px;border-bottom:1px solid #ccc;margin-bottom:6px;"></div>`}
+     <div style="font-size:9px;color:#aaa;">ลายมือชื่อลูกค้า</div>
+     <div style="font-size:10px;color:#555;font-weight:500;margin-top:1px;">${c.fn} ${c.ln}</div>
+    </div>
+   </div>`:''}
+
+   <!-- Portal QR -->
+   <div style="border-top:1px solid #e8e6e1;padding-top:14px;margin-top:8px;display:flex;align-items:center;gap:14px;">
+    <img id="rpt-portal-qr" src="${getPortalQR(cid)}" width="90" height="90" style="border-radius:6px;border:1px solid #e8e6e1;flex-shrink:0;" onerror="this.style.display='none'">
+    <div>
+     <div style="font-size:10px;font-weight:600;color:#1a1917;margin-bottom:3px;">สแกนเพื่อดูประวัติบริการ</div>
+     <div style="font-size:9px;color:#aaa;line-height:1.5;">ดูประวัติงาน แต้มสะสม<br>และจำลองแอร์ได้ที่นี่</div>
+    </div>
+   </div>
+
+   <!-- Footer -->
+   <div style="margin-top:14px;text-align:center;font-size:8px;color:#ccc;letter-spacing:.08em;text-transform:uppercase;">
+    ${co}${coTel?' · '+coTel:''} · ขอบคุณที่ใช้บริการ
+   </div>
   </div>
  </div>`;
 }
 function printPDF(){
  buildReport();
  setTimeout(()=>{
-  const c=document.getElementById('rpt-wrap').innerHTML;
-  if(!c||c.includes('เลือกลูกค้า')){showToast('เลือกลูกค้าและงานก่อน');return;}
+  const wrap=document.getElementById('rpt-wrap');
+  if(!wrap||wrap.innerHTML.includes('เลือกลูกค้า')){showToast('เลือกลูกค้าและงานก่อน');return;}
+  const c=wrap.innerHTML;
   const size=(document.getElementById('rpt-size')?.value||'A4');
   const landscape=size.includes('landscape');
   const baseSize=size.replace(' landscape','');
+  const cid=+document.getElementById('rpt-cust').value;
+  const jid=+document.getElementById('rpt-job').value;
+  const cu=DB.customers.find(x=>x.id===cid);
+  const j=DB.jobs.find(x=>x.id===jid);
+  const fname='nexus_'+(cu?.fn||'report').replace(/\s/g,'_')+'_JOB'+String(j?.id||0).padStart(4,'0')+'.html';
   const html='<!DOCTYPE html><html><head><meta charset="UTF-8">'
-   +'<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">'
-   +'<style>*{box-sizing:border-box;}body{margin:0;padding:16px;background:#fff;font-family:\'IBM Plex Sans Thai\',sans-serif;}'
-   +`@media print{body{margin:0;padding:8px;}@page{margin:10mm;size:${baseSize}${landscape?' landscape':''};}}</style>`
-   +'</head><body>'+c+'</body></html>';
+   +'<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">'
+   +'<style>*{box-sizing:border-box;}body{margin:0;padding:0;background:#fff;font-family:"Inter",sans-serif;}'
+   +'@media print{body{margin:0;}@page{margin:10mm;size:'+baseSize+(landscape?' landscape':'')+';}}'+
+   '</style></head><body>'+c+'</body></html>';
   const blob=new Blob([html],{type:'text/html'});
   const url=URL.createObjectURL(blob);
   const w=window.open(url,'_blank');
-  if(w){
-   w.addEventListener('load',()=>{setTimeout(()=>{w.print();},300);});
-   setTimeout(()=>URL.revokeObjectURL(url),10000);
+  if(w&&!w.closed){
+   w.addEventListener('load',()=>{setTimeout(()=>{w.print();},400);});
+   setTimeout(()=>URL.revokeObjectURL(url),15000);
   } else {
    const a=document.createElement('a');
-   a.href=url;a.download='nexus_report.html';a.click();
-   setTimeout(()=>URL.revokeObjectURL(url),2000);
+   a.href=url;a.download=fname;
+   document.body.appendChild(a);a.click();document.body.removeChild(a);
+   setTimeout(()=>URL.revokeObjectURL(url),3000);
+   showToast('ดาวน์โหลดไฟล์แล้ว เปิดในเบราว์เซอร์เพื่อ Print');
   }
  },400);
 }
@@ -2663,40 +2963,40 @@ function saveReportAsImage(){
  setTimeout(()=>{
   const wrap=document.getElementById('rpt-wrap');
   if(!wrap||wrap.innerHTML.includes('เลือกลูกค้า')){showToast('เลือกลูกค้าและงานก่อน');return;}
-  showToast('กำลังสร้างรูป...',5000);
+  showToast('กำลังสร้างรูป...',6000);
   const loadLib=()=>new Promise((res,rej)=>{
    if(window.html2canvas){res();return;}
    const s=document.createElement('script');
    s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-   s.onload=res;s.onerror=rej;
+   s.onload=res;s.onerror=()=>rej(new Error('โหลด html2canvas ไม่ได้'));
    document.head.appendChild(s);
   });
   loadLib().then(()=>{
-   // Clone into a fixed off-screen container for clean rendering
    const clone=wrap.cloneNode(true);
-   clone.style.cssText='position:fixed;top:0;left:-9999px;width:640px;background:#ffffff;z-index:-999;padding:0;border-radius:0;';
+   clone.style.cssText='position:fixed;top:0;left:-9999px;width:640px;min-height:100px;background:#ffffff;z-index:-999;padding:0;border-radius:0;overflow:visible;';
    document.body.appendChild(clone);
-   html2canvas(clone,{
-    scale:2,useCORS:true,allowTaint:true,
-    backgroundColor:'#ffffff',logging:false,width:640,
-   }).then(canvas=>{
+   return html2canvas(clone,{scale:2,useCORS:true,allowTaint:true,backgroundColor:'#ffffff',logging:false,width:640})
+   .then(canvas=>{
     document.body.removeChild(clone);
     const cid=+document.getElementById('rpt-cust').value;
     const jid=+document.getElementById('rpt-job').value;
-    const c=DB.customers.find(x=>x.id===cid);
+    const cu=DB.customers.find(x=>x.id===cid);
     const j=DB.jobs.find(x=>x.id===jid);
-    const fname=`nexus_${(c?.fn||'report').replace(/\s/g,'_')}_JOB${String(j?.id||0).padStart(4,'0')}.png`;
-    const a=document.createElement('a');
-    a.href=canvas.toDataURL('image/png');
-    a.download=fname;
-    document.body.appendChild(a);a.click();document.body.removeChild(a);
-    showToast('บันทึกรูปสำเร็จ');
+    const fname='nexus_'+(cu?.fn||'report').replace(/\s/g,'_')+'_JOB'+String(j?.id||0).padStart(4,'0')+'.png';
+    canvas.toBlob(blob=>{
+     const url=URL.createObjectURL(blob);
+     const a=document.createElement('a');
+     a.href=url;a.download=fname;
+     document.body.appendChild(a);a.click();document.body.removeChild(a);
+     setTimeout(()=>URL.revokeObjectURL(url),3000);
+     showToast('บันทึกรูปสำเร็จ');
+    },'image/png');
    }).catch(err=>{
-    document.body.removeChild(clone);
-    showToast('เกิดข้อผิดพลาด: '+err.message);
+    if(document.body.contains(clone))document.body.removeChild(clone);
+    throw err;
    });
-  }).catch(()=>showToast('โหลด html2canvas ไม่ได้ — ตรวจสอบอินเตอร์เน็ต'));
- },600);
+  }).catch(err=>showToast('ไม่สำเร็จ: '+err.message));
+ },500);
 }
 // ══════════════════════════════════════════════════════════════════
 function jLbl(t){return{install:'ติดตั้ง',service:'ล้างแอร์',repair:'ซ่อม',refill:'เติมน้ำยา',check:'ตรวจเช็ค'}[t]||t;}
@@ -2765,66 +3065,749 @@ function openAddJobFor(cid){
 // ══════════════════════════════════════════════════════════════════
 lDB();popAllSels();popJobCustSel();
 renderDash();buildChecklist();initRoomCanvas();
-// Set today date default
 document.getElementById('sj-date').value=new Date().toISOString().slice(0,10);
-// Resize room canvas on load
 setTimeout(()=>{drawRoom();},100);
 window.addEventListener('resize',()=>{drawRoom();if(_curPage==='home')drawDashChart();});
-// Auto-save every 30s
 setInterval(()=>{sDB();},30000);
+
+// ── PORTAL: detect #p/ hash ──────────────────────────────────────
+// Run immediately - hide login and app shell if this is a customer portal link
+(function checkPortal(){
+  const h=location.hash;
+  const m=h.match(/^#p\/(.+)$/);
+  if(!m)return;
+  
+  // IMMEDIATELY hide the staff login and app shell
+  // so customer never sees the PIN screen
+  const loginEl=document.getElementById('login-screen');
+  const shellEl=document.getElementById('shell');
+  if(loginEl)loginEl.style.display='none';
+  if(shellEl)shellEl.style.display='none';
+  
+  // Show portal overlay immediately (empty, will fill shortly)
+  const ov=document.getElementById('portal-ov');
+  if(ov){
+    ov.style.display='block';
+    const body=document.getElementById('portal-body');
+    if(body)body.innerHTML='<div style="text-align:center;padding:60px 20px;"><div style="font-size:13px;color:#999;">กำลังโหลด...</div></div>';
+  }
+  
+  try{
+    const b64=m[1].replace(/-/g,'+').replace(/_/g,'/');
+    const json=decodeURIComponent(escape(atob(b64)));
+    const parsed=JSON.parse(json);
+    const payload=parsed.v===2?expandPayload(parsed):parsed;
+    // Small delay to let DOM settle
+    setTimeout(()=>showPortalStandalone(payload),100);
+  }catch(e){
+    // If can't decode payload, show error message (not login screen)
+    const body=document.getElementById('portal-body');
+    if(body)body.innerHTML='<div style="text-align:center;padding:60px 20px;"><div style="font-size:15px;color:#666;margin-bottom:8px;">ลิงก์หมดอายุ</div><div style="font-size:12px;color:#aaa;">ขอรับ QR ใหม่จากช่าง</div></div>';
+  }
+})();
 </script>
 
+<!-- ══ CUSTOMER PORTAL OVERLAY ═══════════════════════════════════ -->
+<div id="portal-ov" style="display:none;position:fixed;inset:0;z-index:9500;background:#f9f8f6;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+ <!-- Portal header -->
+ <div style="background:#1a1917;padding:20px 20px calc(16px + env(safe-area-inset-top));padding-top:calc(20px + env(safe-area-inset-top));position:sticky;top:0;z-index:10;">
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+   <div>
+    <div id="portal-logo" style="font-family:'Sarabun',sans-serif;font-size:20px;font-weight:400;color:#fff;letter-spacing:.1em;">Nexus</div>
+    <div style="font-size:9px;color:rgba(255,255,255,.35);letter-spacing:.12em;text-transform:uppercase;">Customer Portal</div>
+   </div>
+   <button onclick="closePortal()" style="background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+   </button>
+  </div>
+ </div>
+ <!-- Portal body -->
+ <div id="portal-body" style="padding:20px;max-width:480px;margin:0 auto;"></div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+// CUSTOMER PORTAL
+// ══════════════════════════════════════════════════════════════════
+function getPortalToken(cid){
+  return btoa('nx'+cid+'x'+((cid*7+31)%97));
+}
+function decodePortalToken(tok){
+  try{
+    const s=atob(tok);
+    const m=s.match(/^nx(\d+)x/);
+    if(!m)return null;
+    const cid=+m[1];
+    return ((cid*7+31)%97===+s.split('x').pop())?cid:null;
+  }catch(e){return null;}
+}
+function getPortalURL(cid){
+  const c=DB.customers.find(x=>x.id===cid);
+  if(!c)return location.href.split('#')[0]+'#p/'+getPortalToken(cid);
+  const s=DB.settings||{};
+  const jobs=DB.jobs.filter(j=>j.cid===cid).sort((a,b)=>b.date.localeCompare(a.date));
+
+  // ── MINIMAL payload: strip everything non-essential to keep URL short ──
+  // Fields shortened: fn/ln/ph/ad/acs | jobs: t/d/p/st/tx/dt/ai | s: co/tl/adr/tn/tt/li/pe/pp/pr
+  const payload={
+    v:2,// version
+    c:{n:c.fn+' '+c.ln, p:c.ph||'', a:(c.ad||'').slice(0,40),
+       acs:(c.acs||[]).map(ac=>({b:ac.btu||12000,cp:ac.cop||3.5,br:(ac.br||'').slice(0,8),md:(ac.md||'').slice(0,8)}))},
+    j:jobs.slice(0,8).map(j=>({ // max 8 jobs
+      t:j.type[0], // s=service, i=install, r=repair, f=refill, c=check
+      d:j.date,
+      p:j.price||0,
+      st:j.status[0], // d=done, p=pending, i=inprogress, c=cancel
+      tx:(j.tech||'').slice(0,8),
+      dt:(j.detail||'').slice(0,30),
+      ai:j.aci||0,
+      ph:(j.photos||[]).length||0 // just count
+    })),
+    s:{
+      co:(s.company||'').slice(0,20),
+      tl:s.tel||'',
+      tn:(s.techName||'').slice(0,12),
+      tt:s.techTel||'',
+      li:s.lineId||'',
+      pe:s.ptsEnabled!==false?1:0,
+      pp:s.ptsPer||1,
+      pr:(s.ptsReward||'').slice(0,60)
+    }
+  };
+  const json=JSON.stringify(payload);
+  const b64=btoa(unescape(encodeURIComponent(json))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+  const base=location.href.split('#')[0];
+  return base+'#p/'+b64;
+}
+
+// Expand compressed payload back to full objects
+function expandPayload(raw){
+  if(raw.v!==2)return raw; // old format, return as-is
+  const typeMap={s:'service',i:'install',r:'repair',f:'refill',c:'check'};
+  const statMap={d:'done',p:'pending',i:'inprogress',c:'cancel'};
+  const c={fn:raw.c.n.split(' ')[0],ln:raw.c.n.split(' ').slice(1).join(' '),
+    ph:raw.c.p,ad:raw.c.a,
+    acs:(raw.c.acs||[]).map(ac=>({btu:ac.b,cop:ac.cp,br:ac.br,md:ac.md}))};
+  const jobs=(raw.j||[]).map(j=>({
+    type:typeMap[j.t]||j.t,
+    date:j.d,price:j.p,
+    status:statMap[j.st]||j.st,
+    tech:j.tx,detail:j.dt,aci:j.ai||0,
+    photos:j.ph?['['+j.ph+' รูป]']:[]
+  }));
+  const s={company:raw.s.co,tel:raw.s.tl,techName:raw.s.tn,techTel:raw.s.tt,
+    lineId:raw.s.li,ptsEnabled:raw.s.pe===1,ptsPer:raw.s.pp,ptsReward:raw.s.pr};
+  return{c,jobs,s};
+}
+
+function openPortal(cid){
+  const c=DB.customers.find(x=>x.id===cid);
+  if(!c){showToast('ไม่พบข้อมูลลูกค้า');return;}
+  const ov=document.getElementById('portal-ov');
+  const body=document.getElementById('portal-body');
+  const s=DB.settings||{};
+  if(!ov||!body)return;
+  const lg=document.getElementById('portal-logo');
+  if(lg)lg.textContent=s.company||'Nexus';
+
+  const jobs=DB.jobs.filter(j=>j.cid===cid).sort((a,b)=>b.date.localeCompare(a.date));
+  const doneJobs=jobs.filter(j=>j.status==='done');
+  const totalSpend=doneJobs.reduce((sum,j)=>sum+(j.price||0),0);
+  const pts=getCustomerPoints(cid);
+  const ptsEnabled=s.ptsEnabled!==false;
+
+  // ── Next service reminder: last service + 3 months ──
+  const lastService=doneJobs[0];
+  let nextServiceHtml='';
+  if(lastService){
+    const lastD=new Date(lastService.date);
+    const nextD=new Date(lastD);
+    nextD.setMonth(nextD.getMonth()+3);
+    const today=new Date();
+    const diffDays=Math.round((nextD-today)/(1000*60*60*24));
+    const nextStr=nextD.toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
+    const urgent=diffDays<=14;
+    const overdue=diffDays<0;
+    const bgColor=overdue?'#fef2f2':urgent?'#fffbeb':'#f0fdf4';
+    const bColor=overdue?'#fca5a5':urgent?'#fcd34d':'#86efac';
+    const tColor=overdue?'#991b1b':urgent?'#92400e':'#166534';
+    const msg=overdue?`เกินกำหนดล้างแล้ว ${Math.abs(diffDays)} วัน`:
+              urgent?`ถึงเวลาล้างแล้ว — อีก ${diffDays} วัน`:
+              `อีก ${diffDays} วัน`;
+    nextServiceHtml=`<div style="background:${bgColor};border:1px solid ${bColor};border-radius:10px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="${tColor}" stroke-width="2" style="flex-shrink:0;"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="12" cy="16" r="2" fill="${tColor}"/></svg>
+      <div>
+        <div style="font-size:12px;font-weight:600;color:${tColor};">รอบล้างแอร์ถัดไป</div>
+        <div style="font-size:13px;font-weight:700;color:${tColor};margin-top:1px;">${nextStr}</div>
+        <div style="font-size:11px;color:${tColor};opacity:.8;margin-top:1px;">${msg}</div>
+      </div>
+    </div>`;
+  }
+
+  // ── Technician card ──
+  const techName=s.techName||'';
+  const techTel=s.techTel||'';
+  const coTel=s.tel||'';
+  const coName=s.company||'Nexus Service';
+  const contactHtml=`<div style="background:#1a1917;border-radius:12px;padding:16px 18px;margin-bottom:14px;">
+    <div style="font-size:10px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">ช่างผู้ดูแลของคุณ</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-size:16px;font-weight:600;color:#fff;">${techName||'ทีมช่าง Nexus'}</div>
+        ${techTel?`<div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:3px;">${techTel}</div>`:''}
+      </div>
+      ${techTel?`<a href="tel:${techTel}" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;padding:9px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Sarabun',sans-serif;text-decoration:none;display:inline-block;">โทรหาช่าง</a>`:''}
+    </div>
+    <div style="border-top:1px solid rgba(255,255,255,.08);margin-top:12px;padding-top:12px;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-size:12px;color:rgba(255,255,255,.5);">${coName}</div>
+        ${coTel?`<div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:1px;">${coTel}</div>`:''}
+      </div>
+      <div style="display:flex;gap:8px;">
+        ${coTel?`<a href="tel:${coTel}" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.6);padding:7px 12px;border-radius:6px;font-size:11px;font-weight:500;text-decoration:none;display:inline-block;">โทรร้าน</a>`:''}
+        ${s.lineId?`<a href="https://line.me/R/ti/p/${s.lineId}" style="background:#00B900;border:none;color:#fff;padding:7px 12px;border-radius:6px;font-size:11px;font-weight:600;text-decoration:none;display:inline-block;">LINE</a>`:''}
+      </div>
+    </div>
+  </div>`;
+
+  body.innerHTML=`
+   <!-- Customer card -->
+   <div style="background:#fff;border:1px solid #e8e6e1;border-radius:14px;padding:20px;margin-bottom:14px;">
+    <div style="font-size:22px;font-weight:600;color:#1a1917;margin-bottom:4px;">${c.fn} ${c.ln}</div>
+    ${c.ph?`<div style="font-size:13px;color:#666;margin-bottom:2px;">${c.ph}</div>`:''}
+    ${c.ad?`<div style="font-size:11px;color:#999;line-height:1.5;">${c.ad}</div>`:''}
+    ${ptsEnabled&&pts?`<div style="margin-top:12px;display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:#fdf8ee;border:1px solid #e8d9b0;border-radius:6px;">
+     <svg width="13" height="13" viewBox="0 0 24 24" fill="#9a7c4a" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+     <span style="font-size:13px;font-weight:700;color:#7a6030;">${pts.toLocaleString()} แต้มสะสม</span>
+    </div>`:''
+   }</div>
+
+   <!-- Next service reminder -->
+   ${nextServiceHtml}
+
+   <!-- Contact / Tech card -->
+   ${contactHtml}
+
+   <!-- Stats -->
+   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;">
+    <div style="background:#fff;border:1px solid #e8e6e1;border-radius:10px;padding:12px;text-align:center;">
+     <div style="font-size:22px;font-weight:700;color:#1a1917;">${jobs.length}</div>
+     <div style="font-size:9px;color:#999;text-transform:uppercase;letter-spacing:.08em;margin-top:2px;">งานทั้งหมด</div>
+    </div>
+    <div style="background:#fff;border:1px solid #e8e6e1;border-radius:10px;padding:12px;text-align:center;">
+     <div style="font-size:22px;font-weight:700;color:#1a1917;">${(c.acs||[]).length}</div>
+     <div style="font-size:9px;color:#999;text-transform:uppercase;letter-spacing:.08em;margin-top:2px;">เครื่องแอร์</div>
+    </div>
+    <div style="background:#fff;border:1px solid #e8e6e1;border-radius:10px;padding:12px;text-align:center;">
+     <div style="font-size:17px;font-weight:700;color:#1a1917;">฿${(totalSpend/1000).toFixed(1)}k</div>
+     <div style="font-size:9px;color:#999;text-transform:uppercase;letter-spacing:.08em;margin-top:2px;">ค่าบริการรวม</div>
+    </div>
+   </div>
+
+   <!-- AC Simulator -->
+   ${(c.acs||[]).length?`<div style="background:#f4f3f0;border-radius:12px;padding:16px 18px;margin-bottom:14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+     <div>
+      <div style="font-size:13px;font-weight:700;color:#1a1917;">จำลองแอร์ของคุณ</div>
+      <div style="font-size:11px;color:#999;margin-top:2px;">คำนวณ ETA · ค่าไฟ · ขนาดเหมาะสม</div>
+     </div>
+     <button onclick="startPortalSim(${cid})" style="background:#1a1917;border:none;color:#fff;padding:9px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Sarabun',sans-serif;">คำนวณ</button>
+    </div>
+    <div id="portal-sim-panel">
+     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+      <div>
+       <div style="font-size:9px;color:#999;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;">อ.ภายนอก (°C)</div>
+       <input id="portal-tout" type="range" min="28" max="42" value="35" oninput="document.getElementById('portal-tout-v').textContent=this.value+'°C'" style="-webkit-appearance:none;width:100%;height:4px;background:#d5d2ca;border-radius:2px;outline:none;cursor:pointer;border:none;">
+       <div style="text-align:center;font-size:14px;font-weight:700;margin-top:5px;color:#1a1917;" id="portal-tout-v">35°C</div>
+      </div>
+      <div>
+       <div style="font-size:9px;color:#999;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;">ตั้งอุณหภูมิ (°C)</div>
+       <input id="portal-tset" type="range" min="18" max="28" value="25" oninput="document.getElementById('portal-tset-v').textContent=this.value+'°C'" style="-webkit-appearance:none;width:100%;height:4px;background:#d5d2ca;border-radius:2px;outline:none;cursor:pointer;border:none;">
+       <div style="text-align:center;font-size:14px;font-weight:700;margin-top:5px;color:#1a1917;" id="portal-tset-v">25°C</div>
+      </div>
+     </div>
+     ${(c.acs||[]).map((ac,i)=>`
+      <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #e8e6e1;border-radius:8px;margin-bottom:6px;cursor:pointer;background:#fff;">
+       <input type="radio" name="portal-ac" value="${i}" ${i===0?'checked':''} style="accent-color:#1a1917;">
+       <div style="flex:1;"><div style="font-size:13px;font-weight:600;">${ac.br||'?'} ${ac.md||''}</div></div>
+       <span style="font-size:11px;color:#999;font-weight:500;">${(ac.btu||0).toLocaleString()} BTU</span>
+      </label>`).join('')}
+     <div id="portal-sim-result" style="margin-top:12px;"></div>
+    </div>
+   </div>`:''
+   }
+
+   <!-- Service history -->
+   <div style="margin-bottom:6px;">
+    <div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">ประวัติการบริการ</div>
+    ${jobs.length?jobs.map(j=>{
+     const ac2=(c.acs||[])[j.aci||0];
+     const sc={done:'#2d6b4a',inprogress:'#2a4a6e',pending:'#7a6030',cancel:'#888'}[j.status]||'#888';
+     return`<div style="background:#fff;border:1px solid #e8e6e1;border-radius:10px;padding:14px;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+       <div>
+        <div style="font-size:14px;font-weight:600;color:#1a1917;">${jLbl(j.type)}</div>
+        <div style="font-size:11px;color:#999;margin-top:2px;">${j.date}${j.time?' · '+j.time:''}${j.tech?' · ช่าง '+j.tech:''}</div>
+        ${ac2?`<div style="font-size:10px;color:#bbb;margin-top:1px;">${ac2.br||''} ${ac2.md||''}</div>`:''}
+       </div>
+       <div style="text-align:right;">
+        <div style="font-size:16px;font-weight:700;color:#1a1917;">฿${(j.price||0).toLocaleString()}</div>
+        <div style="margin-top:4px;display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:600;border:1px solid ${sc};color:${sc};">${sLbl(j.status).toUpperCase()}</div>
+       </div>
+      </div>
+      ${j.detail?`<div style="font-size:11px;color:#555;line-height:1.7;padding:8px 10px;background:#f9f8f6;border-radius:6px;margin-top:4px;">${j.detail}</div>`:''}
+      ${(j.photos&&j.photos.length)?`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:8px;">
+       ${j.photos.slice(0,4).map(p=>`<img src="${p}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:5px;">`).join('')}
+      </div>`:''}
+     </div>`;
+    }).join(''):`<div style="text-align:center;color:#ccc;padding:30px;font-size:13px;">ยังไม่มีประวัติการบริการ</div>`
+   }</div>
+
+   <!-- Points -->
+   ${ptsEnabled&&pts?`<div style="background:#fdf8ee;border:1px solid #e8d9b0;border-radius:10px;padding:16px;margin-bottom:14px;">
+    <div style="font-size:10px;color:#9a8050;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">แต้มสะสม</div>
+    <div style="font-size:32px;font-weight:700;color:#7a6030;">${pts.toLocaleString()} <span style="font-size:16px;font-weight:400;">แต้ม</span></div>
+    ${s.ptsReward?`<div style="font-size:12px;color:#9a8050;white-space:pre-line;line-height:1.8;margin-top:6px;">${s.ptsReward}</div>`:''}
+   </div>`:''
+   }
+
+   <div style="text-align:center;font-size:10px;color:#ccc;padding:10px 0 20px;">${coName}${coTel?' · '+coTel:''}</div>`;
+
+  ov.style.display='block';
+  document.body.style.overflow='hidden';
+  ov.scrollTop=0;
+  history.pushState(null,'','#p/'+getPortalToken(cid));
+}
+
+function closePortal(){
+  const ov=document.getElementById('portal-ov');
+  if(ov)ov.style.display='none';
+  document.body.style.overflow='';
+  history.pushState(null,'',location.pathname+location.search);
+  // Restore staff app if needed
+  const shellEl=document.getElementById('shell');
+  const loginSc=document.getElementById('login-screen');
+  if(shellEl)shellEl.style.display='';
+  if(loginSc)loginSc.style.display='';
+}
+
+function startPortalSim(cid){
+  // Already visible, just trigger compute
+  runPortalSim(cid);
+}
+
+function runPortalSim(cid){
+  const c=DB.customers.find(x=>x.id===cid);if(!c)return;
+  const ai=+(document.querySelector('input[name="portal-ac"]:checked')?.value)||0;
+  const ac=(c.acs||[])[ai];if(!ac)return;
+  const Tout=+document.getElementById('portal-tout').value||35;
+  const Tset=+document.getElementById('portal-tset').value||25;
+  const btu=ac.btu||12000;
+  const cop=ac.cop||3.5;
+  const W=3.5,L=4.5,H=2.7;
+  const dT=Tout-Tset;
+  const Q_load=(2*(W+L)*H*1.8+W*L*1.8)*dT*1.05;
+  const Q_rated=btu*0.2931;
+  const ratio=Q_load/Q_rated;
+  const etaMins=ratio<1?Math.ceil(8+dT*0.8):Math.ceil(12+dT*1.2);
+  const P_w=Q_rated/cop;
+  const costPerHr=(P_w/1000)*4.5;
+  const col=ratio<0.7?'#2d6b4a':ratio<1?'#7a6030':'#8b2020';
+  const label=ratio<0.7?'ใหญ่เกินไป':ratio<1.1?'เหมาะสม':'เล็กเกินไป';
+  const res=document.getElementById('portal-sim-result');
+  if(!res)return;
+  res.innerHTML=`<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:4px;">
+    <div style="background:#fff;border:1px solid #e8e6e1;border-radius:8px;padding:12px;">
+     <div style="font-size:9px;color:#999;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">ถึงเป้าในประมาณ</div>
+     <div style="font-size:22px;font-weight:700;color:#1a1917;">~${etaMins}<span style="font-size:12px;font-weight:400;margin-left:3px;">นาที</span></div>
+    </div>
+    <div style="background:#fff;border:1px solid #e8e6e1;border-radius:8px;padding:12px;">
+     <div style="font-size:9px;color:#999;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">ค่าไฟ / ชม.</div>
+     <div style="font-size:22px;font-weight:700;color:#1a1917;">฿${costPerHr.toFixed(2)}</div>
+    </div>
+    <div style="background:#fff;border:1px solid #e8e6e1;border-radius:8px;padding:12px;">
+     <div style="font-size:9px;color:#999;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">กำลังไฟ</div>
+     <div style="font-size:22px;font-weight:700;color:#1a1917;">${Math.round(P_w)}<span style="font-size:12px;font-weight:400;margin-left:3px;">W</span></div>
+    </div>
+    <div style="background:#fff;border:1px solid #e8e6e1;border-radius:8px;padding:12px;">
+     <div style="font-size:9px;color:#999;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">ขนาดแอร์</div>
+     <div style="font-size:16px;font-weight:700;color:${col};">${label}</div>
+    </div>
+   </div>
+   <div style="font-size:10px;color:#aaa;margin-top:6px;">* ห้องมาตรฐาน 3.5×4.5m · ภายนอก ${Tout}°C → ตั้ง ${Tset}°C</div>`;
+}
+
+// ── Standalone portal: runs from URL payload, no DB/login needed ──
+function showPortalStandalone(payload){
+  const c=payload.c||{};
+  const jobs=payload.jobs||[];
+  const s=payload.s||{};
+  const ptsEnabled=s.ptsEnabled!==false;
+  // Recalculate points from jobs
+  const ptsPer=s.ptsPer||1;
+  const pts=jobs.filter(j=>j.status==='done').reduce((sum,j)=>sum+Math.floor((j.price||0)/ptsPer),0);
+  const totalSpend=jobs.filter(j=>j.status==='done').reduce((sum,j)=>sum+(j.price||0),0);
+  const doneJobs=jobs.filter(j=>j.status==='done').sort((a,b)=>b.date.localeCompare(a.date));
+
+  // ── Service reminder ──
+  let nextServiceHtml='';
+  if(doneJobs.length){
+    const lastD=new Date(doneJobs[0].date);
+    const nextD=new Date(lastD);nextD.setMonth(nextD.getMonth()+3);
+    const diffDays=Math.round((nextD-new Date())/(86400000));
+    const nextStr=nextD.toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
+    const overdue=diffDays<0,urgent=diffDays<=14&&diffDays>=0;
+    const bg=overdue?'#fef2f2':urgent?'#fffbeb':'#f0fdf4';
+    const bc=overdue?'#fca5a5':urgent?'#fcd34d':'#86efac';
+    const tc=overdue?'#991b1b':urgent?'#92400e':'#166534';
+    const msg=overdue?`เกินกำหนดแล้ว ${Math.abs(diffDays)} วัน`:urgent?`ถึงเวลาแล้ว — อีก ${diffDays} วัน`:`อีก ${diffDays} วัน`;
+    nextServiceHtml=`<div style="background:${bg};border:1px solid ${bc};border-radius:10px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="${tc}" stroke-width="2" style="flex-shrink:0;"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="12" cy="16" r="2" fill="${tc}"/></svg>
+      <div><div style="font-size:12px;font-weight:600;color:${tc};">รอบล้างแอร์ถัดไป</div>
+      <div style="font-size:14px;font-weight:700;color:${tc};margin-top:2px;">${nextStr}</div>
+      <div style="font-size:11px;color:${tc};opacity:.8;">${msg}</div></div></div>`;
+  }
+
+  // ── Contact card ──
+  const coName=s.company||'Nexus Service';
+  const contactHtml=`<div style="background:#1a1917;border-radius:12px;padding:16px 18px;margin-bottom:14px;">
+    <div style="font-size:10px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">ช่างผู้ดูแลของคุณ</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div><div style="font-size:16px;font-weight:600;color:#fff;">${s.techName||'ทีมช่าง'}</div>
+      ${s.techTel?`<div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:2px;">${s.techTel}</div>`:''}</div>
+      ${s.techTel?`<a href="tel:${s.techTel}" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;padding:9px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block;font-family:'Sarabun',sans-serif;">โทรหาช่าง</a>`:''}
+    </div>
+    <div style="border-top:1px solid rgba(255,255,255,.08);padding-top:10px;display:flex;justify-content:space-between;align-items:center;">
+      <div><div style="font-size:12px;color:rgba(255,255,255,.5);">${coName}</div>
+      ${s.tel?`<div style="font-size:11px;color:rgba(255,255,255,.3);">${s.tel}</div>`:''}</div>
+      <div style="display:flex;gap:7px;">
+        ${s.tel?`<a href="tel:${s.tel}" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.6);padding:7px 12px;border-radius:6px;font-size:11px;font-weight:500;text-decoration:none;display:inline-block;font-family:'Sarabun',sans-serif;">โทรร้าน</a>`:''}
+        ${s.lineId?`<a href="https://line.me/R/ti/p/${s.lineId}" style="background:#00B900;border:none;color:#fff;padding:7px 12px;border-radius:6px;font-size:11px;font-weight:600;text-decoration:none;display:inline-block;font-family:'Sarabun',sans-serif;">LINE</a>`:''}
+      </div>
+    </div></div>`;
+
+  const jLblMap={install:'ติดตั้ง',service:'ล้างแอร์',repair:'ซ่อม',refill:'เติมน้ำยา',check:'ตรวจเช็ค'};
+  const sLblMap={done:'เสร็จ',inprogress:'กำลังทำ',pending:'รอ',cancel:'ยกเลิก'};
+  const jL=t=>jLblMap[t]||t;
+  const sL=s2=>sLblMap[s2]||s2;
+
+  // Build body HTML
+  const ov=document.getElementById('portal-ov');
+  const body=document.getElementById('portal-body');
+  const lg=document.getElementById('portal-logo');
+  if(!ov||!body)return;
+  if(lg)lg.textContent=coName;
+
+  body.innerHTML=`
+   <div style="background:#fff;border:1px solid #e8e6e1;border-radius:14px;padding:20px;margin-bottom:14px;">
+    <div style="font-size:22px;font-weight:700;color:#1a1917;margin-bottom:4px;">${c.fn||''} ${c.ln||''}</div>
+    ${c.ph?`<div style="font-size:13px;color:#666;margin-bottom:2px;">${c.ph}</div>`:''}
+    ${c.ad?`<div style="font-size:11px;color:#999;line-height:1.5;">${c.ad}</div>`:''}
+    ${ptsEnabled&&pts?`<div style="margin-top:12px;display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:#fdf8ee;border:1px solid #e8d9b0;border-radius:6px;">
+     <svg width="13" height="13" viewBox="0 0 24 24" fill="#9a7c4a"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+     <span style="font-size:13px;font-weight:700;color:#7a6030;">${pts.toLocaleString()} แต้มสะสม</span>
+    </div>`:''}</div>
+
+   ${nextServiceHtml}
+   ${contactHtml}
+
+   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;">
+    <div style="background:#fff;border:1px solid #e8e6e1;border-radius:10px;padding:12px;text-align:center;">
+     <div style="font-size:22px;font-weight:700;color:#1a1917;">${jobs.length}</div>
+     <div style="font-size:9px;color:#999;text-transform:uppercase;letter-spacing:.08em;margin-top:2px;">งานทั้งหมด</div>
+    </div>
+    <div style="background:#fff;border:1px solid #e8e6e1;border-radius:10px;padding:12px;text-align:center;">
+     <div style="font-size:22px;font-weight:700;color:#1a1917;">${(c.acs||[]).length}</div>
+     <div style="font-size:9px;color:#999;text-transform:uppercase;letter-spacing:.08em;margin-top:2px;">เครื่องแอร์</div>
+    </div>
+    <div style="background:#fff;border:1px solid #e8e6e1;border-radius:10px;padding:12px;text-align:center;">
+     <div style="font-size:17px;font-weight:700;color:#1a1917;">฿${(totalSpend/1000).toFixed(1)}k</div>
+     <div style="font-size:9px;color:#999;text-transform:uppercase;letter-spacing:.08em;margin-top:2px;">ค่าบริการรวม</div>
+    </div>
+   </div>
+
+   ${(c.acs||[]).length?`<div style="background:#f4f3f0;border-radius:12px;padding:16px;margin-bottom:14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+     <div><div style="font-size:13px;font-weight:700;color:#1a1917;">จำลองแอร์ของคุณ</div>
+     <div style="font-size:11px;color:#999;margin-top:2px;">คำนวณ ETA · ค่าไฟ · ขนาดเหมาะสม</div></div>
+     <button onclick="runStandaloneSim('${c.id||0}')" style="background:#1a1917;border:none;color:#fff;padding:9px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Sarabun',sans-serif;">คำนวณ</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+     <div><div style="font-size:9px;color:#999;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">อ.ภายนอก (°C)</div>
+      <input type="range" id="sa-tout" min="28" max="42" value="35" oninput="document.getElementById('sa-tout-v').textContent=this.value+'°C'" style="-webkit-appearance:none;width:100%;height:4px;background:#d5d2ca;border-radius:2px;outline:none;cursor:pointer;border:none;accent-color:#1a1917;">
+      <div style="text-align:center;font-size:14px;font-weight:700;margin-top:4px;" id="sa-tout-v">35°C</div>
+     </div>
+     <div><div style="font-size:9px;color:#999;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">ตั้งอุณหภูมิ (°C)</div>
+      <input type="range" id="sa-tset" min="18" max="28" value="25" oninput="document.getElementById('sa-tset-v').textContent=this.value+'°C'" style="-webkit-appearance:none;width:100%;height:4px;background:#d5d2ca;border-radius:2px;outline:none;cursor:pointer;border:none;accent-color:#1a1917;">
+      <div style="text-align:center;font-size:14px;font-weight:700;margin-top:4px;" id="sa-tset-v">25°C</div>
+     </div>
+    </div>
+    ${(c.acs||[]).map((ac,i)=>`<label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #e8e6e1;border-radius:8px;margin-bottom:6px;cursor:pointer;background:#fff;">
+     <input type="radio" name="sa-ac" value="${JSON.stringify({btu:ac.btu||12000,cop:ac.cop||3.5,br:ac.br||'',md:ac.md||''}).replace(/"/g,'&quot;')}" ${i===0?'checked':''} style="accent-color:#1a1917;">
+     <div style="flex:1;"><div style="font-size:13px;font-weight:600;">${ac.br||'?'} ${ac.md||''}</div></div>
+     <span style="font-size:11px;color:#999;">${(ac.btu||0).toLocaleString()} BTU</span>
+    </label>`).join('')}
+    <div id="sa-result"></div>
+   </div>`:''
+   }
+
+   <div style="margin-bottom:6px;">
+    <div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">ประวัติการบริการ</div>
+    ${jobs.length?[...jobs].sort((a,b)=>b.date.localeCompare(a.date)).map(j=>{
+     const ac2=(c.acs||[])[j.aci||0];
+     const sc={done:'#2d6b4a',inprogress:'#2a4a6e',pending:'#7a6030',cancel:'#888'}[j.status]||'#888';
+     return`<div style="background:#fff;border:1px solid #e8e6e1;border-radius:10px;padding:14px;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+       <div>
+        <div style="font-size:14px;font-weight:600;color:#1a1917;">${jL(j.type)}</div>
+        <div style="font-size:11px;color:#999;margin-top:2px;">${j.date}${j.time?' · '+j.time:''}${j.tech?' · ช่าง '+j.tech:''}</div>
+        ${ac2?`<div style="font-size:10px;color:#bbb;margin-top:1px;">${ac2.br||''} ${ac2.md||''}</div>`:''}
+       </div>
+       <div style="text-align:right;">
+        <div style="font-size:16px;font-weight:700;color:#1a1917;">฿${(j.price||0).toLocaleString()}</div>
+        <div style="margin-top:4px;display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:600;border:1px solid ${sc};color:${sc};">${sL(j.status).toUpperCase()}</div>
+       </div>
+      </div>
+      ${j.detail?`<div style="font-size:11px;color:#555;line-height:1.7;padding:8px 10px;background:#f9f8f6;border-radius:6px;margin-top:8px;">${j.detail}</div>`:''}
+      ${(j.photos&&j.photos[0]&&!j.photos[0].startsWith('['))?`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:8px;">${j.photos.slice(0,4).map(p=>`<img src="${p}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:5px;">`).join('')}</div>`:''}
+     </div>`;
+    }).join(''):`<div style="text-align:center;color:#ccc;padding:30px;font-size:13px;">ยังไม่มีประวัติ</div>`
+   }</div>
+
+   ${ptsEnabled&&pts?`<div style="background:#fdf8ee;border:1px solid #e8d9b0;border-radius:10px;padding:16px;margin-bottom:14px;">
+    <div style="font-size:10px;color:#9a8050;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">แต้มสะสม</div>
+    <div style="font-size:32px;font-weight:700;color:#7a6030;">${pts.toLocaleString()} <span style="font-size:16px;font-weight:400;">แต้ม</span></div>
+    ${s.ptsReward?`<div style="font-size:12px;color:#9a8050;white-space:pre-line;line-height:1.8;margin-top:6px;">${s.ptsReward}</div>`:''}
+   </div>`:''
+   }
+   <div style="text-align:center;font-size:10px;color:#ccc;padding:10px 0 24px;">${coName}${s.tel?' · '+s.tel:''}</div>`;
+
+  // Hide everything staff-facing
+  const loginSc=document.getElementById('login-screen');
+  const shellEl=document.getElementById('shell');
+  if(loginSc){loginSc.style.display='none';}
+  if(shellEl){shellEl.style.display='none';}
+  
+  // Show portal
+  ov.style.display='block';
+  ov.style.zIndex='9500';
+  document.body.style.overflow='hidden';
+  ov.scrollTop=0;
+}
+
+function runStandaloneSim(cidStr){
+  const radio=document.querySelector('input[name="sa-ac"]:checked');
+  if(!radio)return;
+  let ac;
+  try{ac=JSON.parse(radio.value.replace(/&quot;/g,'"'));}catch(e){return;}
+  const Tout=+document.getElementById('sa-tout').value||35;
+  const Tset=+document.getElementById('sa-tset').value||25;
+  const btu=ac.btu||12000;
+  const cop=ac.cop||3.5;
+  const dT=Tout-Tset;
+  const Q_load=(2*(3.5+4.5)*2.7*1.8+3.5*4.5*1.8)*dT*1.05;
+  const Q_rated=btu*0.2931;
+  const ratio=Q_load/Q_rated;
+  const etaMins=ratio<1?Math.ceil(8+dT*0.8):Math.ceil(12+dT*1.2);
+  const P_w=Q_rated/cop;
+  const costPerHr=(P_w/1000)*4.5;
+  const col=ratio<0.7?'#2d6b4a':ratio<1.1?'#7a6030':'#8b2020';
+  const label=ratio<0.7?'ใหญ่เกินไป':ratio<1.1?'เหมาะสม':'เล็กเกินไป';
+  document.getElementById('sa-result').innerHTML=`
+   <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:4px;">
+    <div style="background:#fff;border:1px solid #e8e6e1;border-radius:8px;padding:12px;">
+     <div style="font-size:9px;color:#999;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">ถึงเป้าในประมาณ</div>
+     <div style="font-size:22px;font-weight:700;color:#1a1917;">~${etaMins}<span style="font-size:12px;font-weight:400;margin-left:3px;">นาที</span></div>
+    </div>
+    <div style="background:#fff;border:1px solid #e8e6e1;border-radius:8px;padding:12px;">
+     <div style="font-size:9px;color:#999;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">ค่าไฟ / ชม.</div>
+     <div style="font-size:22px;font-weight:700;color:#1a1917;">฿${costPerHr.toFixed(2)}</div>
+    </div>
+    <div style="background:#fff;border:1px solid #e8e6e1;border-radius:8px;padding:12px;">
+     <div style="font-size:9px;color:#999;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">กำลังไฟ</div>
+     <div style="font-size:22px;font-weight:700;color:#1a1917;">${Math.round(P_w)}<span style="font-size:12px;font-weight:400;margin-left:3px;">W</span></div>
+    </div>
+    <div style="background:#fff;border:1px solid #e8e6e1;border-radius:8px;padding:12px;">
+     <div style="font-size:9px;color:#999;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">ขนาดแอร์</div>
+     <div style="font-size:16px;font-weight:700;color:${col};">${label}</div>
+    </div>
+   </div>
+   <div style="font-size:10px;color:#aaa;margin-top:6px;">* ห้องมาตรฐาน 3.5×4.5m · ภายนอก ${Tout}°C → ตั้ง ${Tset}°C</div>`;
+}
+
+// Generate short QR via is.gd then render — scannable even on small print
+async function buildPortalQRAsync(cid, imgEl, txtEl){
+  const longUrl=getPortalURL(cid);
+  if(imgEl)imgEl.src=''; // clear while loading
+  try{
+    // Use is.gd to shorten URL (free, no auth, CORS-friendly)
+    const res=await fetch('https://is.gd/create.php?format=simple&url='+encodeURIComponent(longUrl));
+    if(!res.ok)throw new Error('is.gd fail');
+    const shortUrl=await res.text();
+    const trimmed=shortUrl.trim();
+    if(!trimmed.startsWith('http'))throw new Error('bad response');
+    // Build QR from short URL
+    const qrSrc='https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=10&ecc=M&data='+encodeURIComponent(trimmed);
+    if(imgEl){imgEl.src=qrSrc;imgEl.style.display='block';}
+    if(txtEl)txtEl.textContent=trimmed;
+    return qrSrc;
+  }catch(e){
+    // Fallback: use long URL directly with higher error correction (less dense than default)
+    const qrSrc='https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=12&ecc=L&data='+encodeURIComponent(longUrl);
+    if(imgEl){imgEl.src=qrSrc;imgEl.style.display='block';}
+    if(txtEl)txtEl.textContent='';
+    return qrSrc;
+  }
+}
+function getPortalQR(cid){
+  // Sync fallback - used in receipt preview (async version used for standalone QR display)
+  const url=getPortalURL(cid);
+  return 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=12&ecc=L&data='+encodeURIComponent(url);
+}
+</script>
+
+<!-- ══ QR SHEET ═══════════════════════════════════════════════ -->
+<div class="sheet-ov" id="sh-qr">
+ <div class="sheet-bd" onclick="closeSheet('sh-qr')"></div>
+ <div class="sheet-box" style="text-align:center;">
+  <div class="sh-handle"></div>
+  <div class="sh-title" style="justify-content:center;font-size:17px;">QR Portal ลูกค้า</div>
+  <div id="qr-cust-name" style="font-size:16px;font-weight:600;margin-bottom:4px;"></div>
+  <div id="qr-status" style="font-size:12px;color:var(--dim);margin-bottom:16px;">กำลังสร้าง QR...</div>
+  <!-- QR image - large and clear -->
+  <div style="display:inline-block;padding:16px;background:#fff;border:1px solid var(--border);border-radius:16px;margin-bottom:14px;">
+   <img id="qr-img" width="200" height="200" style="display:block;border-radius:4px;" src="">
+  </div>
+  <div id="qr-short-url" style="font-size:11px;color:var(--dim);margin-bottom:16px;word-break:break-all;padding:0 20px;"></div>
+  <div style="font-size:11px;color:var(--dim);line-height:1.6;margin-bottom:20px;padding:0 10px;">
+   ลูกค้าสแกน QR นี้ด้วยกล้องมือถือ<br>เพื่อดูประวัติ แต้ม และจำลองแอร์
+  </div>
+  <button class="bigbtn go" onclick="closeSheet('sh-qr')">ปิด</button>
+ </div>
+</div>
+
+<script>
+function showQRSheet(cid){
+  const c=DB.customers.find(x=>x.id===cid);
+  if(!c){showToast('ไม่พบลูกค้า');return;}
+  // Update sheet
+  const nameEl=document.getElementById('qr-cust-name');
+  const statusEl=document.getElementById('qr-status');
+  const imgEl=document.getElementById('qr-img');
+  const urlEl=document.getElementById('qr-short-url');
+  if(nameEl)nameEl.textContent=c.fn+' '+c.ln;
+  if(statusEl)statusEl.textContent='กำลังสร้าง QR...';
+  if(imgEl){imgEl.src='';imgEl.style.opacity='.3';}
+  if(urlEl)urlEl.textContent='';
+  openSheet('sh-qr');
+  // Generate async
+  buildPortalQRAsync(cid, imgEl, urlEl).then(()=>{
+    if(statusEl)statusEl.textContent='สแกนด้วยกล้องมือถือได้เลย';
+    if(imgEl)imgEl.style.opacity='1';
+  }).catch(()=>{
+    if(statusEl)statusEl.textContent='สร้าง QR แล้ว (ใช้ URL ยาว)';
+    if(imgEl)imgEl.style.opacity='1';
+  });
+}
+</script>
 <!-- ══ SETTINGS SHEET ════════════════════════════════════════════ -->
 <div class="sheet-ov" id="sh-settings">
  <div class="sheet-bd" onclick="closeSheet('sh-settings')"></div>
  <div class="sheet-box">
   <div class="sh-handle"></div>
-  <div class="sh-title"><span>⚙ ตั้งค่า / Settings</span><button class="sm-btn" onclick="closeSheet('sh-settings')">ปิด</button></div>
+  <div class="sh-title"><span>ตั้งค่าระบบ</span><button class="sm-btn" onclick="closeSheet('sh-settings')">ปิด</button></div>
 
-  <!-- Profile -->
-  <div class="sec-hd" style="margin-bottom:8px;">ข้อมูลบริษัท / ช่าง</div>
+  <!-- Company -->
+  <div class="sec-hd">ข้อมูลบริษัท</div>
   <div class="frow g2" style="margin-bottom:8px;">
-   <div class="fld"><label>ชื่อบริษัท</label><input id="set-company" placeholder="NEXUS Service"></div>
-   <div class="fld"><label>เบอร์โทรบริษัท</label><input id="set-tel" type="tel" placeholder="08x-xxx-xxxx"></div>
+   <div class="fld"><label>ชื่อบริษัท</label><input id="set-company" placeholder="Nexus Service"></div>
+   <div class="fld"><label>เบอร์โทรบริษัท</label><input id="set-tel" type="tel" placeholder="0800000000"></div>
   </div>
-  <div class="fld" style="margin-bottom:8px;"><label>ที่อยู่บริษัท</label><input id="set-addr" placeholder="บ้านเลขที่ ถนน แขวง เขต จังหวัด"></div>
+  <div class="fld" style="margin-bottom:8px;"><label>ที่อยู่</label><input id="set-addr" placeholder="ที่อยู่บริษัท"></div>
   <div class="frow g2" style="margin-bottom:12px;">
-   <div class="fld"><label>เบอร์โทรช่าง</label><input id="set-tech-tel" type="tel" placeholder="08x-xxx-xxxx"></div>
-   <div class="fld"><label>ชื่อช่างหลัก</label><input id="set-tech-name" placeholder="สมศักดิ์ ช่างดี"></div>
+   <div class="fld"><label>LINE ID ร้าน</label><input id="set-line-id" placeholder="@nexusservice"></div>
+   <div class="fld"><label>Facebook / IG</label><input id="set-social" placeholder="nexus.service"></div>
   </div>
-  <!-- QR Code payment -->
-  <div class="sec-hd" style="margin-bottom:8px;">QR รับเงิน</div>
-  <div class="fld" style="margin-bottom:6px;"><label>URL รูป QR Code (PromptPay / พร้อมเพย์)</label>
-   <input id="set-qr-url" type="url" placeholder="https://... หรือวาง data:image/..."></div>
-  <div id="set-qr-preview" style="margin-bottom:12px;display:none;text-align:center;">
-   <img id="set-qr-img" style="width:120px;height:120px;border:1px solid var(--border);border-radius:8px;object-fit:contain;" src="">
-   <div style="font-size:9px;color:var(--dim);margin-top:4px;font-family:'DM Mono',monospace;">QR Preview</div>
+  <div class="frow g2" style="margin-bottom:12px;">
+   <div class="fld"><label>ชื่อช่างหลัก</label><input id="set-tech-name" placeholder="ชื่อช่าง"></div>
+   <div class="fld"><label>เบอร์โทรช่าง</label><input id="set-tech-tel" type="tel" placeholder="0800000000"></div>
   </div>
-  <div style="margin-bottom:12px;">
-   <div style="font-size:9px;color:var(--dim);margin-bottom:4px;font-family:'DM Mono',monospace;">หรืออัปโหลดรูป QR โดยตรง</div>
-   <input type="file" id="set-qr-file" accept="image/*" onchange="loadQRFile(this)" style="font-size:11px;color:var(--fg2);">
+
+  <!-- QR -->
+  <div class="sec-hd">QR รับเงิน (PromptPay)</div>
+  <div class="fld" style="margin-bottom:8px;"><label>URL หรือ Data URL ของรูป QR</label>
+   <input id="set-qr-url" type="url" placeholder="https://... หรืออัปโหลดด้านล่าง"></div>
+  <div id="set-qr-preview" style="margin-bottom:8px;display:none;text-align:center;">
+   <img id="set-qr-img" style="width:100px;height:100px;border:1px solid var(--border);border-radius:8px;object-fit:contain;">
+  </div>
+  <div style="margin-bottom:14px;">
+   <input type="file" id="set-qr-file" accept="image/*" onchange="loadQRFile(this)" style="font-size:12px;color:var(--fg2);">
+  </div>
+
+  <!-- Points -->
+  <div class="sec-hd">ระบบสะสมแต้ม</div>
+  <div class="setting-row">
+   <div><div class="setting-label">เปิดใช้งานสะสมแต้ม</div><div class="setting-sub">ลูกค้าได้แต้มจากค่าบริการ</div></div>
+   <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer;">
+    <input type="checkbox" id="set-pts-on" style="opacity:0;width:0;height:0;">
+    <span onclick="this.previousElementSibling.click();updatePtsToggle()" id="pts-toggle-ui" style="position:absolute;inset:0;background:var(--border2);border-radius:12px;transition:.2s;"></span>
+    <span id="pts-toggle-knob" style="position:absolute;left:3px;top:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2);"></span>
+   </label>
+  </div>
+  <div id="pts-config" style="margin-top:4px;">
+   <div class="frow g2" style="margin-bottom:8px;">
+    <div class="fld"><label>ทุกกี่บาท ได้ 1 แต้ม</label><input id="set-pts-per" type="number" value="1" min="1" placeholder="1"></div>
+    <div class="fld"><label>หน่วย</label><input id="set-pts-unit" value="บาท" placeholder="บาท"></div>
+   </div>
+   <div class="fld" style="margin-bottom:8px;"><label>รายละเอียดรางวัล (แสดงในใบเสร็จ)</label>
+    <textarea id="set-pts-reward" style="min-height:48px;" placeholder="เช่น 100 แต้ม = ส่วนลด 100 บาท&#10;200 แต้ม = ล้างแอร์ฟรี 1 ครั้ง"></textarea>
+   </div>
+   <div class="fld" style="margin-bottom:12px;"><label>อายุแต้ม (วัน)</label>
+    <input id="set-pts-expire" type="number" value="365" min="1" placeholder="365"></div>
+  </div>
+
+  <!-- Receipt config -->
+  <div class="sec-hd">ตั้งค่าใบเสร็จ</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;margin-bottom:12px;">
+   <label class="setting-row" style="cursor:pointer;padding:10px 0;border-right:none;">
+    <div class="setting-label">แสดงแต้มสะสม</div>
+    <input type="checkbox" id="rpt-show-pts" checked style="width:16px;height:16px;accent-color:var(--acc);">
+   </label>
+   <label class="setting-row" style="cursor:pointer;padding:10px 0 10px 12px;">
+    <div class="setting-label">แสดง QR รับเงิน</div>
+    <input type="checkbox" id="rpt-show-qr" checked style="width:16px;height:16px;accent-color:var(--acc);">
+   </label>
+   <label class="setting-row" style="cursor:pointer;padding:10px 0;border-right:none;">
+    <div class="setting-label">แสดงลายมือชื่อ</div>
+    <input type="checkbox" id="rpt-show-sig" checked style="width:16px;height:16px;accent-color:var(--acc);">
+   </label>
+   <label class="setting-row" style="cursor:pointer;padding:10px 0 10px 12px;">
+    <div class="setting-label">แสดงรูปภาพงาน</div>
+    <input type="checkbox" id="rpt-show-photos" checked style="width:16px;height:16px;accent-color:var(--acc);">
+   </label>
+   <label class="setting-row" style="cursor:pointer;padding:10px 0;grid-column:span 2;">
+    <div class="setting-label">แสดงผลทดสอบ</div>
+    <input type="checkbox" id="rpt-show-test" checked style="width:16px;height:16px;accent-color:var(--acc);">
+   </label>
   </div>
 
   <!-- Security -->
-  <div class="sec-hd" style="margin-bottom:8px;">ความปลอดภัย</div>
+  <div class="sec-hd">ความปลอดภัย</div>
   <div class="frow g2" style="margin-bottom:4px;">
    <div class="fld"><label>PIN ใหม่ (4 หลัก)</label><input id="set-pin" type="number" maxlength="4" placeholder="1234"></div>
    <div class="fld"><label>รหัสผ่าน</label><input id="set-pass" type="password" placeholder="password"></div>
   </div>
-  <div class="frow g2" style="margin-bottom:12px;">
-   <div class="fld"><label>ชื่อผู้ใช้</label><input id="set-user" placeholder="admin"></div>
-   <div class="fld"></div>
-  </div>
-  <button class="bigbtn accent" onclick="saveSettings()">บันทึกการตั้งค่า</button>
+  <div class="fld" style="margin-bottom:12px;"><label>ชื่อผู้ใช้</label><input id="set-user" placeholder="admin"></div>
+  <button class="bigbtn go" onclick="saveSettings()">บันทึกการตั้งค่า</button>
 
   <!-- Data -->
-  <div class="sec-hd" style="margin-top:14px;margin-bottom:8px;">ข้อมูล / Backup</div>
+  <div class="sec-hd" style="margin-top:14px;">ข้อมูล / Backup</div>
   <div class="setting-row">
-   <div><div class="setting-label">Export ข้อมูล</div><div class="setting-sub">บันทึกข้อมูลทั้งหมดเป็นไฟล์</div></div>
+   <div><div class="setting-label">Export ข้อมูล</div><div class="setting-sub">บันทึกข้อมูลทั้งหมดเป็นไฟล์ JSON</div></div>
    <button class="sm-btn" onclick="exportData()">Export</button>
   </div>
   <div class="setting-row">
-   <div><div class="setting-label">Import ข้อมูล</div><div class="setting-sub">โหลดข้อมูลจากไฟล์ backup</div></div>
+   <div><div class="setting-label">Import ข้อมูล</div><div class="setting-sub">โหลดจากไฟล์ backup</div></div>
    <button class="sm-btn" onclick="document.getElementById('import-file').click()">Import</button>
    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(this)">
   </div>
@@ -2832,8 +3815,8 @@ setInterval(()=>{sDB();},30000);
    <div><div class="setting-label">ล้างข้อมูลทั้งหมด</div><div class="setting-sub" style="color:var(--red);">ไม่สามารถกู้คืนได้</div></div>
    <button class="sm-btn" style="border-color:var(--red);color:var(--red);" onclick="clearAllData()">ล้าง</button>
   </div>
-  <div style="font-size:9px;color:var(--dim);font-family:'DM Mono',monospace;margin-top:8px;" id="set-db-info"></div>
-  <button class="bigbtn" style="margin-top:10px;" onclick="closeSheet('sh-settings');doLogout()">ออกจากระบบ</button>
+  <div style="font-size:9px;color:var(--dim);font-family:'IBM Plex Mono',monospace;margin-top:8px;" id="set-db-info"></div>
+  <button class="bigbtn" style="margin-top:10px;border-color:var(--dim);color:var(--dim);" onclick="closeSheet('sh-settings');doLogout()">ออกจากระบบ</button>
  </div>
 </div>
 
@@ -2843,8 +3826,8 @@ setInterval(()=>{sDB();},30000);
     <div id="confirm-title" style="font-size:15px;font-weight:600;color:var(--fg);margin-bottom:8px;"></div>
     <div id="confirm-msg" style="font-size:13px;color:var(--fg2);line-height:1.6;margin-bottom:18px;white-space:pre-line;"></div>
     <div style="display:flex;gap:8px;">
-      <button id="confirm-cancel" style="flex:1;padding:11px;border:1px solid var(--border2);border-radius:9px;background:var(--bg);color:var(--fg2);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">ยกเลิก</button>
-      <button id="confirm-ok" style="flex:1;padding:11px;border:none;border-radius:9px;background:var(--red);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">ยืนยัน</button>
+      <button id="confirm-cancel" style="flex:1;padding:11px;border:1px solid var(--border2);border-radius:9px;background:var(--bg);color:var(--fg2);font-size:13px;font-weight:500;cursor:pointer;font-family:'Sarabun',sans-serif;">ยกเลิก</button>
+      <button id="confirm-ok" style="flex:1;padding:11px;border:none;border-radius:9px;background:var(--red);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'Sarabun',sans-serif;">ยืนยัน</button>
     </div>
   </div>
 </div>
