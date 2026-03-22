@@ -208,33 +208,35 @@ if(location.hash.match(/^#p\/.+/)){
 <div id="login-screen">
  <div class="login-logo">Nexus</div>
  <div class="login-sub">Service Management</div>
- <div class="login-box">
+ <div class="login-box" id="login-box-inner">
+  <!-- Email login form -->
   <div id="login-form">
-   <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:rgba(255,255,255,.4);text-align:center;margin-bottom:24px;letter-spacing:.12em;text-transform:uppercase;">เข้าสู่ระบบ</div>
-   <div style="margin-bottom:12px;">
-    <div style="font-size:9px;color:rgba(255,255,255,.4);font-family:'IBM Plex Mono',monospace;margin-bottom:5px;text-transform:uppercase;letter-spacing:.08em;">Email</div>
-    <input id="l-email" type="email" placeholder="email@example.com" autocomplete="email"
-     style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#fff;border-radius:10px;font-size:14px;padding:12px 14px;width:100%;outline:none;font-family:'Sarabun',sans-serif;box-sizing:border-box;">
+   <div style="font-size:10px;color:rgba(255,255,255,.35);text-align:center;margin-bottom:20px;letter-spacing:.12em;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;">เข้าสู่ระบบ</div>
+   <div style="margin-bottom:10px;">
+    <div style="font-size:9px;color:rgba(255,255,255,.35);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">Email</div>
+    <input id="l-email" type="email" inputmode="email" autocomplete="username"
+     style="width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:10px;font-size:15px;padding:12px 14px;outline:none;font-family:'Sarabun',sans-serif;box-sizing:border-box;">
    </div>
-   <div style="margin-bottom:20px;">
-    <div style="font-size:9px;color:rgba(255,255,255,.4);font-family:'IBM Plex Mono',monospace;margin-bottom:5px;text-transform:uppercase;letter-spacing:.08em;">รหัสผ่าน</div>
-    <input id="l-pass" type="password" placeholder="••••••••" autocomplete="current-password"
-     style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#fff;border-radius:10px;font-size:14px;padding:12px 14px;width:100%;outline:none;font-family:'Sarabun',sans-serif;box-sizing:border-box;">
+   <div style="margin-bottom:18px;">
+    <div style="font-size:9px;color:rgba(255,255,255,.35);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">รหัสผ่าน</div>
+    <input id="l-pass" type="password" autocomplete="current-password"
+     style="width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:10px;font-size:15px;padding:12px 14px;outline:none;font-family:'Sarabun',sans-serif;box-sizing:border-box;"
+     onkeydown="if(event.key==='Enter')fbLogin()">
    </div>
-   <button onclick="fbLogin()" id="login-btn"
-    style="width:100%;padding:14px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:10px;color:#fff;font-family:'Sarabun',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
+   <button id="login-btn" onclick="fbLogin()"
+    style="width:100%;padding:14px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:10px;color:#fff;font-family:'Sarabun',sans-serif;font-size:15px;font-weight:600;cursor:pointer;">
     เข้าสู่ระบบ
    </button>
-   <div id="login-err" style="text-align:center;font-size:12px;color:rgba(255,120,120,.9);margin-top:12px;min-height:16px;"></div>
+   <div id="login-err" style="text-align:center;font-size:12px;color:rgba(255,100,100,.9);margin-top:10px;min-height:16px;line-height:1.5;"></div>
   </div>
+  <!-- Loading state -->
   <div id="login-loading" style="display:none;text-align:center;padding:40px 0;">
-   <div style="width:32px;height:32px;border:2px solid rgba(255,255,255,.15);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px;"></div>
-   <div style="font-size:12px;color:rgba(255,255,255,.4);">กำลังโหลดข้อมูล...</div>
+   <div class="fb-spin"></div>
+   <div style="font-size:12px;color:rgba(255,255,255,.35);">กำลังโหลด...</div>
   </div>
  </div>
- <div style="margin-top:32px;font-size:9px;color:rgba(255,255,255,.18);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.15em;">Nexus © 2025</div>
+ <div style="margin-top:28px;font-size:9px;color:rgba(255,255,255,.15);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.15em;">Nexus © 2025</div>
 </div>
-<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
 <div id="shell">
  <div id="topbar">
@@ -243,10 +245,8 @@ if(location.hash.match(/^#p\/.+/)){
    <span class="topbar-divider"></span>
    <span id="pg-title">Dashboard</span>
   </div>
-  <div id="tb-user-info" style="display:flex;align-items:center;gap:6px;margin-right:4px;">
-   <span id="tb-user-email" style="font-size:10px;color:var(--dim);font-family:'IBM Plex Mono',monospace;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
-  </div>
   <div id="tb-acts" style="display:flex;gap:4px;align-items:center;">
+   <span id="tb-user-email" style="font-size:10px;color:var(--dim);font-family:'IBM Plex Mono',monospace;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:none;"></span>
    <button class="tbtn" onclick="openSheet('sh-cust','add')">+ ลูกค้า</button>
    <button class="tbtn" onclick="openSheet('sh-job','add')">+ งาน</button>
    <button class="tbtn icon" onclick="openSheet('sh-settings')" title="ตั้งค่า" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;border-radius:50%;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></button>
@@ -688,7 +688,7 @@ if(location.hash.match(/^#p\/.+/)){
   <div class="sh-handle"></div>
   <div class="sh-title"><span>เพิ่ม/แก้ไขงาน</span><button class="sm-btn" onclick="closeSheet('sh-job')">ปิด</button></div>
   <input type="hidden" id="sj-id">
-  <div class="fld" style="margin-bottom:8px;"><label>ลูกค้า</label><select id="sj-cust" onchange="updateJobACSel();showJobACInfo()" style="width:100%;background:var(--bar);border:1px solid var(--border2);border-radius:var(--r-sm);color:var(--fg);font-size:12px;padding:7px 9px;"></select></div>
+  <div class="fld" style="margin-bottom:8px;"><label>ลูกค้า</label><select id="sj-cust" onchange="updateJobACSel()" style="width:100%;background:var(--bar);border:1px solid var(--border2);border-radius:var(--r-sm);color:var(--fg);font-size:12px;padding:7px 9px;"></select></div>
   <div class="fld" style="margin-bottom:8px;"><label>เครื่องแอร์</label><select id="sj-ac" onchange="showJobACInfo()" style="width:100%;background:var(--bar);border:1px solid var(--border2);border-radius:var(--r-sm);color:var(--fg);font-size:12px;padding:7px 9px;"></select></div>
   <!-- AC quick info -->
   <div id="sj-ac-info" style="display:none;background:var(--bar2);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 10px;margin-bottom:8px;font-size:10px;">
@@ -792,14 +792,27 @@ function doLogin(){
   // Init stuff that needs the shell visible
   setTimeout(()=>{drawRoom();drawDashChart();},150);
 }
+async function fbChangePassword(){
+  const p=document.getElementById('set-new-pass')?.value||'';
+  if(p.length<6){showToast('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');return;}
+  if(!_user){showToast('กรุณา login ก่อน');return;}
+  try{
+    await _user.updatePassword(p);
+    document.getElementById('set-new-pass').value='';
+    showToast('เปลี่ยนรหัสผ่านแล้ว');
+  }catch(e){
+    if(e.code==='auth/requires-recent-login')showToast('กรุณา logout แล้ว login ใหม่ก่อน');
+    else showToast('Error: '+e.message);
+  }
+}
 function doLogout(){
-  if(_fbAuth)_fbAuth.signOut().then(()=>{
-    // Unsubscribe Firestore listeners
-    _fbUnsubscribe.forEach(u=>u());_fbUnsubscribe=[];
+  if(_auth)_auth.signOut().then(()=>{
+    _unsubs.forEach(u=>u());_unsubs=[];
     DB={customers:[],jobs:[],tests:[],settings:{},nid:1};
   });
 }
 function saveSettings(){
+  // Auth handled by Firebase
   const qrNew=document.getElementById('set-qr-url').value.trim();
   const g=n=>{const e=document.getElementById(n);return e?e.value.trim():''};
   const gc=n=>{const e=document.getElementById(n);return e?e.checked:true};
@@ -820,7 +833,7 @@ function saveSettings(){
     rptShowPhotos:gc('rpt-show-photos'),
     rptShowTest:gc('rpt-show-test'),
   };
-  sDB();
+  _fbSaveSettings();
   closeSheet('sh-settings');
   showToast('บันทึกการตั้งค่าแล้ว');
 }
@@ -833,7 +846,7 @@ function calcPoints(price){
   return Math.floor((price||0)/(s.ptsPer||1));
 }
 function getCustomerPoints(cid){
-  return jobsByCust(String(cid)).filter(j=>j.status==='done')
+  return (DB.jobs||[]).filter(j=>j.cid===cid&&j.status==='done')
     .reduce((sum,j)=>sum+calcPoints(j.price||0),0);
 }
 function renderPointsBadge(cid){
@@ -907,35 +920,14 @@ function exportData(){
 function importData(input){
   const file=input.files[0];if(!file)return;
   const r=new FileReader();
-  r.onload=async e=>{
+  r.onload=e=>{
     try{
       const d=JSON.parse(e.target.result);
       if(!d.customers)throw new Error('ไฟล์ไม่ถูกต้อง');
       showConfirm('Import ข้อมูล',
-        `Import ลูกค้า ${d.customers.length} คน งาน ${(d.jobs||[]).length} งาน\nข้อมูลจะถูกเพิ่มเข้า Cloud Database`,
-        'Import',async()=>{
-        showToast('กำลัง import...', 10000);
-        if(_fbDb){
-          // Upload customers
-          for(const c of (d.customers||[])){
-            const data={...c};delete data._fid;
-            await _fbDb.collection('customers').add(data);
-          }
-          // Upload jobs
-          for(const j of (d.jobs||[])){
-            const data={...j};delete data._fid;
-            await _fbDb.collection('jobs').add(data);
-          }
-          // Upload tests
-          for(const t of (d.tests||[])){
-            const data={...t};delete data._fid;
-            await _fbDb.collection('tests').add(data);
-          }
-          // Settings
-          if(d.settings)await _fbDb.collection('settings').doc('main').set(d.settings);
-        }
-        showToast('Import สำเร็จ! ' + (d.customers||[]).length + ' ลูกค้า');
-        closeSheet('sh-settings');
+        `นำเข้า ${d.customers.length} ลูกค้า, ${(d.jobs||[]).length} งาน\nข้อมูลจะถูกเพิ่มเข้า Cloud Database`,
+        'Import',()=>{
+          _fbImport(d).then(()=>closeSheet('sh-settings')).catch(e=>showToast('Error: '+e.message));
       },false);
     }catch(err){showToast('ไฟล์ไม่ถูกต้อง: '+err.message);}
   };
@@ -943,19 +935,17 @@ function importData(input){
   input.value='';
 }
 function clearAllData(){
-  showConfirm('ล้างข้อมูลทั้งหมด','ข้อมูลลูกค้า งาน และทดสอบทั้งหมดจะถูกลบถาวรจาก Cloud ไม่สามารถกู้คืนได้','ล้างเลย',async()=>{
-    showToast('กำลังลบข้อมูล...',5000);
-    if(_fbDb){
-      const cols=['customers','jobs','tests'];
-      for(const col of cols){
-        const snap=await _fbDb.collection(col).get();
-        const batch=_fbDb.batch();
+  showConfirm('ล้างข้อมูลทั้งหมด','ลบข้อมูลทั้งหมดออกจาก Cloud? ไม่สามารถกู้คืนได้','ล้างเลย',async()=>{
+    showToast('กำลังลบ…',8000);
+    if(_db){
+      for(const col of['customers','jobs','tests']){
+        const snap=await _db.collection(col).get();
+        const batch=_db.batch();
         snap.docs.forEach(d=>batch.delete(d.ref));
-        await batch.commit();
+        if(snap.docs.length)await batch.commit();
       }
     }
-    closeSheet('sh-settings');
-    showToast('ล้างข้อมูลแล้ว');
+    closeSheet('sh-settings');showToast('ล้างข้อมูลแล้ว');
   });
 }
 
@@ -1032,9 +1022,9 @@ function handleJobPhotos(input){
 
 
 // ══════════════════════════════════════════════════════════════════
-// FIREBASE CONFIG & DB
+// FIREBASE — Cloud sync + Auth
 // ══════════════════════════════════════════════════════════════════
-const FB_CONFIG={
+const _FB={
   apiKey:"AIzaSyCUU1Kh9j1scdEWDviVFKBwKP3U3vlh0ro",
   authDomain:"nexusdatabase-800a0.firebaseapp.com",
   projectId:"nexusdatabase-800a0",
@@ -1042,87 +1032,70 @@ const FB_CONFIG={
   messagingSenderId:"797576264170",
   appId:"1:797576264170:web:a8a92f1bb41a3dd1825a93"
 };
+let _db=null,_auth=null,_user=null,_unsubs=[];
 
-let _fbApp=null,_fbDb=null,_fbAuth=null,_fbUser=null;
-let DB={customers:[],jobs:[],tests:[],settings:{},nid:1};
-let _fbUnsubscribe=[];
-
-// Initialize Firebase (loaded from CDN)
-function initFirebase(){
-  if(_fbApp)return Promise.resolve();
+function _loadFBSdks(){
   return new Promise((res,rej)=>{
-    if(window.firebase){_setupFb();res();return;}
-    // Load Firebase SDKs
-    const sdks=[
-      'https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js',
-      'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js',
-      'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js'
-    ];
-    let loaded=0;
-    sdks.forEach(src=>{
+    if(window.firebase){res();return;}
+    let n=0;
+    ['https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js',
+     'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js',
+     'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js'
+    ].forEach(src=>{
       const s=document.createElement('script');s.src=src;
-      s.onload=()=>{if(++loaded===sdks.length){_setupFb();res();}};
+      s.onload=()=>{if(++n===3){firebase.initializeApp(_FB);_auth=firebase.auth();_db=firebase.firestore();res();}};
       s.onerror=rej;document.head.appendChild(s);
     });
   });
 }
-function _setupFb(){
-  _fbApp=firebase.initializeApp(FB_CONFIG);
-  _fbAuth=firebase.auth();
-  _fbDb=firebase.firestore();
-}
 
-// Firebase Login
+// ── Firebase Login ──────────────────────────────────────────────
 async function fbLogin(){
-  const email=document.getElementById('l-email').value.trim();
-  const pass=document.getElementById('l-pass').value;
+  const email=(document.getElementById('l-email').value||'').trim();
+  const pass=document.getElementById('l-pass').value||'';
   const errEl=document.getElementById('login-err');
   const btn=document.getElementById('login-btn');
-  const form=document.getElementById('login-form');
-  const loading=document.getElementById('login-loading');
+  errEl.textContent='';
   if(!email||!pass){errEl.textContent='กรุณาใส่ email และรหัสผ่าน';return;}
   btn.disabled=true;btn.textContent='กำลังเข้าสู่ระบบ...';
-  errEl.textContent='';
   try{
-    await initFirebase();
-    await _fbAuth.signInWithEmailAndPassword(email,pass);
+    await _loadFBSdks();
+    await _auth.signInWithEmailAndPassword(email,pass);
     // onAuthStateChanged will handle the rest
   }catch(e){
     btn.disabled=false;btn.textContent='เข้าสู่ระบบ';
-    const msgs={
-      'auth/user-not-found':'ไม่พบ email นี้',
-      'auth/wrong-password':'รหัสผ่านไม่ถูกต้อง',
-      'auth/invalid-email':'Email ไม่ถูกต้อง',
-      'auth/too-many-requests':'ลองใหม่ในอีกสักครู่',
-      'auth/network-request-failed':'ไม่มีอินเตอร์เน็ต'
-    };
-    errEl.textContent=msgs[e.code]||('Error: '+e.message);
+    const m={'auth/user-not-found':'ไม่พบ email นี้','auth/wrong-password':'รหัสผ่านไม่ถูกต้อง',
+             'auth/invalid-email':'Email ไม่ถูกต้อง','auth/too-many-requests':'ลองใหม่ในอีกสักครู่',
+             'auth/invalid-credential':'Email หรือรหัสผ่านไม่ถูกต้อง',
+             'auth/network-request-failed':'ไม่มีอินเตอร์เน็ต'};
+    errEl.textContent=m[e.code]||e.message;
   }
 }
 
-// Auth state observer - runs on every page load
-async function startAuthObserver(){
-  await initFirebase();
-  _fbAuth.onAuthStateChanged(async user=>{
-    // Check if this is a customer portal link - skip auth
-    if(location.hash.match(/^#p\/.+/))return;
-    if(user){
-      _fbUser=user;
-      // Show loading in login screen
+// ── Auth Observer ───────────────────────────────────────────────
+async function _startAuth(){
+  await _loadFBSdks();
+  _auth.onAuthStateChanged(async u=>{
+    if(location.hash.match(/^#p\/.+/))return; // portal mode — skip auth
+    if(u){
+      _user=u;
+      // Show loading
       document.getElementById('login-form').style.display='none';
       document.getElementById('login-loading').style.display='block';
-      // Load all data from Firestore
-      await loadAllFromFirestore();
-      // Update user display
-      const userEl=document.getElementById('tb-user-email');
-      if(userEl)userEl.textContent=user.email;
-      // Hide login
+      // Load all data
+      await _loadAll();
+      // Show email in topbar
+      const el=document.getElementById('tb-user-email');
+      if(el){el.textContent=u.email;el.style.display='block';}
+      // Hide login, show app
       document.getElementById('login-screen').style.display='none';
-      renderDash();buildChecklist();
+      // Init app
+      renderDash();buildChecklist();initRoomCanvas();
+      document.getElementById('sj-date').value=new Date().toISOString().slice(0,10);
       setTimeout(()=>{drawRoom();drawDashChart();},150);
     }else{
-      _fbUser=null;
-      // Show login screen
+      _user=null;
+      _unsubs.forEach(u=>u());_unsubs=[];
       document.getElementById('login-screen').style.display='flex';
       document.getElementById('login-form').style.display='block';
       document.getElementById('login-loading').style.display='none';
@@ -1132,147 +1105,148 @@ async function startAuthObserver(){
   });
 }
 
-// Load all data from Firestore into local DB
-async function loadAllFromFirestore(){
-  if(!_fbDb)return;
-  // Unsubscribe old listeners
-  _fbUnsubscribe.forEach(u=>u());_fbUnsubscribe=[];
-
-  // Real-time listeners for live sync
-  const cuSub=_fbDb.collection('customers').onSnapshot(snap=>{
+// ── Load all data with real-time listeners ──────────────────────
+async function _loadAll(){
+  _unsubs.forEach(u=>u());_unsubs=[];
+  // Customers
+  const u1=_db.collection('customers').onSnapshot(snap=>{
     DB.customers=snap.docs.map(d=>({...d.data(),_fid:d.id}));
-    renderDash();
     if(_curPage==='custs')renderCusts();
+    if(_curPage==='home')renderDash();
     popAllSels();popJobCustSel();
-    if(_curPage==='sched')renderSched(_schedMode||'week');
     if(_curPage==='more'){loadMapCustSel();loadRptSelects();}
   });
-  const joSub=_fbDb.collection('jobs').onSnapshot(snap=>{
+  // Jobs
+  const u2=_db.collection('jobs').onSnapshot(snap=>{
     DB.jobs=snap.docs.map(d=>({...d.data(),_fid:d.id}));
-    renderDash();
     if(_curPage==='jobs')renderJobs();
+    if(_curPage==='home')renderDash();
     if(_curPage==='sched')renderSched(_schedMode||'week');
     if(_curPage==='more')loadRptSelects();
-    popAllSels();
   });
-  const teSub=_fbDb.collection('tests').onSnapshot(snap=>{
+  // Tests
+  const u3=_db.collection('tests').onSnapshot(snap=>{
     DB.tests=snap.docs.map(d=>({...d.data(),_fid:d.id}));
   });
-  const setSnap=await _fbDb.collection('settings').doc('main').get();
-  if(setSnap.exists)DB.settings=setSnap.data();
-  else DB.settings={};
-
-  _fbUnsubscribe=[cuSub,joSub,teSub];
-  // Wait for first snapshots to arrive before showing app
-  setTimeout(()=>{
-    renderDash();
-    if(_curPage!=='home') goNav(_curPage);
-  },500);
+  // Settings (one-time read, not real-time)
+  try{
+    const s=await _db.collection('settings').doc('main').get();
+    DB.settings=s.exists?s.data():{};
+  }catch(e){DB.settings={};}
+  _unsubs=[u1,u2,u3];
   showToast('โหลดข้อมูลแล้ว');
 }
 
-// Save to Firestore (replaces old sDB)
-async function sDB(){
-  // Settings only - customers/jobs/tests saved individually
-  if(!_fbDb||!DB.settings)return;
-  try{await _fbDb.collection('settings').doc('main').set(DB.settings);}catch(e){}
+// ── ID helpers ──────────────────────────────────────────────────
+// Customers may have old numeric id OR new Firestore _fid
+// Always use these helpers — never compare IDs directly
+function _cKey(c){return c._fid||String(c.id||'');}
+function _cBy(id){
+  const s=String(id||'');
+  return DB.customers.find(x=>x._fid===s||String(x.id)===s);
 }
-
-// Old lDB kept as no-op (data comes from Firestore now)
-function lDB(){}
-
-// Firebase CRUD helpers
-async function fbSaveCustomer(c){
-  if(!_fbDb)return;
-  const data=JSON.parse(JSON.stringify(c)); // strips undefined
-  delete data._fid; // don't store _fid as a field
-  if(c._fid){
-    await _fbDb.collection('customers').doc(c._fid).set(data);
-  }else{
-    const ref=await _fbDb.collection('customers').add(data);
-    c._fid=ref.id;
-  }
+function _jKey(j){return j._fid||String(j.id||'');}
+function _jBy(id){
+  const s=String(id||'');
+  return DB.jobs.find(x=>x._fid===s||String(x.id)===s);
 }
-async function fbDeleteCustomer(fid){
-  if(!_fbDb||!fid)return;
-  // Find the customer to get their numeric id too (for old jobs)
-  const c=custById(fid);
-  await _fbDb.collection('customers').doc(fid).delete();
-  // Delete jobs that match by _fid OR by old numeric id
-  const queries=[_fbDb.collection('jobs').where('cid','==',fid).get()];
-  if(c&&c.id)queries.push(_fbDb.collection('jobs').where('cid','==',c.id).get());
-  if(c&&c.id)queries.push(_fbDb.collection('jobs').where('cid','==',String(c.id)).get());
-  const snaps=await Promise.all(queries);
-  const seen=new Set();
-  const batch=_fbDb.batch();
-  snaps.forEach(snap=>snap.docs.forEach(d=>{if(!seen.has(d.id)){seen.add(d.id);batch.delete(d.ref);}}));
-  if(seen.size>0)await batch.commit();
-  showToast('ลบลูกค้าแล้ว');
-}
-async function fbSaveJob(j){
-  if(!_fbDb)return;
-  const data=JSON.parse(JSON.stringify(j));
-  delete data._fid; // don't store _fid as a field
-  if(j._fid){
-    await _fbDb.collection('jobs').doc(j._fid).set(data);
-  }else{
-    const ref=await _fbDb.collection('jobs').add(data);
-    j._fid=ref.id;
-  }
-}
-async function fbDeleteJob(fid){
-  if(!_fbDb||!fid)return;
-  await _fbDb.collection('jobs').doc(fid).delete();
-}
-async function fbSaveTest(t){
-  if(!_fbDb)return;
-  const data=JSON.parse(JSON.stringify(t));
-  await _fbDb.collection('tests').add(data);
-}
-
-// Get next ID (Firestore uses string IDs but we keep numeric for compatibility)
-function nextId(){return DB.nid?++DB.nid:Date.now();}
-
-// ══════════════════════════════════════════════════════════════════
-// FIREBASE USER MANAGEMENT
-// ══════════════════════════════════════════════════════════════════
-async function changePassword(){
-  const newPass=document.getElementById('set-new-pass')?.value;
-  if(!newPass||newPass.length<6){showToast('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');return;}
-  if(!_fbUser){showToast('กรุณา login ก่อน');return;}
-  try{
-    await _fbUser.updatePassword(newPass);
-    document.getElementById('set-new-pass').value='';
-    showToast('เปลี่ยนรหัสผ่านแล้ว');
-  }catch(e){
-    if(e.code==='auth/requires-recent-login'){
-      showToast('กรุณา logout แล้ว login ใหม่ก่อนเปลี่ยนรหัสผ่าน');
-    }else{
-      showToast('Error: '+e.message);
-    }
-  }
-}
-
-// ══════════════════════════════════════════════════════════════════
-// ID HELPERS - Firestore uses string _fid, legacy uses numeric id
-// ══════════════════════════════════════════════════════════════════
-function custById(id){return custById(id);}
-function jobById(id){return DB.jobs.find(x=>x._fid===id||x._fid===String(id)||String(x.id)===String(id));}
-function custKey(c){return c._fid||String(c.id);}  // use as HTML onclick arg
-function jobKey(j){return j._fid||String(j.id);}
-function jobsByCust(cid){
+function _jobsOf(cid){
   if(!cid)return[];
-  const cid_s=String(cid);
-  // Find the customer to get all their possible IDs
-  const c=DB.customers.find(x=>x._fid===cid_s||String(x.id)===cid_s);
-  if(!c)return(DB.jobs||[]).filter(j=>String(j.cid)===cid_s);
-  // Match by _fid OR by numeric id OR by any string form
-  const fid=c._fid||'';
-  const nid=String(c.id||'');
-  return(DB.jobs||[]).filter(j=>{
-    const jcid=String(j.cid||'');
-    return jcid===fid||jcid===nid||jcid===cid_s;
-  });
+  const s=String(cid);
+  const c=_cBy(s);
+  if(!c)return DB.jobs.filter(j=>String(j.cid)===s);
+  const fid=c._fid||'',nid=String(c.id||'');
+  return DB.jobs.filter(j=>{const jc=String(j.cid||'');return jc===fid||jc===nid||jc===s;});
+}
+
+// ── Firebase CRUD (replaces local-only sDB) ─────────────────────
+async function _fbSaveCust(c){
+  if(!_db)return;
+  const d={...c};delete d._fid;
+  const data=JSON.parse(JSON.stringify(d));
+  if(c._fid) await _db.collection('customers').doc(c._fid).set(data);
+  else{const r=await _db.collection('customers').add(data);c._fid=r.id;}
+}
+async function _fbDelCust(c){
+  if(!_db||!c._fid)return;
+  // Delete customer doc
+  await _db.collection('customers').doc(c._fid).delete();
+  // Delete all their jobs (by _fid and by old numeric id)
+  const fid=c._fid,nid=String(c.id||'');
+  const queries=[
+    _db.collection('jobs').where('cid','==',fid).get(),
+    _db.collection('jobs').where('cid','==',nid).get(),
+  ];
+  const snaps=await Promise.all(queries);
+  const seen=new Set();const batch=_db.batch();
+  snaps.forEach(s=>s.docs.forEach(d=>{if(!seen.has(d.id)){seen.add(d.id);batch.delete(d.ref);}}));
+  if(seen.size)await batch.commit();
+}
+async function _fbSaveJob(j){
+  if(!_db)return;
+  const d={...j};delete d._fid;
+  const data=JSON.parse(JSON.stringify(d));
+  if(j._fid) await _db.collection('jobs').doc(j._fid).set(data);
+  else{const r=await _db.collection('jobs').add(data);j._fid=r.id;}
+}
+async function _fbDelJob(j){if(_db&&j._fid)await _db.collection('jobs').doc(j._fid).delete();}
+async function _fbSaveTest(t){
+  if(!_db)return;
+  const data=JSON.parse(JSON.stringify(t));
+  await _db.collection('tests').add(data);
+}
+async function _fbSaveSettings(){
+  if(!_db||!DB.settings)return;
+  try{await _db.collection('settings').doc('main').set(DB.settings);}catch(e){}
+}
+
+// ── Import from backup — uploads entire JSON to Firestore ───────
+async function _fbImport(data){
+  if(!_db)return;
+  showToast('กำลัง import…',10000);
+  // Upload customers first, build id→_fid map for job cid remapping
+  const cidMap={};
+  for(const c of(data.customers||[])){
+    const d={...c};delete d._fid;
+    const clean=JSON.parse(JSON.stringify(d));
+    const r=await _db.collection('customers').add(clean);
+    cidMap[String(c.id)]=r.id; // map old numeric id → new _fid
+  }
+  // Upload jobs, remap cid to new _fid
+  for(const j of(data.jobs||[])){
+    const d={...j};delete d._fid;
+    if(cidMap[String(d.cid)])d.cid=cidMap[String(d.cid)];
+    await _db.collection('jobs').add(JSON.parse(JSON.stringify(d)));
+  }
+  // Upload tests
+  for(const t of(data.tests||[])){
+    const d={...t};delete d._fid;
+    await _db.collection('tests').add(JSON.parse(JSON.stringify(d)));
+  }
+  // Settings
+  if(data.settings)await _db.collection('settings').doc('main').set(data.settings);
+  showToast(`Import สำเร็จ — ${(data.customers||[]).length} ลูกค้า, ${(data.jobs||[]).length} งาน`);
+}
+
+let _schedMode='week';
+let DB={customers:[],jobs:[],tests:[],nid:1};
+function sDB(){try{localStorage.setItem('acp2',JSON.stringify(DB));}catch(e){}}
+function lDB(){
+ try{const d=localStorage.getItem('acp2');if(d)DB=JSON.parse(d);}catch(e){}
+ if(!DB.customers.length){
+  DB.customers=[
+   {id:1,fn:'สมชาย',ln:'ใจดี',ph:'089-123-4567',li:'@somchai',ad:'123 ถ.สุขุมวิท คลองเตย กรุงเทพ',lat:13.7220,lng:100.5650,note:'บ้านชั้นเดียว',
+    acs:[{br:'Mitsubishi',md:'MSY-GN13VF',btu:13000,type:'inverter',cop:3.5,age:3,sn:'MT001',setT:25}]},
+   {id:2,fn:'สมหญิง',ln:'รักดี',ph:'062-456-7890',li:'@somying',ad:'456 ถ.พหลโยธิน จตุจักร กรุงเทพ',lat:13.8299,lng:100.5618,note:'คอนโด ชั้น 5',
+    acs:[{br:'Daikin',md:'FTKM15TV',btu:15000,type:'inverter',cop:4.0,age:1,sn:'DK002',setT:24},
+      {br:'Samsung',md:'AR12BSHZ',btu:12000,type:'fixed',cop:2.8,age:5,sn:'SM003',setT:25}]}
+  ];
+  DB.jobs=[
+   {id:1,cid:1,aci:0,type:'service',date:new Date().toISOString().slice(0,10),time:'09:00',tech:'สมศักดิ์',price:800,detail:'ล้างแอร์ทำความสะอาด',status:'done'},
+   {id:2,cid:2,aci:0,type:'refill',date:new Date().toISOString().slice(0,10),time:'13:00',tech:'สมบัติ',price:1200,detail:'เติมน้ำยา R-410A',status:'pending'}
+  ];
+  DB.nid=10;sDB();
+ }
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -1308,7 +1282,7 @@ function renderDash(){
  document.getElementById('d-nd').textContent=DB.jobs.filter(j=>j.status==='done'&&j.date.startsWith(mo)).length;
  // Recent jobs
  document.getElementById('d-jobs').innerHTML=DB.jobs.slice(-4).reverse().map(j=>{
-  const c=custById(j.cid)||{fn:'?',ln:''};
+  const c=_cBy(j.cid)||{fn:'?',ln:'',acs:[]};
   return`<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)33;">
    <div><div style="font-size:12px;">${jLbl(j.type)} — ${c.fn} ${c.ln}</div>
     <div style="font-size:9px;color:var(--dim);font-family:'IBM Plex Mono',monospace;">${j.date} · ${j.tech||'—'}</div></div>
@@ -1356,8 +1330,7 @@ function renderCusts(){
  const q=(document.getElementById('cust-srch')?.value||'').toLowerCase();
  const list=DB.customers.filter(c=>(c.fn+' '+c.ln+c.ph+(c.ad||'')).toLowerCase().includes(q));
  document.getElementById('cust-list').innerHTML=list.length?list.map(c=>{
-  const ck=custKey(c);
-  const jobCount=jobsByCust(ck).length;
+  const ck=_cKey(c);const jobCount=_jobsOf(ck).length;
   const ptsBadge=renderPointsBadge(ck);
   return`<div class="card anim" style="padding:12px 14px;margin-bottom:8px;">
    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
@@ -1401,21 +1374,23 @@ function showConfirm(title, msg, okLabel, onOk, danger=true){
 }
 
 function deleteCust(id){
-  const c=custById(id);
-  if(!c){showToast('ไม่พบข้อมูลลูกค้า');return;}
-  const ck=custKey(c);
-  const jobs=jobsByCust(ck);
+  const c=_cBy(id);const ck=c?_cKey(c):String(id);
+  if(!c) return;
+  const jobCount=_jobsOf(ck).length;
   showConfirm(
     'ลบลูกค้า',
-    `ลบ "${c.fn} ${c.ln}" และงาน ${jobs.length} งาน?
+    `ลบ "${c.fn} ${c.ln}" และงานทั้งหมด ${jobCount} งาน?
 ไม่สามารถกู้คืนได้`,
     'ลบเลย',
     ()=>{
-      if(c._fid){
-        fbDeleteCustomer(c._fid).catch(e=>showToast('Error: '+e.message));
-      }
+      const c2=_cBy(id);
+      if(c2)_fbDelCust(c2).catch(e=>showToast('Error: '+e.message));
+      DB.tests=(DB.tests||[]).filter(t=>t.cid!==id);
+      sDB();
+      // Close detail sheet if open
       const detSheet=document.getElementById('sh-cust-detail');
       if(detSheet&&detSheet.classList.contains('open')) closeSheet('sh-cust-detail');
+      renderCusts();renderDash();popAllSels();
     }
   );
 }
@@ -1423,9 +1398,9 @@ function deleteCust(id){
 function openGmap(lat,lng){window.open(`https://www.google.com/maps?q=${lat},${lng}&z=17`,'_blank');}
 
 function viewCust(id){
- const c=custById(id);if(!c)return;
- const ck=custKey(c);
- const jobs=jobsByCust(ck);
+ const c=_cBy(id);if(!c)return;
+ const ck=_cKey(c);
+ const jobs=_jobsOf(ck);
  document.getElementById('sh-cd-name').textContent=`${c.fn} ${c.ln}`;
  document.getElementById('sh-cd-body').innerHTML=`
   <div class="frow g2" style="margin-bottom:10px;">
@@ -1456,7 +1431,7 @@ function viewCust(id){
    <button class="bigbtn" style="flex:1;margin:0;min-width:100px;" onclick="goNav('more');setTimeout(()=>{moreTab('report',document.querySelector('#pg-more .tab-btn:nth-child(2)'));document.getElementById('rpt-cust').value='${ck}';loadRptJobs();buildReport();},200);closeSheet('sh-cust-detail')">ใบเสร็จ</button>
    <button class="bigbtn red" style="flex:1;margin:0;min-width:100px;" onclick="deleteCust('${ck}')">ลบลูกค้า</button>
   </div>
-  <button class="bigbtn" style="margin-top:8px;border-color:var(--gold);color:var(--gold);" onclick="closeSheet('sh-cust-detail');openPortal('${ck}')">
+  <button class="bigbtn" style="margin-top:8px;border-color:var(--gold);color:var(--gold);" onclick="closeSheet('sh-cust-detail');openPortal(${id})">
    ดูหน้าพอร์ทัลลูกค้า
   </button>
   <button class="bigbtn" style="border-color:var(--acc);color:var(--acc);" onclick="showQRSheet('${ck}')">
@@ -1482,9 +1457,9 @@ function openSheet(id,mode){
   sv('set-line-id',s.lineId||'');
   sv('set-social',s.social||'');
   if(s.qrUrl&&se('set-qr-preview')&&se('set-qr-img')){se('set-qr-img').src=s.qrUrl;se('set-qr-preview').style.display='block';}
-  // Show current logged-in user
-  const emailEl=document.getElementById('set-account-email');
-  if(emailEl&&_fbUser)emailEl.textContent=_fbUser.email||'';
+  // account managed by Firebase
+  const emailEl2=document.getElementById('set-account-email');
+  if(emailEl2&&_user)emailEl2.textContent=_user.email||'';
   // Points
   const pon=s.ptsEnabled!==false;
   sc('set-pts-on',pon);
@@ -1526,14 +1501,14 @@ function openSheet(id,mode){
    initSig('sig-cust');initSig('sig-tech');
    clearSig('sig-cust');clearSig('sig-tech');
    const jid=document.getElementById('sj-id').value;
-   if(jid){const j=jobById(jid);if(j&&j.photos){_jobPhotos=[...j.photos];renderJobPhotos();}}
+   if(jid){const j=DB.jobs.find(x=>x.id===+jid);if(j&&j.photos){_jobPhotos=[...j.photos];renderJobPhotos();}}
   },80);
  }
 }
 function closeSheet(id){const el=document.getElementById(id);if(el)el.classList.remove('open');}
 
 function editCust(id){
- const c=custById(id);if(!c)return;
+ const c=_cBy(id);if(!c)return;
  document.getElementById('sh-cust-title').textContent='Edit แก้ไขลูกค้า';
  document.getElementById('sc-id').value=c._fid||c.id;
  document.getElementById('sc-fn').value=c.fn||'';
@@ -1573,9 +1548,9 @@ function renderAcRows(){
 }
 
 function saveCust(){
- const fid=document.getElementById('sc-id').value; // Firestore ID
+ const id=document.getElementById('sc-id').value;
  const c={
-  id:fid||('c'+Date.now()),
+  id:id?+id:DB.nid++,
   fn:document.getElementById('sc-fn').value.trim(),
   ln:document.getElementById('sc-ln').value.trim(),
   ph:document.getElementById('sc-ph').value.trim(),
@@ -1586,12 +1561,11 @@ function saveCust(){
   note:document.getElementById('sc-note').value.trim(),
   acs:_shACs
  };
- if(fid)c._fid=fid;
  if(!c.fn){showToast('กรุณาใส่ชื่อ');return;}
- fbSaveCustomer(c).then(()=>{
-   closeSheet('sh-cust');
-   showToast('บันทึกข้อมูลลูกค้าแล้ว');
- }).catch(e=>showToast('Error: '+e.message));
+ if(id){const i=DB.customers.findIndex(x=>x.id===c.id);if(i>=0)DB.customers[i]=c;}
+ else DB.customers.push(c);
+ sDB();closeSheet('sh-cust');renderCusts();renderDash();popAllSels();
+ showToast('บันทึกข้อมูลลูกค้าแล้ว');
 }
 
 function gpsMe(){
@@ -1609,7 +1583,7 @@ function renderJobs(){
  const f=document.getElementById('job-filter')?.value||'';
  const list=DB.jobs.filter(j=>!f||j.status===f).sort((a,b)=>b.date.localeCompare(a.date));
  document.getElementById('job-list').innerHTML=list.map(j=>{
-  const c=custById(j.cid)||{fn:'?',ln:'',acs:[]};
+  const c=_cBy(j.cid)||{fn:'?',ln:''};
   const ac=(c.acs||[])[j.aci||0];
   return`<div class="card anim" style="margin-bottom:6px;">
    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
@@ -1625,47 +1599,43 @@ function renderJobs(){
    </div>
    ${j.detail?`<div style="font-size:11px;color:var(--fg2);margin-bottom:8px;">${j.detail}</div>`:''}
    <div style="display:flex;gap:4px;flex-wrap:wrap;">
-    <button class="sm-btn" onclick="editJob('${jobKey(j)}')">Edit</button>
+    <button class="sm-btn" onclick="editJob('${_jKey(j)}')">Edit</button>
     <button class="sm-btn" onclick="simFromCust('${j.cid}',${j.aci||0})">Sim</button>
     <button class="sm-btn" onclick="testFromCust('${j.cid}')">Test</button>
     ${c.lat&&c.lng?`<button class="sm-btn" onclick="openGmap(${c.lat},${c.lng})">นำทาง</button>`:''}
-    <button class="sm-btn" style="margin-left:auto;border-color:var(--green);color:var(--green);" onclick="setJobStatus('${jobKey(j)}','done')">เสร็จ</button>
-    <button class="sm-btn" style="border-color:var(--red);color:var(--red);" onclick="deleteJob('${jobKey(j)}')">ลบ</button>
+    <button class="sm-btn" style="margin-left:auto;border-color:var(--green);color:var(--green);" onclick="setJobStatus('${_jKey(j)}','done')">เสร็จ</button>
+    <button class="sm-btn" style="border-color:var(--red);color:var(--red);" onclick="deleteJob('${_jKey(j)}')">ลบ</button>
    </div>
   </div>`;
  }).join('')||'<div style="text-align:center;color:var(--dim);padding:30px;">ไม่มีงาน</div>';
 }
 
 function openJobForCust(cid){
- popJobCustSel();
- setTimeout(()=>{document.getElementById('sj-cust').value=cid;updateJobACSel();},50);
- openSheet('sh-job');
+ const c=_cBy(cid);const ck=c?_cKey(c):String(cid);
+ openSheet('sh-job','add');
+ setTimeout(()=>{document.getElementById('sj-cust').value=ck;updateJobACSel();setTimeout(showJobACInfo,60);},150);
 }
 function popJobCustSel(){
- const sel=document.getElementById('sj-cust');
- if(!sel)return;
+ const sel=document.getElementById('sj-cust');if(!sel)return;
  const prev=sel.value;
- sel.innerHTML=DB.customers.map(c=>`<option value="${custKey(c)}">${c.fn} ${c.ln}</option>`).join('');
- // Restore previously selected customer if possible
- if(prev&&sel.querySelector(`option[value="${prev}"]`)) sel.value=prev;
- setTimeout(()=>{updateJobACSel();showJobACInfo();},20);
+ sel.innerHTML=DB.customers.map(c=>`<option value="${_cKey(c)}">${c.fn} ${c.ln}</option>`).join('');
+ if(prev&&sel.querySelector(`option[value="${prev}"]`))sel.value=prev;
+ setTimeout(()=>{updateJobACSel();},30);
 }
 function updateJobACSel(){
- const sel=document.getElementById('sj-cust');
- if(!sel)return;
+ const sel=document.getElementById('sj-cust');if(!sel)return;
  const cid=sel.value||'';
- const c=custById(cid);
+ const c=_cBy(cid);
  const acs=c?.acs||[];
- const acSel=document.getElementById('sj-ac');
- if(!acSel)return;
+ const acSel=document.getElementById('sj-ac');if(!acSel)return;
  acSel.innerHTML='<option value="">— เลือกแอร์ —</option>'
-  +acs.map((ac,i)=>`<option value="${i}">${(ac.br||'')} ${(ac.md||'')} (${(ac.btu||0).toLocaleString()} BTU)</option>`).join('');
+  +acs.map((ac,i)=>`<option value="${i}">${ac.br||''} ${ac.md||''} (${(ac.btu||0).toLocaleString()} BTU)</option>`).join('');
  showJobACInfo();
 }
 function showJobACInfo(){
  const cid=document.getElementById('sj-cust')?.value||'';
  const ai=document.getElementById('sj-ac')?.value;
- const c=custById(cid);
+ const c=_cBy(cid);
  const ac=c&&ai!==''?(c.acs||[])[+ai]:null;
  const el=document.getElementById('sj-ac-info');
  if(!ac||!el){if(el)el.style.display='none';return;}
@@ -1678,38 +1648,32 @@ function showJobACInfo(){
  if(s('sj-ai-sn'))s('sj-ai-sn').textContent=ac.sn||'—';
 }
 function editJob(id){
- const j=jobById(id);if(!j)return;
- // Fill all text fields immediately
+ const j=_jBy(id);if(!j)return;
  const g=n=>document.getElementById(n);
  g('sj-id').value=j._fid||j.id;
  g('sj-type').value=j.type||'service';
- g('sj-date').value=j.date||new Date().toISOString().slice(0,10);
+ g('sj-date').value=j.date||'';
  g('sj-time').value=j.time||'09:00';
  g('sj-tech').value=j.tech||'';
  g('sj-price').value=j.price||0;
  g('sj-detail').value=j.detail||'';
  g('sj-status').value=j.status||'pending';
- // Populate customer select first, then set value, then AC select
+ openSheet('sh-job');
  popJobCustSel();
  setTimeout(()=>{
-  const jc=custById(j.cid);
-  const ck=jc?custKey(jc):(String(j.cid)||'');
-  g('sj-cust').value=ck;
+  const jc=_cBy(j.cid);
+  g('sj-cust').value=jc?_cKey(jc):String(j.cid||'');
   updateJobACSel();
-  setTimeout(()=>{
-   g('sj-ac').value=String(j.aci||0);
-   showJobACInfo();
-  },80);
- },80);
- openSheet('sh-job');
+  setTimeout(()=>{document.getElementById('sj-ac').value=String(j.aci||0);showJobACInfo();},80);
+ },100);
 }
 function saveJob(){
- const fid=document.getElementById('sj-id').value;
- const custId=document.getElementById('sj-cust').value;
- if(!custId){showToast('เลือกลูกค้าก่อน');return;}
+ const fid=document.getElementById('sj-id').value.trim();
+ const cid=document.getElementById('sj-cust').value;
+ if(!cid){showToast('เลือกลูกค้าก่อน');return;}
  const j={
   id:fid||('j'+Date.now()),
-  cid:custId,
+  cid:cid,
   aci:+document.getElementById('sj-ac').value||0,
   type:document.getElementById('sj-type').value,
   date:document.getElementById('sj-date').value,
@@ -1723,24 +1687,20 @@ function saveJob(){
   sigTech:getSigData('sig-tech')||null,
  };
  if(fid)j._fid=fid;
- fbSaveJob(j).then(()=>{
-   closeSheet('sh-job');
-   showToast('บันทึกงานแล้ว');
- }).catch(e=>showToast('Error: '+e.message));
+ _fbSaveJob(j)
+  .then(()=>{closeSheet('sh-job');showToast('บันทึกงานแล้ว');})
+  .catch(e=>showToast('Error: '+e.message));
 }
 function setJobStatus(id,st){
-  const j=jobById(id);
-  if(j&&j._fid){
-    _fbDb.collection('jobs').doc(j._fid).update({status:st})
-      .catch(e=>showToast('Error: '+e.message));
-  }
+  const j=_jBy(id);if(!j||!j._fid)return;
+  _db.collection('jobs').doc(j._fid).update({status:st}).catch(e=>showToast('Error: '+e.message));
 }
 
 function deleteJob(id){
-  const j=jobById(id);if(!j)return;
-  const c=custById(j.cid)||{fn:'?',ln:''};
+  const j=_jBy(id);if(!j)return;
+  const c=_cBy(j.cid)||{fn:'?',ln:''};
   showConfirm('ลบงาน',`ลบงาน "${jLbl(j.type)}" ของ ${c.fn} ${c.ln} วันที่ ${j.date}?`,'ลบเลย',()=>{
-    if(j._fid){fbDeleteJob(j._fid).catch(e=>showToast('Error: '+e.message));}
+    _fbDelJob(j).catch(e=>showToast('Error: '+e.message));
   });
 }
 
@@ -2744,36 +2704,26 @@ function analyzeTest(){
 function saveTest(){
  const cid=document.getElementById('test-cust').value;
  if(!cid){showToast('เลือกลูกค้าก่อน');return;}
- const t={
-  id:'t'+Date.now(),cid,date:new Date().toISOString(),
-  dis:document.getElementById('t-dis').value,
-  suc:document.getElementById('t-suc').value,
-  sup:document.getElementById('t-sup').value,
-  ret:document.getElementById('t-ret').value,
-  hp:document.getElementById('t-hp').value,
-  lp:document.getElementById('t-lp').value,
-  amp:document.getElementById('t-amp').value,
-  chk:JSON.parse(JSON.stringify(_chk)),
-  note:document.getElementById('t-note').value,
-  status:document.getElementById('t-status').value
- };
- fbSaveTest(t)
-  .then(()=>showToast('✓ บันทึกผลทดสอบแล้ว'))
-  .catch(e=>showToast('Error: '+e.message));
+ const t={id:'t'+Date.now(),cid,date:new Date().toISOString(),
+  dis:document.getElementById('t-dis').value,suc:document.getElementById('t-suc').value,
+  sup:document.getElementById('t-sup').value,ret:document.getElementById('t-ret').value,
+  hp:document.getElementById('t-hp').value,lp:document.getElementById('t-lp').value,
+  amp:document.getElementById('t-amp').value,chk:JSON.parse(JSON.stringify(_chk)),
+  note:document.getElementById('t-note').value,status:document.getElementById('t-status').value};
+ _fbSaveTest(t).then(()=>showToast('✓ บันทึกผลทดสอบแล้ว')).catch(e=>showToast('Error: '+e.message));
 }
 
 // ══════════════════════════════════════════════════════════════════
 // SCHEDULE
 // ══════════════════════════════════════════════════════════════════
-let _schedMode='week';
 function renderSched(mode){
- _schedMode=mode||_schedMode;
+ _schedMode=mode||_schedMode||'week';
  const el=document.getElementById('sched-body');if(!el)return;
  const today=new Date();
  if(mode==='list'){
   const list=DB.jobs.filter(j=>j.status!=='done').sort((a,b)=>a.date.localeCompare(b.date));
   el.innerHTML=list.map(j=>{
-   const c=custById(j.cid)||{fn:'?',ln:''};
+   const c=_cBy(j.cid)||{fn:'?',ln:''};
    return`<div class="card anim" style="display:flex;justify-content:space-between;padding:10px 12px;margin-bottom:5px;">
     <div><div style="font-weight:600;font-size:12px;">${c.fn} ${c.ln}</div>
      <div style="font-size:10px;color:var(--dim);">${jLbl(j.type)} · ${j.tech||'—'}</div></div>
@@ -2794,7 +2744,7 @@ function renderSched(mode){
   +cells.map(({ds,d,jobs})=>`
   <div class="cal-day ${ds===td?'today':''}">
    <div class="cal-dn">${['S','M','T','W','T','F','S'][d.getDay()]}${d.getDate()}</div>
-   ${jobs.map(j=>{
+   ${jobs.map(j=>{const c=DB.customers.find(x=>x.id===j.cid)||{fn:'?'};
     return`<div class="cal-ev">${j.time} ${c.fn}</div>`;}).join('')}
   </div>`).join('')+'</div>';
 }
@@ -2820,7 +2770,7 @@ function loadMapCustSel(){
  const sel=document.getElementById('map-cust-sel');if(!sel)return;
  const withGPS=DB.customers.filter(c=>c.lat&&c.lng);
  sel.innerHTML='<option value="">— เลือกลูกค้าเพื่อเปิดแผนที่ —</option>'
-  +withGPS.map(c=>`<option value="${custKey(c)}">${c.fn} ${c.ln}</option>`).join('');
+  +withGPS.map(c=>`<option value="${_cKey(c)}">${c.fn} ${c.ln}</option>`).join('');
  // List
  const listEl=document.getElementById('map-cust-list');
  if(!listEl)return;
@@ -2850,7 +2800,7 @@ function showMapFrame(lat,lng,name){
 
 function focusMapCust(){
  const id=document.getElementById('map-cust-sel').value;if(!id)return;
- const c=custById(id);if(!c||!c.lat||!c.lng)return;
+ const c=_cBy(id);if(!c||!c.lat||!c.lng)return;
  showMapFrame(c.lat,c.lng,`${c.fn} ${c.ln}`);
 }
 
@@ -2868,32 +2818,23 @@ function moreTab(t,el){
 // ══════════════════════════════════════════════════════════════════
 function loadRptSelects(){
  const sel=document.getElementById('rpt-cust');if(!sel)return;
- const prev=sel.value;
  sel.innerHTML='<option value="">— เลือกลูกค้า —</option>'
-  +DB.customers.map(c=>`<option value="${custKey(c)}">${c.fn} ${c.ln}${c.ph?' ('+c.ph+')':''}</option>`).join('');
- // Restore previous selection
- if(prev && sel.querySelector(`option[value="${prev}"]`)){
-   sel.value=prev;
-   loadRptJobs();
- }
+  +DB.customers.map(c=>`<option value="${_cKey(c)}">${c.fn} ${c.ln}${c.ph?' ('+c.ph+')':''}</option>`).join('');
 }
 function loadRptJobs(){
  const cid=document.getElementById('rpt-cust').value;
- const jobs=jobsByCust(cid).sort((a,b)=>b.date.localeCompare(a.date));
+ const jobs=_jobsOf(cid).sort((a,b)=>b.date.localeCompare(a.date));
  document.getElementById('rpt-job').innerHTML='<option value="">— เลือกงาน —</option>'
-  +jobs.map(j=>`<option value="${jobKey(j)}">${j.date} — ${jLbl(j.type)}</option>`).join('');
- if(jobs.length){
-  document.getElementById('rpt-job').value=jobKey(jobs[0]);
- }else{
-  document.getElementById('rpt-job').innerHTML='<option value="">— ยังไม่มีงาน —</option>';
- }
+  +jobs.map(j=>`<option value="${_jKey(j)}">${j.date} — ${jLbl(j.type)}</option>`).join('');
+ if(jobs.length)document.getElementById('rpt-job').value=_jKey(jobs[0]);
+ else document.getElementById('rpt-job').innerHTML='<option value="">— ยังไม่มีงาน —</option>';
 }
 function buildReport(){
  const cid=document.getElementById('rpt-cust').value;
  const jid=document.getElementById('rpt-job').value;
- if(!cid||!jid||jid===''){showToast('เลือกลูกค้าและงานก่อน');return;}
- const c=custById(cid);
- const j=jobById(jid);
+ if(!cid||!jid){showToast('เลือกลูกค้าและงานก่อน');return;}
+ const c=_cBy(cid);
+ const j=_jBy(jid);
  if(!c||!j){showToast('เลือกลูกค้าและงานก่อน');return;}
  const ac=(c.acs||[])[j.aci||0]||{};
  const test=(DB.tests||[]).filter(t=>String(t.cid)===String(cid)).pop()||null;
@@ -3060,8 +3001,8 @@ function printPDF(){
   const baseSize=size.replace(' landscape','');
   const cid=document.getElementById('rpt-cust').value;
   const jid=document.getElementById('rpt-job').value;
-  const cu=custById(cid);
-  const j=jobById(jid);
+  const cu=_cBy(cid);
+  const j=_jBy(jid);
   const fname='nexus_'+(cu?.fn||'report').replace(/\s/g,'_')+'_JOB'+String(j?.id||0).padStart(4,'0')+'.html';
   const html='<!DOCTYPE html><html><head><meta charset="UTF-8">'
    +'<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">'
@@ -3105,8 +3046,8 @@ function saveReportAsImage(){
     document.body.removeChild(clone);
     const cid=document.getElementById('rpt-cust').value;
     const jid=document.getElementById('rpt-job').value;
-    const cu=custById(cid);
-    const j=jobById(jid);
+    const cu=_cBy(cid);
+    const j=_jBy(jid);
     const fname='nexus_'+(cu?.fn||'report').replace(/\s/g,'_')+'_JOB'+String(j?.id||0).padStart(4,'0')+'.png';
     canvas.toBlob(blob=>{
      const url=URL.createObjectURL(blob);
@@ -3129,32 +3070,30 @@ function sLbl(s){return{pending:'รอ',inprogress:'กำลังทำ',done
 function sBadge(s){return{pending:'badge-y',inprogress:'badge-b',done:'badge-g',cancel:'badge-r'}[s]||'badge-a';}
 
 function popAllSels(){
- const custOpts=()=>DB.customers.map(c=>`<option value="${custKey(c)}">${c.fn} ${c.ln}${c.ph?' ('+c.ph+')':''}</option>`).join('');
+ const custOpts=()=>DB.customers.map(c=>`<option value="${_cKey(c)}">${c.fn} ${c.ln}${c.ph?' ('+c.ph+')':''}</option>`).join('');
  // sim shows ALL customers; if they have ACs each gets its own option; if none, still show customer
  const acOpts=()=>DB.customers.map(c=>{
-   const ck2=custKey(c);
-   const acs=c.acs||[];
-   if(acs.length===0) return `<option value="${ck2}_0">${c.fn} ${c.ln} — (ไม่มีข้อมูลแอร์)</option>`;
-   return acs.map((ac,i)=>`<option value="${ck2}_${i}">${c.fn} ${c.ln} — ${ac.br||'?'} ${ac.md||''}</option>`).join('');
+   const ck=_cKey(c);const acs=c.acs||[];
+   if(acs.length===0) return `<option value="${ck}_0">${c.fn} ${c.ln} — (ไม่มีข้อมูลแอร์)</option>`;
+   return acs.map((ac,i)=>`<option value="${ck}_${i}">${c.fn} ${c.ln} — ${ac.br||'?'} ${ac.md||''}</option>`).join('');
  }).join('');
  const setOpt=(id,html)=>{const el=document.getElementById(id);if(el)el.innerHTML=html;};
  setOpt('sim-cust-sel','<option value="">— เลือกลูกค้า —</option>'+acOpts());
  setOpt('test-cust','<option value="">— เลือกลูกค้า —</option>'+custOpts());
- setOpt('map-cust-sel','<option value="">— เลือกลูกค้า —</option>'+DB.customers.filter(c=>c.lat&&c.lng).map(c=>`<option value="${custKey(c)}">${c.fn} ${c.ln}</option>`).join(''));
+ setOpt('map-cust-sel','<option value="">— เลือกลูกค้า —</option>'+DB.customers.filter(c=>c.lat&&c.lng).map(c=>`<option value="${c.id}">${c.fn} ${c.ln}</option>`).join(''));
  setOpt('rpt-cust','<option value="">— เลือกลูกค้า —</option>'+custOpts());
  // Also refresh job customer select if open
  const sj=document.getElementById('sj-cust');
- if(sj){sj.innerHTML=DB.customers.map(c=>`<option value="${custKey(c)}">${c.fn} ${c.ln}</option>`).join('');updateJobACSel();}
+ if(sj){sj.innerHTML=DB.customers.map(c=>`<option value="${c.id}">${c.fn} ${c.ln}</option>`).join('');updateJobACSel();}
 }
 function popSimSel(){popAllSels();}
 function popTestSel(){popAllSels();buildChecklist();}
 
 function loadSimFromCust(){
  const v=document.getElementById('sim-cust-sel')?.value;if(!v)return;
- const parts=v.split('_');
- const cid=parts.slice(0,-1).join('_');// support _fid which may contain _
- const ai=parts[parts.length-1];
- const c=custById(cid);if(!c)return;
+ const last=v.lastIndexOf('_');
+ const cid=v.slice(0,last),ai=v.slice(last+1);
+ const c=_cBy(cid);if(!c)return;
  const ac=(c.acs||[])[+ai];if(!ac)return;
  const setEl=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val;};
  setEl('s-brand',(ac.br||'')+' '+(ac.md||''));
@@ -3169,40 +3108,32 @@ function loadSimFromCust(){
 }
 
 function simFromCust(cid,ai){
+ const c=_cBy(cid);const ck=c?_cKey(c):String(cid);
  goNav('sim');
  setTimeout(()=>{
   const sel=document.getElementById('sim-cust-sel');
-  if(sel){sel.value=String(cid)+'_'+(ai||0);loadSimFromCust();}
- },200);
+  if(sel){sel.value=ck+'_'+(ai||0);loadSimFromCust();}
+ },250);
 }
 function testFromCust(cid){
+ const c=_cBy(cid);const ck=c?_cKey(c):String(cid);
  goNav('test');
  setTimeout(()=>{
   const sel=document.getElementById('test-cust');
-  if(sel)sel.value=String(cid);
- },200);
+  if(sel)sel.value=ck;
+ },250);
 }
 function openAddJobFor(cid){
- const c=custById(cid);
- const ck=c?custKey(c):String(cid);
- openSheet('sh-job','add');
- setTimeout(()=>{
-   document.getElementById('sj-cust').value=ck;
-   updateJobACSel();
-   setTimeout(showJobACInfo,60);
- },150);
+ popJobCustSel();
+ setTimeout(()=>{document.getElementById('sj-cust').value=cid;updateJobACSel();},60);
+ openSheet('sh-job');
 }
 
 // ══════════════════════════════════════════════════════════════════
-// INIT
+// INIT — Firebase handles data load and app bootstrap
 // ══════════════════════════════════════════════════════════════════
-// Initialize app with Firebase auth
-initRoomCanvas();
-buildChecklist();
-document.getElementById('sj-date').value=new Date().toISOString().slice(0,10);
 window.addEventListener('resize',()=>{drawRoom();if(_curPage==='home')drawDashChart();});
-// Start Firebase auth observer (handles login/logout/data loading)
-startAuthObserver();
+_startAuth(); // starts Firebase auth observer → loads data → shows app
 
 // ── PORTAL: detect #p/ hash ──────────────────────────────────────
 // Run immediately - hide login and app shell if this is a customer portal link
@@ -3264,10 +3195,10 @@ function decodePortalToken(tok){
   }catch(e){return null;}
 }
 function getPortalURL(cid){
-  const c=custById(cid);
+  const c=DB.customers.find(x=>x.id===cid);
   if(!c)return location.href.split('#')[0]+'#p/'+getPortalToken(cid);
   const s=DB.settings||{};
-  const jobs=jobsByCust(cid).sort((a,b)=>b.date.localeCompare(a.date));
+  const jobs=_jobsOf(cid).sort((a,b)=>b.date.localeCompare(a.date));
 
   // ── MINIMAL payload: strip everything non-essential to keep URL short ──
   // Fields shortened: fn/ln/ph/ad/acs | jobs: t/d/p/st/tx/dt/ai | s: co/tl/adr/tn/tt/li/pe/pp/pr
@@ -3323,7 +3254,7 @@ function expandPayload(raw){
 }
 
 function openPortal(cid){
-  const c=custById(cid);
+  const c=_cBy(cid);
   if(!c){showToast('ไม่พบข้อมูลลูกค้า');return;}
   const ov=document.getElementById('portal-ov');
   const body=document.getElementById('portal-body');
@@ -3332,7 +3263,7 @@ function openPortal(cid){
   const lg=document.getElementById('portal-logo');
   if(lg)lg.textContent=s.company||'Nexus';
 
-  const jobs=jobsByCust(cid).sort((a,b)=>b.date.localeCompare(a.date));
+  const jobs=_jobsOf(cid).sort((a,b)=>b.date.localeCompare(a.date));
   const doneJobs=jobs.filter(j=>j.status==='done');
   const totalSpend=doneJobs.reduce((sum,j)=>sum+(j.price||0),0);
   const pts=getCustomerPoints(cid);
@@ -3519,7 +3450,7 @@ function startPortalSim(cid){
 }
 
 function runPortalSim(cid){
-  const c=custById(cid);if(!c)return;
+  const c=DB.customers.find(x=>x.id===cid);if(!c)return;
   const ai=+(document.querySelector('input[name="portal-ac"]:checked')?.value)||0;
   const ac=(c.acs||[])[ai];if(!ac)return;
   const Tout=+document.getElementById('portal-tout').value||35;
@@ -3811,7 +3742,7 @@ function getPortalQR(cid){
 
 <script>
 function showQRSheet(cid){
-  const c=custById(cid);
+  const c=_cBy(cid);
   if(!c){showToast('ไม่พบลูกค้า');return;}
   // Update sheet
   const nameEl=document.getElementById('qr-cust-name');
@@ -3914,26 +3845,13 @@ function showQRSheet(cid){
    </label>
   </div>
 
-  <!-- Account -->
-  <div class="sec-hd">บัญชีผู้ใช้</div>
-  <div class="setting-row">
-   <div>
-    <div class="setting-label" id="set-account-email" style="color:var(--acc);font-weight:600;"></div>
-    <div class="setting-sub">บัญชีที่ login อยู่</div>
-   </div>
+  <!-- Security -->
+  <div class="sec-hd">ความปลอดภัย</div>
+  <div class="frow g2" style="margin-bottom:4px;">
+   <div class="fld"><label>PIN ใหม่ (4 หลัก)</label><input id="set-pin" type="number" maxlength="4" placeholder="1234"></div>
+   <div class="fld"><label>รหัสผ่าน</label><input id="set-pass" type="password" placeholder="password"></div>
   </div>
-  <div style="margin-bottom:12px;">
-   <div class="sec-hd" style="font-size:9px;margin-top:8px;margin-bottom:6px;">เปลี่ยนรหัสผ่าน</div>
-   <div class="frow g2">
-    <div class="fld"><label>รหัสผ่านใหม่</label>
-     <input id="set-new-pass" type="password" placeholder="••••••••" autocomplete="new-password"
-      style="background:var(--bar2);border:1px solid var(--border2);color:var(--fg);border-radius:var(--r-sm);font-size:13px;padding:9px 11px;width:100%;outline:none;">
-    </div>
-    <div style="display:flex;align-items:flex-end;padding-bottom:2px;">
-     <button class="sm-btn" onclick="changePassword()">เปลี่ยน</button>
-    </div>
-   </div>
-  </div>
+  <div class="fld" style="margin-bottom:12px;"><label>ชื่อผู้ใช้</label><input id="set-user" placeholder="admin"></div>
   <button class="bigbtn go" onclick="saveSettings()">บันทึกการตั้งค่า</button>
 
   <!-- Data -->
