@@ -839,7 +839,7 @@ function calcPoints(price){
   return Math.floor((price||0)/(s.ptsPer||1));
 }
 function getCustomerPoints(cid){
-  return (DB.jobs||[]).filter(j=>j.cid===cid&&j.status==='done')
+  return jobsByCust(String(cid)).filter(j=>j.status==='done')
     .reduce((sum,j)=>sum+calcPoints(j.price||0),0);
 }
 function renderPointsBadge(cid){
@@ -913,14 +913,34 @@ function exportData(){
 function importData(input){
   const file=input.files[0];if(!file)return;
   const r=new FileReader();
-  r.onload=e=>{
+  r.onload=async e=>{
     try{
       const d=JSON.parse(e.target.result);
       if(!d.customers)throw new Error('ไฟล์ไม่ถูกต้อง');
-      showConfirm('Import ข้อมูล','จะแทนที่ข้อมูลทั้งหมดด้วยไฟล์ backup นี้ใช่ไหม?','Import',()=>{
-        DB=d;sDB();
-        renderDash();popAllSels();popJobCustSel();
-        showToast('Import สำเร็จ');
+      showConfirm('Import ข้อมูล',
+        `Import ลูกค้า ${d.customers.length} คน งาน ${(d.jobs||[]).length} งาน\nข้อมูลจะถูกเพิ่มเข้า Cloud Database`,
+        'Import',async()=>{
+        showToast('กำลัง import...', 10000);
+        if(_fbDb){
+          // Upload customers
+          for(const c of (d.customers||[])){
+            const data={...c};delete data._fid;
+            await _fbDb.collection('customers').add(data);
+          }
+          // Upload jobs
+          for(const j of (d.jobs||[])){
+            const data={...j};delete data._fid;
+            await _fbDb.collection('jobs').add(data);
+          }
+          // Upload tests
+          for(const t of (d.tests||[])){
+            const data={...t};delete data._fid;
+            await _fbDb.collection('tests').add(data);
+          }
+          // Settings
+          if(d.settings)await _fbDb.collection('settings').doc('main').set(d.settings);
+        }
+        showToast('Import สำเร็จ! ' + (d.customers||[]).length + ' ลูกค้า');
         closeSheet('sh-settings');
       },false);
     }catch(err){showToast('ไฟล์ไม่ถูกต้อง: '+err.message);}
@@ -1156,8 +1176,8 @@ function lDB(){}
 // Firebase CRUD helpers
 async function fbSaveCustomer(c){
   if(!_fbDb)return;
-  // Strip undefined
-  const data=JSON.parse(JSON.stringify(c));
+  const data=JSON.parse(JSON.stringify(c)); // strips undefined
+  delete data._fid; // don't store _fid as a field
   if(c._fid){
     await _fbDb.collection('customers').doc(c._fid).set(data);
   }else{
@@ -1168,15 +1188,19 @@ async function fbSaveCustomer(c){
 async function fbDeleteCustomer(fid){
   if(!_fbDb||!fid)return;
   await _fbDb.collection('customers').doc(fid).delete();
-  // Delete customer's jobs too
-  const jobs=await _fbDb.collection('jobs').where('cid','==',fid).get();
-  const batch=_fbDb.batch();
-  jobs.docs.forEach(d=>batch.delete(d.ref));
-  await batch.commit();
+  // Delete all jobs belonging to this customer
+  const snap=await _fbDb.collection('jobs').where('cid','==',fid).get();
+  if(snap.docs.length){
+    const batch=_fbDb.batch();
+    snap.docs.forEach(d=>batch.delete(d.ref));
+    await batch.commit();
+  }
+  showToast('ลบลูกค้าแล้ว');
 }
 async function fbSaveJob(j){
   if(!_fbDb)return;
   const data=JSON.parse(JSON.stringify(j));
+  delete data._fid; // don't store _fid as a field
   if(j._fid){
     await _fbDb.collection('jobs').doc(j._fid).set(data);
   }else{
@@ -1196,6 +1220,15 @@ async function fbSaveTest(t){
 
 // Get next ID (Firestore uses string IDs but we keep numeric for compatibility)
 function nextId(){return DB.nid?++DB.nid:Date.now();}
+
+// ══════════════════════════════════════════════════════════════════
+// ID HELPERS - Firestore uses string _fid, legacy uses numeric id
+// ══════════════════════════════════════════════════════════════════
+function custById(id){return DB.customers.find(x=>x._fid===id||x._fid===String(id)||String(x.id)===String(id));}
+function jobById(id){return DB.jobs.find(x=>x._fid===id||x._fid===String(id)||String(x.id)===String(id));}
+function custKey(c){return c._fid||String(c.id);}  // use as HTML onclick arg
+function jobKey(j){return j._fid||String(j.id);}
+function jobsByCust(cid){return (DB.jobs||[]).filter(j=>j.cid===cid||j.cid===String(cid));}
 
 // ══════════════════════════════════════════════════════════════════
 // NAV
@@ -1278,11 +1311,12 @@ function renderCusts(){
  const q=(document.getElementById('cust-srch')?.value||'').toLowerCase();
  const list=DB.customers.filter(c=>(c.fn+' '+c.ln+c.ph+(c.ad||'')).toLowerCase().includes(q));
  document.getElementById('cust-list').innerHTML=list.length?list.map(c=>{
-  const jobCount=DB.jobs.filter(j=>j.cid===c.id).length;
-  const ptsBadge=renderPointsBadge(c.id);
+  const ck=custKey(c);
+  const jobCount=jobsByCust(ck).length;
+  const ptsBadge=renderPointsBadge(ck);
   return`<div class="card anim" style="padding:12px 14px;margin-bottom:8px;">
    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-    <div style="flex:1;min-width:0;cursor:pointer;" onclick="viewCust(${c.id})">
+    <div style="flex:1;min-width:0;cursor:pointer;" onclick="viewCust('${ck}')">
      <div style="display:flex;align-items:center;gap:7px;margin-bottom:3px;">
       <div style="font-weight:600;font-size:14px;">${c.fn} ${c.ln}</div>
       ${ptsBadge}
@@ -1291,10 +1325,10 @@ function renderCusts(){
      <div style="font-size:10px;color:var(--dim);margin-top:2px;">${(c.acs||[]).length} เครื่อง · ${jobCount} งาน${c.ad?' · '+c.ad.slice(0,25):''}${c.ad&&c.ad.length>25?'…':''}</div>
     </div>
     <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;flex-shrink:0;margin-left:8px;">
-     <button class="sm-btn" onclick="viewCust('${c._fid||c.id}')">ดู</button>
-     <button class="sm-btn" onclick="editCust('${c._fid||c.id}')">แก้ไข</button>
+     <button class="sm-btn" onclick="viewCust('${ck}')">ดู</button>
+     <button class="sm-btn" onclick="editCust('${ck}')">แก้ไข</button>
      ${c.lat&&c.lng?`<button class="sm-btn" onclick="openGmap(${c.lat},${c.lng})">แผนที่</button>`:''}
-     <button class="sm-btn" style="border-color:var(--red);color:var(--red);" onclick="deleteCust('${c._fid||c.id}')">ลบ</button>
+     <button class="sm-btn" style="border-color:var(--red);color:var(--red);" onclick="deleteCust('${ck}')">ลบ</button>
     </div>
    </div>
   </div>`;
@@ -1322,23 +1356,21 @@ function showConfirm(title, msg, okLabel, onOk, danger=true){
 }
 
 function deleteCust(id){
-  const c=DB.customers.find(x=>x._fid===id||String(x.id)===String(id));
-  if(!c) return;
-  const jobCount=DB.jobs.filter(j=>j.cid===id).length;
+  const c=custById(id);
+  if(!c){showToast('ไม่พบข้อมูลลูกค้า');return;}
+  const ck=custKey(c);
+  const jobs=jobsByCust(ck);
   showConfirm(
     'ลบลูกค้า',
-    `ลบ "${c.fn} ${c.ln}" และงานทั้งหมด ${jobCount} งาน?
+    `ลบ "${c.fn} ${c.ln}" และงาน ${jobs.length} งาน?
 ไม่สามารถกู้คืนได้`,
     'ลบเลย',
     ()=>{
-      const c2=DB.customers.find(x=>x.id===id);
-      if(c2&&c2._fid){fbDeleteCustomer(c2._fid).catch(e=>showToast('Error: '+e.message));}
-      DB.tests=(DB.tests||[]).filter(t=>t.cid!==id);
-      sDB();
-      // Close detail sheet if open
+      if(c._fid){
+        fbDeleteCustomer(c._fid).catch(e=>showToast('Error: '+e.message));
+      }
       const detSheet=document.getElementById('sh-cust-detail');
       if(detSheet&&detSheet.classList.contains('open')) closeSheet('sh-cust-detail');
-      renderCusts();renderDash();popAllSels();
     }
   );
 }
@@ -1346,8 +1378,9 @@ function deleteCust(id){
 function openGmap(lat,lng){window.open(`https://www.google.com/maps?q=${lat},${lng}&z=17`,'_blank');}
 
 function viewCust(id){
- const c=DB.customers.find(x=>x.id===id);if(!c)return;
- const jobs=DB.jobs.filter(j=>j.cid===id);
+ const c=custById(id);if(!c)return;
+ const ck=custKey(c);
+ const jobs=jobsByCust(ck);
  document.getElementById('sh-cd-name').textContent=`${c.fn} ${c.ln}`;
  document.getElementById('sh-cd-body').innerHTML=`
   <div class="frow g2" style="margin-bottom:10px;">
@@ -1373,15 +1406,15 @@ function viewCust(id){
    <span>${j.date} — ${jLbl(j.type)}</span><span class="badge ${sBadge(j.status)}">${sLbl(j.status)}</span></div>`).join('')
    ||'<div style="color:var(--dim);font-size:11px;">ยังไม่มีประวัติ</div>'}
   <div style="display:flex;gap:6px;margin-top:14px;flex-wrap:wrap;">
-   <button class="bigbtn" style="flex:1;margin:0;min-width:100px;" onclick="editCust(${id});closeSheet('sh-cust-detail')">Edit</button>
-   <button class="bigbtn accent" style="flex:1;margin:0;min-width:100px;" onclick="openJobForCust(${id});closeSheet('sh-cust-detail')">+ งาน</button>
-   <button class="bigbtn" style="flex:1;margin:0;min-width:100px;" onclick="goNav('more');setTimeout(()=>{moreTab('report',document.querySelector('#pg-more .tab-btn:nth-child(2)'));document.getElementById('rpt-cust').value=${id};loadRptJobs();buildReport();},200);closeSheet('sh-cust-detail')">ใบเสร็จ</button>
-   <button class="bigbtn red" style="flex:1;margin:0;min-width:100px;" onclick="deleteCust(${id})">ลบลูกค้า</button>
+   <button class="bigbtn" style="flex:1;margin:0;min-width:100px;" onclick="editCust('${ck}');closeSheet('sh-cust-detail')">Edit</button>
+   <button class="bigbtn accent" style="flex:1;margin:0;min-width:100px;" onclick="openJobForCust('${ck}');closeSheet('sh-cust-detail')">+ งาน</button>
+   <button class="bigbtn" style="flex:1;margin:0;min-width:100px;" onclick="goNav('more');setTimeout(()=>{moreTab('report',document.querySelector('#pg-more .tab-btn:nth-child(2)'));document.getElementById('rpt-cust').value='${ck}';loadRptJobs();buildReport();},200);closeSheet('sh-cust-detail')">ใบเสร็จ</button>
+   <button class="bigbtn red" style="flex:1;margin:0;min-width:100px;" onclick="deleteCust('${ck}')">ลบลูกค้า</button>
   </div>
-  <button class="bigbtn" style="margin-top:8px;border-color:var(--gold);color:var(--gold);" onclick="closeSheet('sh-cust-detail');openPortal(${id})">
+  <button class="bigbtn" style="margin-top:8px;border-color:var(--gold);color:var(--gold);" onclick="closeSheet('sh-cust-detail');openPortal('${ck}')">
    ดูหน้าพอร์ทัลลูกค้า
   </button>
-  <button class="bigbtn" style="border-color:var(--acc);color:var(--acc);" onclick="showQRSheet(${id})">
+  <button class="bigbtn" style="border-color:var(--acc);color:var(--acc);" onclick="showQRSheet('${ck}')">
    แสดง QR สำหรับลูกค้า
   </button>
   </div>
@@ -1453,7 +1486,7 @@ function openSheet(id,mode){
 function closeSheet(id){const el=document.getElementById(id);if(el)el.classList.remove('open');}
 
 function editCust(id){
- const c=DB.customers.find(x=>x.id===id||x._fid===id||String(x.id)===String(id));if(!c)return;
+ const c=custById(id);if(!c)return;
  document.getElementById('sh-cust-title').textContent='Edit แก้ไขลูกค้า';
  document.getElementById('sc-id').value=c._fid||c.id;
  document.getElementById('sc-fn').value=c.fn||'';
@@ -1529,7 +1562,7 @@ function renderJobs(){
  const f=document.getElementById('job-filter')?.value||'';
  const list=DB.jobs.filter(j=>!f||j.status===f).sort((a,b)=>b.date.localeCompare(a.date));
  document.getElementById('job-list').innerHTML=list.map(j=>{
-  const c=DB.customers.find(x=>x.id===j.cid||x._fid===j.cid||String(x.id)===String(j.cid))||{fn:'?',ln:''};
+  const c=custById(j.cid)||{fn:'?',ln:'',acs:[]};
   const ac=(c.acs||[])[j.aci||0];
   return`<div class="card anim" style="margin-bottom:6px;">
    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
@@ -1545,12 +1578,12 @@ function renderJobs(){
    </div>
    ${j.detail?`<div style="font-size:11px;color:var(--fg2);margin-bottom:8px;">${j.detail}</div>`:''}
    <div style="display:flex;gap:4px;flex-wrap:wrap;">
-    <button class="sm-btn" onclick="editJob(${j.id})">Edit</button>
-    <button class="sm-btn" onclick="simFromCust(${j.cid},${j.aci||0})">Sim</button>
-    <button class="sm-btn" onclick="testFromCust(${j.cid})">Test</button>
-    ${c.lat&&c.lng?`<button class="sm-btn" onclick="openGmap(${c.lat},${c.lng})">📍 นำทาง</button>`:''}
-    <button class="sm-btn" style="margin-left:auto;border-color:var(--green);color:var(--green);" onclick="setJobStatus(${j.id},'done')">เสร็จ</button>
-    <button class="sm-btn" style="border-color:var(--red);color:var(--red);" onclick="deleteJob(${j.id})">Del</button>
+    <button class="sm-btn" onclick="editJob('${jobKey(j)}')">Edit</button>
+    <button class="sm-btn" onclick="simFromCust('${j.cid}',${j.aci||0})">Sim</button>
+    <button class="sm-btn" onclick="testFromCust('${j.cid}')">Test</button>
+    ${c.lat&&c.lng?`<button class="sm-btn" onclick="openGmap(${c.lat},${c.lng})">นำทาง</button>`:''}
+    <button class="sm-btn" style="margin-left:auto;border-color:var(--green);color:var(--green);" onclick="setJobStatus('${jobKey(j)}','done')">เสร็จ</button>
+    <button class="sm-btn" style="border-color:var(--red);color:var(--red);" onclick="deleteJob('${jobKey(j)}')">ลบ</button>
    </div>
   </div>`;
  }).join('')||'<div style="text-align:center;color:var(--dim);padding:30px;">ไม่มีงาน</div>';
@@ -1562,7 +1595,7 @@ function openJobForCust(cid){
  openSheet('sh-job');
 }
 function popJobCustSel(){
- document.getElementById('sj-cust').innerHTML=DB.customers.map(c=>`<option value="${c._fid||c.id}">${c.fn} ${c.ln}</option>`).join('');
+ document.getElementById('sj-cust').innerHTML=DB.customers.map(c=>`<option value="${custKey(c)}">${c.fn} ${c.ln}</option>`).join('');
  updateJobACSel();
 }
 function updateJobACSel(){
@@ -1588,7 +1621,7 @@ function showJobACInfo(){
  if(s('sj-ai-sn'))s('sj-ai-sn').textContent=ac.sn||'—';
 }
 function editJob(id){
- const j=DB.jobs.find(x=>x.id===id);if(!j)return;
+ const j=jobById(id);if(!j)return;
  popJobCustSel();
  setTimeout(()=>{
   document.getElementById('sj-id').value=j._fid||j.id;
@@ -1631,18 +1664,18 @@ function saveJob(){
  }).catch(e=>showToast('Error: '+e.message));
 }
 function setJobStatus(id,st){
-  const j=DB.jobs.find(x=>x.id===id);
+  const j=jobById(id);
   if(j&&j._fid){
-    _fbDb.collection('jobs').doc(j._fid).update({status:st}).catch(e=>showToast('Error: '+e.message));
+    _fbDb.collection('jobs').doc(j._fid).update({status:st})
+      .catch(e=>showToast('Error: '+e.message));
   }
 }
 
 function deleteJob(id){
-  const j=DB.jobs.find(x=>x.id===id);if(!j)return;
-  const c=DB.customers.find(x=>x.id===j.cid||x._fid===j.cid||String(x.id)===String(j.cid))||{fn:'?',ln:''};
+  const j=jobById(id);if(!j)return;
+  const c=custById(j.cid)||{fn:'?',ln:''};
   showConfirm('ลบงาน',`ลบงาน "${jLbl(j.type)}" ของ ${c.fn} ${c.ln} วันที่ ${j.date}?`,'ลบเลย',()=>{
-    const j2=DB.jobs.find(x=>x.id===id);
-    if(j2&&j2._fid){fbDeleteJob(j2._fid).then(()=>{renderJobs();renderDash();}).catch(e=>showToast('Error: '+e.message));}
+    if(j._fid){fbDeleteJob(j._fid).catch(e=>showToast('Error: '+e.message));}
   });
 }
 
@@ -2694,7 +2727,7 @@ function renderSched(mode){
   +cells.map(({ds,d,jobs})=>`
   <div class="cal-day ${ds===td?'today':''}">
    <div class="cal-dn">${['S','M','T','W','T','F','S'][d.getDay()]}${d.getDate()}</div>
-   ${jobs.map(j=>{const c=DB.customers.find(x=>x.id===j.cid)||{fn:'?'};
+   ${jobs.map(j=>{
     return`<div class="cal-ev">${j.time} ${c.fn}</div>`;}).join('')}
   </div>`).join('')+'</div>';
 }
@@ -2772,8 +2805,8 @@ function loadRptSelects(){
   +DB.customers.map(c=>`<option value="${c.id}">${c.fn} ${c.ln}${c.ph?' ('+c.ph+')':''}</option>`).join('');
 }
 function loadRptJobs(){
- const cid=+document.getElementById('rpt-cust').value;
- const jobs=DB.jobs.filter(j=>j.cid===cid);
+ const cid=document.getElementById('rpt-cust').value;
+ const jobs=jobsByCust(cid);
  document.getElementById('rpt-job').innerHTML='<option value="">— เลือกงาน —</option>'
   +jobs.map(j=>`<option value="${j.id}">${j.date} — ${jLbl(j.type)}</option>`).join('');
  if(jobs.length)document.getElementById('rpt-job').value=jobs[jobs.length-1].id;
@@ -2785,7 +2818,7 @@ function buildReport(){
  const j=DB.jobs.find(x=>x.id===jid);
  if(!c||!j){showToast('เลือกลูกค้าและงานก่อน');return;}
  const ac=(c.acs||[])[j.aci||0]||{};
- const test=(DB.tests||[]).filter(t=>t.cid===cid).pop()||null;
+ const test=(DB.tests||[]).filter(t=>String(t.cid)===String(cid)).pop()||null;
  const today=new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
  const s=DB.settings||{};
  const co=s.company||'Nexus Service';
@@ -3021,9 +3054,10 @@ function popAllSels(){
  const custOpts=()=>DB.customers.map(c=>`<option value="${c.id}">${c.fn} ${c.ln}${c.ph?' ('+c.ph+')':''}</option>`).join('');
  // sim shows ALL customers; if they have ACs each gets its own option; if none, still show customer
  const acOpts=()=>DB.customers.map(c=>{
+   const ck2=custKey(c);
    const acs=c.acs||[];
-   if(acs.length===0) return `<option value="${c.id}_0">${c.fn} ${c.ln} — (ไม่มีข้อมูลแอร์)</option>`;
-   return acs.map((ac,i)=>`<option value="${c.id}_${i}">${c.fn} ${c.ln} — ${ac.br||'?'} ${ac.md||''}</option>`).join('');
+   if(acs.length===0) return `<option value="${ck2}_0">${c.fn} ${c.ln} — (ไม่มีข้อมูลแอร์)</option>`;
+   return acs.map((ac,i)=>`<option value="${ck2}_${i}">${c.fn} ${c.ln} — ${ac.br||'?'} ${ac.md||''}</option>`).join('');
  }).join('');
  const setOpt=(id,html)=>{const el=document.getElementById(id);if(el)el.innerHTML=html;};
  setOpt('sim-cust-sel','<option value="">— เลือกลูกค้า —</option>'+acOpts());
@@ -3032,15 +3066,17 @@ function popAllSels(){
  setOpt('rpt-cust','<option value="">— เลือกลูกค้า —</option>'+custOpts());
  // Also refresh job customer select if open
  const sj=document.getElementById('sj-cust');
- if(sj){sj.innerHTML=DB.customers.map(c=>`<option value="${c._fid||c.id}">${c.fn} ${c.ln}</option>`).join('');updateJobACSel();}
+ if(sj){sj.innerHTML=DB.customers.map(c=>`<option value="${custKey(c)}">${c.fn} ${c.ln}</option>`).join('');updateJobACSel();}
 }
 function popSimSel(){popAllSels();}
 function popTestSel(){popAllSels();buildChecklist();}
 
 function loadSimFromCust(){
  const v=document.getElementById('sim-cust-sel')?.value;if(!v)return;
- const [cid,ai]=v.split('_');
- const c=DB.customers.find(x=>x.id===+cid);if(!c)return;
+ const parts=v.split('_');
+ const cid=parts.slice(0,-1).join('_');// support _fid which may contain _
+ const ai=parts[parts.length-1];
+ const c=custById(cid);if(!c)return;
  const ac=(c.acs||[])[+ai];if(!ac)return;
  const setEl=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val;};
  setEl('s-brand',(ac.br||'')+' '+(ac.md||''));
@@ -3058,20 +3094,20 @@ function simFromCust(cid,ai){
  goNav('sim');
  setTimeout(()=>{
   const sel=document.getElementById('sim-cust-sel');
-  if(sel){sel.value=cid+'_'+(ai||0);loadSimFromCust();}
+  if(sel){sel.value=String(cid)+'_'+(ai||0);loadSimFromCust();}
  },200);
 }
 function testFromCust(cid){
  goNav('test');
  setTimeout(()=>{
   const sel=document.getElementById('test-cust');
-  if(sel)sel.value=cid;
+  if(sel)sel.value=String(cid);
  },200);
 }
 function openAddJobFor(cid){
  popJobCustSel();
- setTimeout(()=>{document.getElementById('sj-cust').value=cid;updateJobACSel();},60);
- openSheet('sh-job');
+ setTimeout(()=>{document.getElementById('sj-cust').value=cid;updateJobACSel();showJobACInfo();},80);
+ openSheet('sh-job','add');
 }
 
 // ══════════════════════════════════════════════════════════════════
