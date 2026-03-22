@@ -1617,14 +1617,24 @@ function openJobForCust(cid){
  openSheet('sh-job');
 }
 function popJobCustSel(){
- document.getElementById('sj-cust').innerHTML=DB.customers.map(c=>`<option value="${custKey(c)}">${c.fn} ${c.ln}</option>`).join('');
- updateJobACSel();
+ const sel=document.getElementById('sj-cust');
+ if(!sel)return;
+ const prev=sel.value;
+ sel.innerHTML=DB.customers.map(c=>`<option value="${custKey(c)}">${c.fn} ${c.ln}</option>`).join('');
+ // Restore previously selected customer if possible
+ if(prev&&sel.querySelector(`option[value="${prev}"]`)) sel.value=prev;
+ setTimeout(()=>{updateJobACSel();showJobACInfo();},20);
 }
 function updateJobACSel(){
- const cid=document.getElementById('sj-cust')?.value||'';
+ const sel=document.getElementById('sj-cust');
+ if(!sel)return;
+ const cid=sel.value||'';
  const c=custById(cid);
- document.getElementById('sj-ac').innerHTML=`<option value="">— เลือกแอร์ —</option>`
-  +(c?.acs||[]).map((ac,i)=>`<option value="${i}">${ac.br} ${ac.md} (${(ac.btu||0).toLocaleString()} BTU)</option>`).join('');
+ const acs=c?.acs||[];
+ const acSel=document.getElementById('sj-ac');
+ if(!acSel)return;
+ acSel.innerHTML='<option value="">— เลือกแอร์ —</option>'
+  +acs.map((ac,i)=>`<option value="${i}">${(ac.br||'')} ${(ac.md||'')} (${(ac.btu||0).toLocaleString()} BTU)</option>`).join('');
  showJobACInfo();
 }
 function showJobACInfo(){
@@ -1644,22 +1654,28 @@ function showJobACInfo(){
 }
 function editJob(id){
  const j=jobById(id);if(!j)return;
+ // Fill all text fields immediately
+ const g=n=>document.getElementById(n);
+ g('sj-id').value=j._fid||j.id;
+ g('sj-type').value=j.type||'service';
+ g('sj-date').value=j.date||new Date().toISOString().slice(0,10);
+ g('sj-time').value=j.time||'09:00';
+ g('sj-tech').value=j.tech||'';
+ g('sj-price').value=j.price||0;
+ g('sj-detail').value=j.detail||'';
+ g('sj-status').value=j.status||'pending';
+ // Populate customer select first, then set value, then AC select
  popJobCustSel();
  setTimeout(()=>{
-  document.getElementById('sj-id').value=j._fid||j.id;
-  // Find the matching customer and use custKey for the select
   const jc=custById(j.cid);
-  document.getElementById('sj-cust').value=jc?custKey(jc):(j.cid||'');
+  const ck=jc?custKey(jc):(String(j.cid)||'');
+  g('sj-cust').value=ck;
   updateJobACSel();
-  setTimeout(()=>{document.getElementById('sj-ac').value=j.aci||0;},60);
-  document.getElementById('sj-type').value=j.type;
-  document.getElementById('sj-date').value=j.date;
-  document.getElementById('sj-time').value=j.time||'09:00';
-  document.getElementById('sj-tech').value=j.tech||'';
-  document.getElementById('sj-price').value=j.price||0;
-  document.getElementById('sj-detail').value=j.detail||'';
-  document.getElementById('sj-status').value=j.status||'pending';
- },60);
+  setTimeout(()=>{
+   g('sj-ac').value=String(j.aci||0);
+   showJobACInfo();
+  },80);
+ },80);
  openSheet('sh-job');
 }
 function saveJob(){
@@ -2825,19 +2841,30 @@ function moreTab(t,el){
 // ══════════════════════════════════════════════════════════════════
 function loadRptSelects(){
  const sel=document.getElementById('rpt-cust');if(!sel)return;
+ const prev=sel.value;
  sel.innerHTML='<option value="">— เลือกลูกค้า —</option>'
   +DB.customers.map(c=>`<option value="${custKey(c)}">${c.fn} ${c.ln}${c.ph?' ('+c.ph+')':''}</option>`).join('');
+ // Restore previous selection
+ if(prev && sel.querySelector(`option[value="${prev}"]`)){
+   sel.value=prev;
+   loadRptJobs();
+ }
 }
 function loadRptJobs(){
  const cid=document.getElementById('rpt-cust').value;
  const jobs=jobsByCust(cid).sort((a,b)=>b.date.localeCompare(a.date));
  document.getElementById('rpt-job').innerHTML='<option value="">— เลือกงาน —</option>'
   +jobs.map(j=>`<option value="${jobKey(j)}">${j.date} — ${jLbl(j.type)}</option>`).join('');
- if(jobs.length)document.getElementById('rpt-job').value=jobKey(jobs[0]);
+ if(jobs.length){
+  document.getElementById('rpt-job').value=jobKey(jobs[0]);
+ }else{
+  document.getElementById('rpt-job').innerHTML='<option value="">— ยังไม่มีงาน —</option>';
+ }
 }
 function buildReport(){
- const cid=+document.getElementById('rpt-cust').value;
- const jid=+document.getElementById('rpt-job').value;
+ const cid=document.getElementById('rpt-cust').value;
+ const jid=document.getElementById('rpt-job').value;
+ if(!cid||!jid||jid===''){showToast('เลือกลูกค้าและงานก่อน');return;}
  const c=custById(cid);
  const j=jobById(jid);
  if(!c||!j){showToast('เลือกลูกค้าและงานก่อน');return;}
@@ -3004,8 +3031,8 @@ function printPDF(){
   const size=(document.getElementById('rpt-size')?.value||'A4');
   const landscape=size.includes('landscape');
   const baseSize=size.replace(' landscape','');
-  const cid=+document.getElementById('rpt-cust').value;
-  const jid=+document.getElementById('rpt-job').value;
+  const cid=document.getElementById('rpt-cust').value;
+  const jid=document.getElementById('rpt-job').value;
   const cu=custById(cid);
   const j=jobById(jid);
   const fname='nexus_'+(cu?.fn||'report').replace(/\s/g,'_')+'_JOB'+String(j?.id||0).padStart(4,'0')+'.html';
@@ -3049,8 +3076,8 @@ function saveReportAsImage(){
    return html2canvas(clone,{scale:2,useCORS:true,allowTaint:true,backgroundColor:'#ffffff',logging:false,width:640})
    .then(canvas=>{
     document.body.removeChild(clone);
-    const cid=+document.getElementById('rpt-cust').value;
-    const jid=+document.getElementById('rpt-job').value;
+    const cid=document.getElementById('rpt-cust').value;
+    const jid=document.getElementById('rpt-job').value;
     const cu=custById(cid);
     const j=jobById(jid);
     const fname='nexus_'+(cu?.fn||'report').replace(/\s/g,'_')+'_JOB'+String(j?.id||0).padStart(4,'0')+'.png';
@@ -3130,13 +3157,13 @@ function testFromCust(cid){
 }
 function openAddJobFor(cid){
  const c=custById(cid);
- const ck=c?custKey(c):cid;
- popJobCustSel();
+ const ck=c?custKey(c):String(cid);
+ openSheet('sh-job','add');
  setTimeout(()=>{
    document.getElementById('sj-cust').value=ck;
-   updateJobACSel();showJobACInfo();
- },120);
- openSheet('sh-job','add');
+   updateJobACSel();
+   setTimeout(showJobACInfo,60);
+ },150);
 }
 
 // ══════════════════════════════════════════════════════════════════
