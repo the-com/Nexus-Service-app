@@ -800,12 +800,6 @@ function doLogout(){
   });
 }
 function saveSettings(){
-  const pin=document.getElementById('set-pin').value.trim();
-  const user=document.getElementById('set-user').value.trim();
-  const pass=document.getElementById('set-pass').value;
-  if(pin&&/^\d{4}$/.test(pin))localStorage.setItem('nx_pin',pin);
-  if(user)localStorage.setItem('nx_user',user);
-  if(pass)localStorage.setItem('nx_pass',pass);
   const qrNew=document.getElementById('set-qr-url').value.trim();
   const g=n=>{const e=document.getElementById(n);return e?e.value.trim():''};
   const gc=n=>{const e=document.getElementById(n);return e?e.checked:true};
@@ -1147,14 +1141,17 @@ async function loadAllFromFirestore(){
   // Real-time listeners for live sync
   const cuSub=_fbDb.collection('customers').onSnapshot(snap=>{
     DB.customers=snap.docs.map(d=>({...d.data(),_fid:d.id}));
-    renderDash();renderCusts();popAllSels();popJobCustSel();
-    if(_curPage==='sched')renderSched('week');
+    renderDash();
+    if(_curPage==='custs')renderCusts();
+    popAllSels();popJobCustSel();
+    if(_curPage==='sched')renderSched(_schedMode||'week');
     if(_curPage==='more'){loadMapCustSel();loadRptSelects();}
   });
   const joSub=_fbDb.collection('jobs').onSnapshot(snap=>{
     DB.jobs=snap.docs.map(d=>({...d.data(),_fid:d.id}));
-    renderDash();renderJobs();
-    if(_curPage==='sched')renderSched('week');
+    renderDash();
+    if(_curPage==='jobs')renderJobs();
+    if(_curPage==='sched')renderSched(_schedMode||'week');
     if(_curPage==='more')loadRptSelects();
     popAllSels();
   });
@@ -1163,8 +1160,14 @@ async function loadAllFromFirestore(){
   });
   const setSnap=await _fbDb.collection('settings').doc('main').get();
   if(setSnap.exists)DB.settings=setSnap.data();
+  else DB.settings={};
 
   _fbUnsubscribe=[cuSub,joSub,teSub];
+  // Wait for first snapshots to arrive before showing app
+  setTimeout(()=>{
+    renderDash();
+    if(_curPage!=='home') goNav(_curPage);
+  },500);
   showToast('โหลดข้อมูลแล้ว');
 }
 
@@ -1229,6 +1232,26 @@ async function fbSaveTest(t){
 
 // Get next ID (Firestore uses string IDs but we keep numeric for compatibility)
 function nextId(){return DB.nid?++DB.nid:Date.now();}
+
+// ══════════════════════════════════════════════════════════════════
+// FIREBASE USER MANAGEMENT
+// ══════════════════════════════════════════════════════════════════
+async function changePassword(){
+  const newPass=document.getElementById('set-new-pass')?.value;
+  if(!newPass||newPass.length<6){showToast('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');return;}
+  if(!_fbUser){showToast('กรุณา login ก่อน');return;}
+  try{
+    await _fbUser.updatePassword(newPass);
+    document.getElementById('set-new-pass').value='';
+    showToast('เปลี่ยนรหัสผ่านแล้ว');
+  }catch(e){
+    if(e.code==='auth/requires-recent-login'){
+      showToast('กรุณา logout แล้ว login ใหม่ก่อนเปลี่ยนรหัสผ่าน');
+    }else{
+      showToast('Error: '+e.message);
+    }
+  }
+}
 
 // ══════════════════════════════════════════════════════════════════
 // ID HELPERS - Firestore uses string _fid, legacy uses numeric id
@@ -1459,7 +1482,9 @@ function openSheet(id,mode){
   sv('set-line-id',s.lineId||'');
   sv('set-social',s.social||'');
   if(s.qrUrl&&se('set-qr-preview')&&se('set-qr-img')){se('set-qr-img').src=s.qrUrl;se('set-qr-preview').style.display='block';}
-  sv('set-user',localStorage.getItem('nx_user')||'admin');
+  // Show current logged-in user
+  const emailEl=document.getElementById('set-account-email');
+  if(emailEl&&_fbUser)emailEl.textContent=_fbUser.email||'';
   // Points
   const pon=s.ptsEnabled!==false;
   sc('set-pts-on',pon);
@@ -2740,7 +2765,9 @@ function saveTest(){
 // ══════════════════════════════════════════════════════════════════
 // SCHEDULE
 // ══════════════════════════════════════════════════════════════════
+let _schedMode='week';
 function renderSched(mode){
+ _schedMode=mode||_schedMode;
  const el=document.getElementById('sched-body');if(!el)return;
  const today=new Date();
  if(mode==='list'){
@@ -2793,7 +2820,7 @@ function loadMapCustSel(){
  const sel=document.getElementById('map-cust-sel');if(!sel)return;
  const withGPS=DB.customers.filter(c=>c.lat&&c.lng);
  sel.innerHTML='<option value="">— เลือกลูกค้าเพื่อเปิดแผนที่ —</option>'
-  +withGPS.map(c=>`<option value="${c.id}">${c.fn} ${c.ln}</option>`).join('');
+  +withGPS.map(c=>`<option value="${custKey(c)}">${c.fn} ${c.ln}</option>`).join('');
  // List
  const listEl=document.getElementById('map-cust-list');
  if(!listEl)return;
@@ -2822,7 +2849,7 @@ function showMapFrame(lat,lng,name){
 }
 
 function focusMapCust(){
- const id=+document.getElementById('map-cust-sel').value;if(!id)return;
+ const id=document.getElementById('map-cust-sel').value;if(!id)return;
  const c=custById(id);if(!c||!c.lat||!c.lng)return;
  showMapFrame(c.lat,c.lng,`${c.fn} ${c.ln}`);
 }
@@ -3887,13 +3914,26 @@ function showQRSheet(cid){
    </label>
   </div>
 
-  <!-- Security -->
-  <div class="sec-hd">ความปลอดภัย</div>
-  <div class="frow g2" style="margin-bottom:4px;">
-   <div class="fld"><label>PIN ใหม่ (4 หลัก)</label><input id="set-pin" type="number" maxlength="4" placeholder="1234"></div>
-   <div class="fld"><label>รหัสผ่าน</label><input id="set-pass" type="password" placeholder="password"></div>
+  <!-- Account -->
+  <div class="sec-hd">บัญชีผู้ใช้</div>
+  <div class="setting-row">
+   <div>
+    <div class="setting-label" id="set-account-email" style="color:var(--acc);font-weight:600;"></div>
+    <div class="setting-sub">บัญชีที่ login อยู่</div>
+   </div>
   </div>
-  <div class="fld" style="margin-bottom:12px;"><label>ชื่อผู้ใช้</label><input id="set-user" placeholder="admin"></div>
+  <div style="margin-bottom:12px;">
+   <div class="sec-hd" style="font-size:9px;margin-top:8px;margin-bottom:6px;">เปลี่ยนรหัสผ่าน</div>
+   <div class="frow g2">
+    <div class="fld"><label>รหัสผ่านใหม่</label>
+     <input id="set-new-pass" type="password" placeholder="••••••••" autocomplete="new-password"
+      style="background:var(--bar2);border:1px solid var(--border2);color:var(--fg);border-radius:var(--r-sm);font-size:13px;padding:9px 11px;width:100%;outline:none;">
+    </div>
+    <div style="display:flex;align-items:flex-end;padding-bottom:2px;">
+     <button class="sm-btn" onclick="changePassword()">เปลี่ยน</button>
+    </div>
+   </div>
+  </div>
   <button class="bigbtn go" onclick="saveSettings()">บันทึกการตั้งค่า</button>
 
   <!-- Data -->
