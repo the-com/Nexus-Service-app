@@ -192,182 +192,16 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
  background:rgba(154,124,74,.1);border:1px solid rgba(154,124,74,.25);color:var(--gold);
  font-size:10px;font-weight:600;font-family:'IBM Plex Mono',monospace;}
 
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;height:100dvh;overflow:hidden;}
-body{background:var(--bg);color:var(--fg);font-family:'Sarabun',sans-serif;font-size:15px;}
-#shell{display:flex;height:100dvh;flex-direction:column;overflow:hidden;}
-
-/* TOPBAR */
-#topbar{background:var(--bar);border-bottom:1px solid var(--border);padding:0 14px;padding-top:var(--st);
- height:calc(48px + var(--st));display:flex;align-items:flex-end;gap:8px;padding-bottom:9px;flex-shrink:0;}
-#pg-title{font-size:15px;font-weight:600;color:var(--fg);flex:1;letter-spacing:.04em;}
-.tbtn{background:none;border:1px solid var(--border2);color:var(--fg2);font-family:'Sarabun',sans-serif;
- font-size:11px;padding:5px 11px;border-radius:20px;cursor:pointer;white-space:nowrap;transition:all .12s;}
-.tbtn:active,.tbtn.on{border-color:var(--acc);color:var(--acc);}
-
-/* BOTTOM NAV */
-#bnav{background:var(--bar);border-top:1px solid var(--border);display:flex;align-items:stretch;
- flex-shrink:0;padding-bottom:var(--sb);}
-.bni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
- padding:8px 4px 6px;cursor:pointer;transition:all .12s;border:none;background:none;gap:2px;}
-.bni-ic{font-size:10px;line-height:1;letter-spacing:.05em;}
-.bni-lbl{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--dim);transition:color .12s;}
-.bni.active .bni-lbl{color:var(--acc);}
-.bni.active .bni-ic{color:var(--acc);}
-
-/* PAGE STACK */
-#pages{flex:1;overflow:hidden;position:relative;min-height:0;}
-.pg{position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden;opacity:0;pointer-events:none;transition:opacity .18s;}
-.pg.active{opacity:1;pointer-events:all;}
-.scr{flex:1;overflow-y:auto;padding:12px 14px;padding-bottom:20px;min-height:0;
- -webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:var(--border2) transparent;}
-.scr::-webkit-scrollbar{width:2px;}
-
-/* CARDS */
-.card{background:var(--bar);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
-.sec-hd{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;
- margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
-
-/* FORM */
-.frow{display:grid;gap:8px;margin-bottom:8px;}
-.frow.g2{grid-template-columns:1fr 1fr;}
-.frow.g3{grid-template-columns:1fr 1fr 1fr;}
-.frow.g4{grid-template-columns:1fr 1fr 1fr 1fr;}
-.fld{display:flex;flex-direction:column;gap:3px;}
-.fld label{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--dim);}
-.fld input,.fld select,.fld textarea{background:var(--bar);border:1px solid var(--border2);border-radius:var(--r-sm);
- color:var(--fg);font-size:12px;padding:7px 9px;font-family:'Sarabun',sans-serif;outline:none;width:100%;transition:border-color .13s;}
-.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--fg2);}
-.fld select option{background:var(--bar);}
-.fld textarea{resize:vertical;min-height:56px;}
-input[type=range]{-webkit-appearance:none;height:2px;background:var(--border2);border-radius:2px;outline:none;cursor:pointer;border:none;padding:0;}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--acc);cursor:pointer;}
-
-/* BUTTONS */
-.bigbtn{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border2);color:var(--fg2);
- font-family:'Sarabun',sans-serif;font-size:12px;padding:10px;border-radius:var(--r-sm);cursor:pointer;
- margin-bottom:6px;transition:all .11s;font-weight:500;}
-.bigbtn:active{opacity:.6;}
-.bigbtn.accent{border-color:var(--acc);color:var(--acc);}
-.bigbtn.go{background:var(--acc);color:#ffffff;border-color:var(--acc);font-weight:700;}
-.bigbtn.red{border-color:var(--red);color:var(--red);}
-.bigbtn.green{border-color:var(--green);color:var(--green);}
-.sm-btn{font-size:10px;padding:4px 10px;border-radius:20px;border:1px solid var(--border2);
- background:none;color:var(--fg2);cursor:pointer;font-family:'IBM Plex Mono',monospace;transition:all .11s;}
-.sm-btn:active{border-color:var(--acc);color:var(--acc);}
-
-/* STATS ROW */
-.stats-row{display:grid;gap:6px;margin-bottom:8px;}
-.stats-row.g4{grid-template-columns:repeat(4,1fr);}
-.stats-row.g3{grid-template-columns:repeat(3,1fr);}
-.stats-row.g2{grid-template-columns:repeat(2,1fr);}
-.stat{background:var(--bar);border:1px solid var(--border);border-radius:var(--r-sm);padding:9px 10px;box-shadow:0 1px 2px rgba(0,0,0,.05);}
-.stat-l{font-size:8px;font-family:'IBM Plex Mono',monospace;color:var(--dim);margin-bottom:3px;}
-.stat-v{font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;line-height:1;}
-.stat-u{font-size:9px;color:var(--fg2);margin-left:2px;}
-.stat.acc .stat-v{color:var(--acc);}
-.stat.blue .stat-v{color:var(--blue);}
-.stat.green .stat-v{color:var(--green);}
-.stat.red .stat-v{color:var(--red);}
-.stat.yellow .stat-v{color:var(--yellow);}
-
-/* BADGE */
-.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:20px;font-size:9px;font-family:'IBM Plex Mono',monospace;font-weight:500;}
-.badge-g{background:rgba(58,158,110,.1);color:var(--green);border:1px solid rgba(58,158,110,.2);}
-.badge-y{background:rgba(184,146,14,.1);color:var(--yellow);border:1px solid rgba(184,146,14,.2);}
-.badge-r{background:rgba(200,85,85,.1);color:var(--red);border:1px solid rgba(200,85,85,.2);}
-.badge-b{background:rgba(74,143,212,.1);color:var(--blue);border:1px solid rgba(74,143,212,.2);}
-.badge-a{background:rgba(224,224,226,.07);color:var(--acc);border:1px solid rgba(224,224,226,.12);}
-
-/* TABLE */
-.tbl{width:100%;border-collapse:collapse;}
-.tbl th{text-align:left;font-size:8px;font-family:'IBM Plex Mono',monospace;color:var(--dim);padding:6px 8px;
- border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.05em;}
-.tbl td{font-size:11px;padding:7px 8px;border-bottom:1px solid rgba(39,39,41,.5);vertical-align:middle;}
-.tbl tr:last-child td{border-bottom:none;}
-.tbl tr:active td{background:rgba(255,255,255,.02);}
-
-/* MODAL / SHEET */
-.sheet-ov{position:fixed;inset:0;z-index:300;pointer-events:none;}
-.sheet-ov.open{pointer-events:all;}
-.sheet-bd{position:absolute;inset:0;background:rgba(0,0,0,0);transition:background .2s;}
-.sheet-ov.open .sheet-bd{background:rgba(0,0,0,.65);}
-.sheet-box{position:absolute;bottom:0;left:0;right:0;background:var(--bar);border-top:1px solid var(--border2);
- border-radius:18px 18px 0 0;padding:0 16px calc(20px + var(--sb));max-height:88dvh;overflow-y:auto;
- transform:translateY(100%);transition:transform .28s cubic-bezier(.25,.46,.45,.94);}
-.sheet-ov.open .sheet-box{transform:translateY(0);}
-.sh-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:12px auto 16px;}
-.sh-title{font-size:15px;font-weight:600;color:var(--fg);margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
-
-/* CANVAS SIM */
-#simCv{display:block;width:100%;border-radius:var(--r-sm);background:#f8f8f6;border:1px solid var(--border);}
-#roomCv{display:block;width:100%;border-radius:var(--r-sm);background:#f0f0ee;border:1px solid var(--border);touch-action:none;cursor:crosshair;}
-
-/* MAP */
-#mapFrame{width:100%;height:300px;border-radius:var(--r);border:1px solid var(--border);overflow:hidden;}
-
-/* TABS */
-.tab-row{display:flex;gap:2px;background:var(--bar);border-radius:var(--r-sm);padding:3px;margin-bottom:10px;}
-.tab-btn{flex:1;padding:6px;text-align:center;border-radius:8px;font-size:10px;font-family:'IBM Plex Mono',monospace;
- cursor:pointer;color:var(--dim);background:none;border:none;transition:all .13s;}
-.tab-btn.active{background:var(--bar2);color:var(--acc);border:1px solid var(--border2);}
-
-/* CALENDAR */
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
-.cal-day{background:var(--bar2);border:1px solid var(--border);border-radius:6px;padding:5px 4px;min-height:52px;}
-.cal-day.today{border-color:var(--acc);}
-.cal-dn{font-size:8px;font-family:'IBM Plex Mono',monospace;color:var(--dim);margin-bottom:3px;}
-.cal-ev{background:rgba(74,143,212,.15);border-radius:3px;padding:1px 4px;font-size:8px;color:var(--blue);
- margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-
-/* REPORT PREVIEW */
-#rpt-wrap{background:#fff;color:#111;border-radius:var(--r);overflow:hidden;}
-
-/* PROGRESS */
-.prog{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:4px;}
-.prog-fill{height:100%;border-radius:3px;transition:width .4s;}
-
-/* ANIM */
-@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-.anim{animation:fadeUp .18s ease;}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.pls{animation:pulse 1.4s infinite;}
-
-/* LOGIN */
-#login-screen{position:fixed;inset:0;z-index:9000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
-#login-screen.hidden{display:none;}
-.login-logo{font-family:'IBM Plex Mono',monospace;font-size:28px;font-weight:700;letter-spacing:.2em;color:var(--acc);margin-bottom:4px;}
-.login-sub{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--dim);letter-spacing:.15em;margin-bottom:36px;}
-.login-box{width:100%;max-width:340px;background:var(--bar);border:1px solid var(--border2);border-radius:16px;padding:22px;}
-.login-box .fld{margin-bottom:12px;}
-.login-pin{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;}
-.pin-btn{height:56px;border-radius:12px;border:1px solid var(--border2);background:var(--bar);color:var(--fg);font-size:20px;font-weight:600;cursor:pointer;transition:all .12s;}
-.pin-btn:active{background:var(--acc);color:#fff;border-color:var(--acc);}
-.pin-dots{display:flex;gap:8px;justify-content:center;margin-bottom:16px;height:14px;}
-.pin-dot{width:10px;height:10px;border-radius:50%;background:var(--border2);transition:background .15s;}
-.pin-dot.filled{background:var(--acc);}
-
-/* SIGNATURE */
-.sig-canvas{width:100%;height:120px;border:1px solid var(--border2);border-radius:var(--r-sm);background:#fafaf8;touch-action:none;cursor:crosshair;display:block;}
-.sig-wrap{position:relative;}
-.sig-clear{position:absolute;top:4px;right:4px;font-size:9px;padding:3px 8px;border:1px solid var(--border2);border-radius:4px;background:var(--bar);color:var(--fg2);cursor:pointer;font-family:'IBM Plex Mono',monospace;}
-
-/* PHOTOS */
-.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px;}
-.photo-item{aspect-ratio:1;border-radius:var(--r-sm);overflow:hidden;position:relative;background:var(--bar2);border:1px solid var(--border);}
-.photo-item img{width:100%;height:100%;object-fit:cover;}
-.photo-del{position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;background:rgba(139,32,32,.85);color:#fff;border:none;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}
-.photo-add{aspect-ratio:1;border-radius:var(--r-sm);border:1px dashed var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--bar2);flex-direction:column;gap:3px;}
-.photo-add span{font-size:20px;color:var(--dim);}
-.photo-add small{font-size:8px;color:var(--dim);font-family:'IBM Plex Mono',monospace;}
-
-/* SETTINGS SHEET */
-#sh-settings .sh-title{font-size:15px;}
-.setting-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--border);}
-.setting-row:last-child{border-bottom:none;}
-.setting-label{font-size:13px;font-weight:500;}
-.setting-sub{font-size:10px;color:var(--dim);margin-top:1px;font-family:'IBM Plex Mono',monospace;}
+/* Portal mode: hide staff UI instantly */
+html.is-portal #shell{display:none!important;}
+html.is-portal #login-screen{display:none!important;}
 </style>
+<script>
+// Detect portal link BEFORE anything renders - prevents staff UI flash
+if(location.hash.match(/^#p\/.+/)){
+  document.documentElement.classList.add('is-portal');
+}
+</script>
 </head>
 <body>
 <!-- ═══ LOGIN SCREEN ═══════════════════════════════════════════ -->
@@ -375,40 +209,32 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
  <div class="login-logo">Nexus</div>
  <div class="login-sub">Service Management</div>
  <div class="login-box">
-  <div id="login-mode-pin">
-   <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:rgba(255,255,255,.3);text-align:center;margin-bottom:20px;letter-spacing:.1em;text-transform:uppercase;">Enter PIN</div>
-   <div class="pin-dots" id="pin-dots">
-    <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
-    <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
+  <div id="login-form">
+   <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:rgba(255,255,255,.4);text-align:center;margin-bottom:24px;letter-spacing:.12em;text-transform:uppercase;">เข้าสู่ระบบ</div>
+   <div style="margin-bottom:12px;">
+    <div style="font-size:9px;color:rgba(255,255,255,.4);font-family:'IBM Plex Mono',monospace;margin-bottom:5px;text-transform:uppercase;letter-spacing:.08em;">Email</div>
+    <input id="l-email" type="email" placeholder="email@example.com" autocomplete="email"
+     style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#fff;border-radius:10px;font-size:14px;padding:12px 14px;width:100%;outline:none;font-family:'Sarabun',sans-serif;box-sizing:border-box;">
    </div>
-   <div class="login-pin">
-    <button class="pin-btn" onclick="pinPress('1')">1</button>
-    <button class="pin-btn" onclick="pinPress('2')">2</button>
-    <button class="pin-btn" onclick="pinPress('3')">3</button>
-    <button class="pin-btn" onclick="pinPress('4')">4</button>
-    <button class="pin-btn" onclick="pinPress('5')">5</button>
-    <button class="pin-btn" onclick="pinPress('6')">6</button>
-    <button class="pin-btn" onclick="pinPress('7')">7</button>
-    <button class="pin-btn" onclick="pinPress('8')">8</button>
-    <button class="pin-btn" onclick="pinPress('9')">9</button>
-    <button class="pin-btn" onclick="pinPress('C')" style="font-size:11px;font-family:'IBM Plex Mono',monospace;letter-spacing:.05em;">CLR</button>
-    <button class="pin-btn" onclick="pinPress('0')">0</button>
-    <button class="pin-btn" onclick="pinPress('⌫')" style="font-size:18px;">⌫</button>
+   <div style="margin-bottom:20px;">
+    <div style="font-size:9px;color:rgba(255,255,255,.4);font-family:'IBM Plex Mono',monospace;margin-bottom:5px;text-transform:uppercase;letter-spacing:.08em;">รหัสผ่าน</div>
+    <input id="l-pass" type="password" placeholder="••••••••" autocomplete="current-password"
+     style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#fff;border-radius:10px;font-size:14px;padding:12px 14px;width:100%;outline:none;font-family:'Sarabun',sans-serif;box-sizing:border-box;">
    </div>
-   <div id="pin-err" style="text-align:center;font-size:10px;color:rgba(255,80,80,.8);margin-top:12px;min-height:14px;font-family:'IBM Plex Mono',monospace;"></div>
-   <button onclick="showLoginMode('pass')" style="width:100%;margin-top:16px;padding:10px;background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:10px;color:rgba(255,255,255,.3);font-family:'Sarabun',sans-serif;font-size:12px;cursor:pointer;">ใช้รหัสผ่านแทน</button>
+   <button onclick="fbLogin()" id="login-btn"
+    style="width:100%;padding:14px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:10px;color:#fff;font-family:'Sarabun',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
+    เข้าสู่ระบบ
+   </button>
+   <div id="login-err" style="text-align:center;font-size:12px;color:rgba(255,120,120,.9);margin-top:12px;min-height:16px;"></div>
   </div>
-  <div id="login-mode-pass" style="display:none;">
-   <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:rgba(255,255,255,.3);text-align:center;margin-bottom:20px;letter-spacing:.1em;text-transform:uppercase;">Sign In</div>
-   <div class="fld" style="margin-bottom:12px;"><label>Username</label><input id="l-user" placeholder="admin" autocomplete="username"></div>
-   <div class="fld" style="margin-bottom:20px;"><label>Password</label><input id="l-pass" type="password" placeholder="••••••" autocomplete="current-password"></div>
-   <button onclick="loginPass()" style="width:100%;padding:13px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:10px;color:#fff;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">เข้าสู่ระบบ</button>
-   <div id="pass-err" style="text-align:center;font-size:10px;color:rgba(255,80,80,.8);margin-top:8px;min-height:14px;"></div>
-   <button onclick="showLoginMode('pin')" style="width:100%;margin-top:10px;padding:10px;background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:10px;color:rgba(255,255,255,.3);font-family:'Sarabun',sans-serif;font-size:12px;cursor:pointer;">ใช้ PIN แทน</button>
+  <div id="login-loading" style="display:none;text-align:center;padding:40px 0;">
+   <div style="width:32px;height:32px;border:2px solid rgba(255,255,255,.15);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px;"></div>
+   <div style="font-size:12px;color:rgba(255,255,255,.4);">กำลังโหลดข้อมูล...</div>
   </div>
  </div>
  <div style="margin-top:32px;font-size:9px;color:rgba(255,255,255,.18);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.15em;">Nexus © 2025</div>
 </div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
 <div id="shell">
  <div id="topbar">
@@ -416,6 +242,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
    <span class="topbar-logo">Nexus</span>
    <span class="topbar-divider"></span>
    <span id="pg-title">Dashboard</span>
+  </div>
+  <div id="tb-user-info" style="display:flex;align-items:center;gap:6px;margin-right:4px;">
+   <span id="tb-user-email" style="font-size:10px;color:var(--dim);font-family:'IBM Plex Mono',monospace;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
   </div>
   <div id="tb-acts" style="display:flex;gap:4px;align-items:center;">
    <button class="tbtn" onclick="openSheet('sh-cust','add')">+ ลูกค้า</button>
@@ -964,12 +793,11 @@ function doLogin(){
   setTimeout(()=>{drawRoom();drawDashChart();},150);
 }
 function doLogout(){
-  _pinBuf='';
-  document.getElementById('pin-err').textContent='';
-  document.getElementById('pass-err')?document.getElementById('pass-err').textContent='':'';
-  updatePinDots();
-  showLoginMode('pin');
-  document.getElementById('login-screen').classList.remove('hidden');
+  if(_fbAuth)_fbAuth.signOut().then(()=>{
+    // Unsubscribe Firestore listeners
+    _fbUnsubscribe.forEach(u=>u());_fbUnsubscribe=[];
+    DB={customers:[],jobs:[],tests:[],settings:{},nid:1};
+  });
 }
 function saveSettings(){
   const pin=document.getElementById('set-pin').value.trim();
@@ -1101,10 +929,17 @@ function importData(input){
   input.value='';
 }
 function clearAllData(){
-  showConfirm('ล้างข้อมูลทั้งหมด','ข้อมูลลูกค้า งาน และทดสอบทั้งหมดจะถูกลบ ไม่สามารถกู้คืนได้','ล้างเลย',()=>{
-    localStorage.removeItem('acp2');
-    DB={customers:[],jobs:[],tests:[],nid:1};
-    renderDash();renderCusts();renderJobs();popAllSels();
+  showConfirm('ล้างข้อมูลทั้งหมด','ข้อมูลลูกค้า งาน และทดสอบทั้งหมดจะถูกลบถาวรจาก Cloud ไม่สามารถกู้คืนได้','ล้างเลย',async()=>{
+    showToast('กำลังลบข้อมูล...',5000);
+    if(_fbDb){
+      const cols=['customers','jobs','tests'];
+      for(const col of cols){
+        const snap=await _fbDb.collection(col).get();
+        const batch=_fbDb.batch();
+        snap.docs.forEach(d=>batch.delete(d.ref));
+        await batch.commit();
+      }
+    }
     closeSheet('sh-settings');
     showToast('ล้างข้อมูลแล้ว');
   });
@@ -1182,25 +1017,185 @@ function handleJobPhotos(input){
 }
 
 
-let DB={customers:[],jobs:[],tests:[],nid:1};
-function sDB(){try{localStorage.setItem('acp2',JSON.stringify(DB));}catch(e){}}
-function lDB(){
- try{const d=localStorage.getItem('acp2');if(d)DB=JSON.parse(d);}catch(e){}
- if(!DB.customers.length){
-  DB.customers=[
-   {id:1,fn:'สมชาย',ln:'ใจดี',ph:'089-123-4567',li:'@somchai',ad:'123 ถ.สุขุมวิท คลองเตย กรุงเทพ',lat:13.7220,lng:100.5650,note:'บ้านชั้นเดียว',
-    acs:[{br:'Mitsubishi',md:'MSY-GN13VF',btu:13000,type:'inverter',cop:3.5,age:3,sn:'MT001',setT:25}]},
-   {id:2,fn:'สมหญิง',ln:'รักดี',ph:'062-456-7890',li:'@somying',ad:'456 ถ.พหลโยธิน จตุจักร กรุงเทพ',lat:13.8299,lng:100.5618,note:'คอนโด ชั้น 5',
-    acs:[{br:'Daikin',md:'FTKM15TV',btu:15000,type:'inverter',cop:4.0,age:1,sn:'DK002',setT:24},
-      {br:'Samsung',md:'AR12BSHZ',btu:12000,type:'fixed',cop:2.8,age:5,sn:'SM003',setT:25}]}
-  ];
-  DB.jobs=[
-   {id:1,cid:1,aci:0,type:'service',date:new Date().toISOString().slice(0,10),time:'09:00',tech:'สมศักดิ์',price:800,detail:'ล้างแอร์ทำความสะอาด',status:'done'},
-   {id:2,cid:2,aci:0,type:'refill',date:new Date().toISOString().slice(0,10),time:'13:00',tech:'สมบัติ',price:1200,detail:'เติมน้ำยา R-410A',status:'pending'}
-  ];
-  DB.nid=10;sDB();
- }
+// ══════════════════════════════════════════════════════════════════
+// FIREBASE CONFIG & DB
+// ══════════════════════════════════════════════════════════════════
+const FB_CONFIG={
+  apiKey:"AIzaSyCUU1Kh9j1scdEWDviVFKBwKP3U3vlh0ro",
+  authDomain:"nexusdatabase-800a0.firebaseapp.com",
+  projectId:"nexusdatabase-800a0",
+  storageBucket:"nexusdatabase-800a0.firebasestorage.app",
+  messagingSenderId:"797576264170",
+  appId:"1:797576264170:web:a8a92f1bb41a3dd1825a93"
+};
+
+let _fbApp=null,_fbDb=null,_fbAuth=null,_fbUser=null;
+let DB={customers:[],jobs:[],tests:[],settings:{},nid:1};
+let _fbUnsubscribe=[];
+
+// Initialize Firebase (loaded from CDN)
+function initFirebase(){
+  if(_fbApp)return Promise.resolve();
+  return new Promise((res,rej)=>{
+    if(window.firebase){_setupFb();res();return;}
+    // Load Firebase SDKs
+    const sdks=[
+      'https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js',
+      'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js',
+      'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js'
+    ];
+    let loaded=0;
+    sdks.forEach(src=>{
+      const s=document.createElement('script');s.src=src;
+      s.onload=()=>{if(++loaded===sdks.length){_setupFb();res();}};
+      s.onerror=rej;document.head.appendChild(s);
+    });
+  });
 }
+function _setupFb(){
+  _fbApp=firebase.initializeApp(FB_CONFIG);
+  _fbAuth=firebase.auth();
+  _fbDb=firebase.firestore();
+}
+
+// Firebase Login
+async function fbLogin(){
+  const email=document.getElementById('l-email').value.trim();
+  const pass=document.getElementById('l-pass').value;
+  const errEl=document.getElementById('login-err');
+  const btn=document.getElementById('login-btn');
+  const form=document.getElementById('login-form');
+  const loading=document.getElementById('login-loading');
+  if(!email||!pass){errEl.textContent='กรุณาใส่ email และรหัสผ่าน';return;}
+  btn.disabled=true;btn.textContent='กำลังเข้าสู่ระบบ...';
+  errEl.textContent='';
+  try{
+    await initFirebase();
+    await _fbAuth.signInWithEmailAndPassword(email,pass);
+    // onAuthStateChanged will handle the rest
+  }catch(e){
+    btn.disabled=false;btn.textContent='เข้าสู่ระบบ';
+    const msgs={
+      'auth/user-not-found':'ไม่พบ email นี้',
+      'auth/wrong-password':'รหัสผ่านไม่ถูกต้อง',
+      'auth/invalid-email':'Email ไม่ถูกต้อง',
+      'auth/too-many-requests':'ลองใหม่ในอีกสักครู่',
+      'auth/network-request-failed':'ไม่มีอินเตอร์เน็ต'
+    };
+    errEl.textContent=msgs[e.code]||('Error: '+e.message);
+  }
+}
+
+// Auth state observer - runs on every page load
+async function startAuthObserver(){
+  await initFirebase();
+  _fbAuth.onAuthStateChanged(async user=>{
+    // Check if this is a customer portal link - skip auth
+    if(location.hash.match(/^#p\/.+/))return;
+    if(user){
+      _fbUser=user;
+      // Show loading in login screen
+      document.getElementById('login-form').style.display='none';
+      document.getElementById('login-loading').style.display='block';
+      // Load all data from Firestore
+      await loadAllFromFirestore();
+      // Update user display
+      const userEl=document.getElementById('tb-user-email');
+      if(userEl)userEl.textContent=user.email;
+      // Hide login
+      document.getElementById('login-screen').style.display='none';
+      renderDash();buildChecklist();
+      setTimeout(()=>{drawRoom();drawDashChart();},150);
+    }else{
+      _fbUser=null;
+      // Show login screen
+      document.getElementById('login-screen').style.display='flex';
+      document.getElementById('login-form').style.display='block';
+      document.getElementById('login-loading').style.display='none';
+      const btn=document.getElementById('login-btn');
+      if(btn){btn.disabled=false;btn.textContent='เข้าสู่ระบบ';}
+    }
+  });
+}
+
+// Load all data from Firestore into local DB
+async function loadAllFromFirestore(){
+  if(!_fbDb)return;
+  // Unsubscribe old listeners
+  _fbUnsubscribe.forEach(u=>u());_fbUnsubscribe=[];
+
+  // Real-time listeners for live sync
+  const cuSub=_fbDb.collection('customers').onSnapshot(snap=>{
+    DB.customers=snap.docs.map(d=>({...d.data(),_fid:d.id}));
+    renderDash();renderCusts();popAllSels();popJobCustSel();
+  });
+  const joSub=_fbDb.collection('jobs').onSnapshot(snap=>{
+    DB.jobs=snap.docs.map(d=>({...d.data(),_fid:d.id}));
+    renderDash();renderJobs();
+  });
+  const teSub=_fbDb.collection('tests').onSnapshot(snap=>{
+    DB.tests=snap.docs.map(d=>({...d.data(),_fid:d.id}));
+  });
+  const setSnap=await _fbDb.collection('settings').doc('main').get();
+  if(setSnap.exists)DB.settings=setSnap.data();
+
+  _fbUnsubscribe=[cuSub,joSub,teSub];
+  showToast('โหลดข้อมูลแล้ว');
+}
+
+// Save to Firestore (replaces old sDB)
+async function sDB(){
+  // Settings only - customers/jobs/tests saved individually
+  if(!_fbDb||!DB.settings)return;
+  try{await _fbDb.collection('settings').doc('main').set(DB.settings);}catch(e){}
+}
+
+// Old lDB kept as no-op (data comes from Firestore now)
+function lDB(){}
+
+// Firebase CRUD helpers
+async function fbSaveCustomer(c){
+  if(!_fbDb)return;
+  // Strip undefined
+  const data=JSON.parse(JSON.stringify(c));
+  if(c._fid){
+    await _fbDb.collection('customers').doc(c._fid).set(data);
+  }else{
+    const ref=await _fbDb.collection('customers').add(data);
+    c._fid=ref.id;
+  }
+}
+async function fbDeleteCustomer(fid){
+  if(!_fbDb||!fid)return;
+  await _fbDb.collection('customers').doc(fid).delete();
+  // Delete customer's jobs too
+  const jobs=await _fbDb.collection('jobs').where('cid','==',fid).get();
+  const batch=_fbDb.batch();
+  jobs.docs.forEach(d=>batch.delete(d.ref));
+  await batch.commit();
+}
+async function fbSaveJob(j){
+  if(!_fbDb)return;
+  const data=JSON.parse(JSON.stringify(j));
+  if(j._fid){
+    await _fbDb.collection('jobs').doc(j._fid).set(data);
+  }else{
+    const ref=await _fbDb.collection('jobs').add(data);
+    j._fid=ref.id;
+  }
+}
+async function fbDeleteJob(fid){
+  if(!_fbDb||!fid)return;
+  await _fbDb.collection('jobs').doc(fid).delete();
+}
+async function fbSaveTest(t){
+  if(!_fbDb)return;
+  const data=JSON.parse(JSON.stringify(t));
+  await _fbDb.collection('tests').add(data);
+}
+
+// Get next ID (Firestore uses string IDs but we keep numeric for compatibility)
+function nextId(){return DB.nid?++DB.nid:Date.now();}
 
 // ══════════════════════════════════════════════════════════════════
 // NAV
@@ -1235,7 +1230,7 @@ function renderDash(){
  document.getElementById('d-nd').textContent=DB.jobs.filter(j=>j.status==='done'&&j.date.startsWith(mo)).length;
  // Recent jobs
  document.getElementById('d-jobs').innerHTML=DB.jobs.slice(-4).reverse().map(j=>{
-  const c=DB.customers.find(x=>x.id===j.cid)||{fn:'?',ln:''};
+  const c=DB.customers.find(x=>x.id===j.cid||x._fid===j.cid||String(x.id)===String(j.cid))||{fn:'?',ln:''};
   return`<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)33;">
    <div><div style="font-size:12px;">${jLbl(j.type)} — ${c.fn} ${c.ln}</div>
     <div style="font-size:9px;color:var(--dim);font-family:'IBM Plex Mono',monospace;">${j.date} · ${j.tech||'—'}</div></div>
@@ -1296,10 +1291,10 @@ function renderCusts(){
      <div style="font-size:10px;color:var(--dim);margin-top:2px;">${(c.acs||[]).length} เครื่อง · ${jobCount} งาน${c.ad?' · '+c.ad.slice(0,25):''}${c.ad&&c.ad.length>25?'…':''}</div>
     </div>
     <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;flex-shrink:0;margin-left:8px;">
-     <button class="sm-btn" onclick="viewCust(${c.id})">ดู</button>
-     <button class="sm-btn" onclick="editCust(${c.id})">แก้ไข</button>
+     <button class="sm-btn" onclick="viewCust('${c._fid||c.id}')">ดู</button>
+     <button class="sm-btn" onclick="editCust('${c._fid||c.id}')">แก้ไข</button>
      ${c.lat&&c.lng?`<button class="sm-btn" onclick="openGmap(${c.lat},${c.lng})">แผนที่</button>`:''}
-     <button class="sm-btn" style="border-color:var(--red);color:var(--red);" onclick="deleteCust(${c.id})">ลบ</button>
+     <button class="sm-btn" style="border-color:var(--red);color:var(--red);" onclick="deleteCust('${c._fid||c.id}')">ลบ</button>
     </div>
    </div>
   </div>`;
@@ -1327,7 +1322,7 @@ function showConfirm(title, msg, okLabel, onOk, danger=true){
 }
 
 function deleteCust(id){
-  const c=DB.customers.find(x=>x.id===id);
+  const c=DB.customers.find(x=>x._fid===id||String(x.id)===String(id));
   if(!c) return;
   const jobCount=DB.jobs.filter(j=>j.cid===id).length;
   showConfirm(
@@ -1336,8 +1331,8 @@ function deleteCust(id){
 ไม่สามารถกู้คืนได้`,
     'ลบเลย',
     ()=>{
-      DB.customers=DB.customers.filter(x=>x.id!==id);
-      DB.jobs=DB.jobs.filter(j=>j.cid!==id);
+      const c2=DB.customers.find(x=>x.id===id);
+      if(c2&&c2._fid){fbDeleteCustomer(c2._fid).catch(e=>showToast('Error: '+e.message));}
       DB.tests=(DB.tests||[]).filter(t=>t.cid!==id);
       sDB();
       // Close detail sheet if open
@@ -1458,9 +1453,9 @@ function openSheet(id,mode){
 function closeSheet(id){const el=document.getElementById(id);if(el)el.classList.remove('open');}
 
 function editCust(id){
- const c=DB.customers.find(x=>x.id===id);if(!c)return;
+ const c=DB.customers.find(x=>x.id===id||x._fid===id||String(x.id)===String(id));if(!c)return;
  document.getElementById('sh-cust-title').textContent='Edit แก้ไขลูกค้า';
- document.getElementById('sc-id').value=c.id;
+ document.getElementById('sc-id').value=c._fid||c.id;
  document.getElementById('sc-fn').value=c.fn||'';
  document.getElementById('sc-ln').value=c.ln||'';
  document.getElementById('sc-ph').value=c.ph||'';
@@ -1498,9 +1493,9 @@ function renderAcRows(){
 }
 
 function saveCust(){
- const id=document.getElementById('sc-id').value;
+ const fid=document.getElementById('sc-id').value; // Firestore ID
  const c={
-  id:id?+id:DB.nid++,
+  id:fid||('c'+Date.now()),
   fn:document.getElementById('sc-fn').value.trim(),
   ln:document.getElementById('sc-ln').value.trim(),
   ph:document.getElementById('sc-ph').value.trim(),
@@ -1511,11 +1506,12 @@ function saveCust(){
   note:document.getElementById('sc-note').value.trim(),
   acs:_shACs
  };
+ if(fid)c._fid=fid;
  if(!c.fn){showToast('กรุณาใส่ชื่อ');return;}
- if(id){const i=DB.customers.findIndex(x=>x.id===c.id);if(i>=0)DB.customers[i]=c;}
- else DB.customers.push(c);
- sDB();closeSheet('sh-cust');renderCusts();renderDash();popAllSels();
- showToast('บันทึกข้อมูลลูกค้าแล้ว');
+ fbSaveCustomer(c).then(()=>{
+   closeSheet('sh-cust');
+   showToast('บันทึกข้อมูลลูกค้าแล้ว');
+ }).catch(e=>showToast('Error: '+e.message));
 }
 
 function gpsMe(){
@@ -1533,7 +1529,7 @@ function renderJobs(){
  const f=document.getElementById('job-filter')?.value||'';
  const list=DB.jobs.filter(j=>!f||j.status===f).sort((a,b)=>b.date.localeCompare(a.date));
  document.getElementById('job-list').innerHTML=list.map(j=>{
-  const c=DB.customers.find(x=>x.id===j.cid)||{fn:'?',ln:''};
+  const c=DB.customers.find(x=>x.id===j.cid||x._fid===j.cid||String(x.id)===String(j.cid))||{fn:'?',ln:''};
   const ac=(c.acs||[])[j.aci||0];
   return`<div class="card anim" style="margin-bottom:6px;">
    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
@@ -1566,12 +1562,12 @@ function openJobForCust(cid){
  openSheet('sh-job');
 }
 function popJobCustSel(){
- document.getElementById('sj-cust').innerHTML=DB.customers.map(c=>`<option value="${c.id}">${c.fn} ${c.ln}</option>`).join('');
+ document.getElementById('sj-cust').innerHTML=DB.customers.map(c=>`<option value="${c._fid||c.id}">${c.fn} ${c.ln}</option>`).join('');
  updateJobACSel();
 }
 function updateJobACSel(){
  const cid=+document.getElementById('sj-cust')?.value;
- const c=DB.customers.find(x=>x.id===cid);
+ const c=DB.customers.find(x=>x.id===cid||x._fid===cid||String(x.id)===String(cid));
  document.getElementById('sj-ac').innerHTML=`<option value="">— เลือกแอร์ —</option>`
   +(c?.acs||[]).map((ac,i)=>`<option value="${i}">${ac.br} ${ac.md} (${(ac.btu||0).toLocaleString()} BTU)</option>`).join('');
  showJobACInfo();
@@ -1579,7 +1575,7 @@ function updateJobACSel(){
 function showJobACInfo(){
  const cid=+document.getElementById('sj-cust')?.value;
  const ai=document.getElementById('sj-ac')?.value;
- const c=DB.customers.find(x=>x.id===cid);
+ const c=DB.customers.find(x=>x.id===cid||x._fid===cid||String(x.id)===String(cid));
  const ac=c&&ai!==''?(c.acs||[])[+ai]:null;
  const el=document.getElementById('sj-ac-info');
  if(!ac||!el){if(el)el.style.display='none';return;}
@@ -1595,7 +1591,7 @@ function editJob(id){
  const j=DB.jobs.find(x=>x.id===id);if(!j)return;
  popJobCustSel();
  setTimeout(()=>{
-  document.getElementById('sj-id').value=j.id;
+  document.getElementById('sj-id').value=j._fid||j.id;
   document.getElementById('sj-cust').value=j.cid;
   updateJobACSel();
   setTimeout(()=>{document.getElementById('sj-ac').value=j.aci||0;},60);
@@ -1610,32 +1606,43 @@ function editJob(id){
  openSheet('sh-job');
 }
 function saveJob(){
- const id=document.getElementById('sj-id').value;
+ const fid=document.getElementById('sj-id').value;
+ const custId=document.getElementById('sj-cust').value;
+ if(!custId){showToast('เลือกลูกค้าก่อน');return;}
  const j={
-  id:id?+id:DB.nid++,cid:+document.getElementById('sj-cust').value,
+  id:fid||('j'+Date.now()),
+  cid:custId,
   aci:+document.getElementById('sj-ac').value||0,
-  type:document.getElementById('sj-type').value,date:document.getElementById('sj-date').value,
-  time:document.getElementById('sj-time').value,tech:document.getElementById('sj-tech').value.trim(),
-  price:+document.getElementById('sj-price').value||0,detail:document.getElementById('sj-detail').value.trim(),
+  type:document.getElementById('sj-type').value,
+  date:document.getElementById('sj-date').value,
+  time:document.getElementById('sj-time').value,
+  tech:document.getElementById('sj-tech').value.trim(),
+  price:+document.getElementById('sj-price').value||0,
+  detail:document.getElementById('sj-detail').value.trim(),
   status:document.getElementById('sj-status').value,
   photos:[..._jobPhotos],
-  sigCust:getSigData('sig-cust'),
-  sigTech:getSigData('sig-tech'),
+  sigCust:getSigData('sig-cust')||null,
+  sigTech:getSigData('sig-tech')||null,
  };
- if(!j.cid){showToast('เลือกลูกค้าก่อน');return;}
- if(id){const i=DB.jobs.findIndex(x=>x.id===j.id);if(i>=0)DB.jobs[i]=j;}
- else DB.jobs.push(j);
- sDB();closeSheet('sh-job');renderJobs();renderDash();
- showToast('บันทึกงานแล้ว');
+ if(fid)j._fid=fid;
+ fbSaveJob(j).then(()=>{
+   closeSheet('sh-job');
+   showToast('บันทึกงานแล้ว');
+ }).catch(e=>showToast('Error: '+e.message));
 }
-function setJobStatus(id,st){const j=DB.jobs.find(x=>x.id===id);if(j){j.status=st;sDB();renderJobs();}}
+function setJobStatus(id,st){
+  const j=DB.jobs.find(x=>x.id===id);
+  if(j&&j._fid){
+    _fbDb.collection('jobs').doc(j._fid).update({status:st}).catch(e=>showToast('Error: '+e.message));
+  }
+}
 
 function deleteJob(id){
   const j=DB.jobs.find(x=>x.id===id);if(!j)return;
-  const c=DB.customers.find(x=>x.id===j.cid)||{fn:'?',ln:''};
+  const c=DB.customers.find(x=>x.id===j.cid||x._fid===j.cid||String(x.id)===String(j.cid))||{fn:'?',ln:''};
   showConfirm('ลบงาน',`ลบงาน "${jLbl(j.type)}" ของ ${c.fn} ${c.ln} วันที่ ${j.date}?`,'ลบเลย',()=>{
-    DB.jobs=DB.jobs.filter(x=>x.id!==id);
-    sDB();renderJobs();renderDash();
+    const j2=DB.jobs.find(x=>x.id===id);
+    if(j2&&j2._fid){fbDeleteJob(j2._fid).then(()=>{renderJobs();renderDash();}).catch(e=>showToast('Error: '+e.message));}
   });
 }
 
@@ -2637,17 +2644,24 @@ function analyzeTest(){
 }
 
 function saveTest(){
- const cid=+document.getElementById('test-cust').value;
+ const cid=document.getElementById('test-cust').value;
  if(!cid){showToast('เลือกลูกค้าก่อน');return;}
- if(!DB.tests)DB.tests=[];
- DB.tests.push({id:DB.nid++,cid,date:new Date().toISOString(),
-  dis:document.getElementById('t-dis').value,suc:document.getElementById('t-suc').value,
-  sup:document.getElementById('t-sup').value,ret:document.getElementById('t-ret').value,
-  hp:document.getElementById('t-hp').value,lp:document.getElementById('t-lp').value,
-  amp:document.getElementById('t-amp').value,chk:JSON.parse(JSON.stringify(_chk)),
-  note:document.getElementById('t-note').value,status:document.getElementById('t-status').value});
- sDB();
- showToast('✓ บันทึกผลทดสอบแล้ว');
+ const t={
+  id:'t'+Date.now(),cid,date:new Date().toISOString(),
+  dis:document.getElementById('t-dis').value,
+  suc:document.getElementById('t-suc').value,
+  sup:document.getElementById('t-sup').value,
+  ret:document.getElementById('t-ret').value,
+  hp:document.getElementById('t-hp').value,
+  lp:document.getElementById('t-lp').value,
+  amp:document.getElementById('t-amp').value,
+  chk:JSON.parse(JSON.stringify(_chk)),
+  note:document.getElementById('t-note').value,
+  status:document.getElementById('t-status').value
+ };
+ fbSaveTest(t)
+  .then(()=>showToast('✓ บันทึกผลทดสอบแล้ว'))
+  .catch(e=>showToast('Error: '+e.message));
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -2659,7 +2673,7 @@ function renderSched(mode){
  if(mode==='list'){
   const list=DB.jobs.filter(j=>j.status!=='done').sort((a,b)=>a.date.localeCompare(b.date));
   el.innerHTML=list.map(j=>{
-   const c=DB.customers.find(x=>x.id===j.cid)||{fn:'?',ln:''};
+   const c=DB.customers.find(x=>x.id===j.cid||x._fid===j.cid||String(x.id)===String(j.cid))||{fn:'?',ln:''};
    return`<div class="card anim" style="display:flex;justify-content:space-between;padding:10px 12px;margin-bottom:5px;">
     <div><div style="font-weight:600;font-size:12px;">${c.fn} ${c.ln}</div>
      <div style="font-size:10px;color:var(--dim);">${jLbl(j.type)} · ${j.tech||'—'}</div></div>
@@ -2767,7 +2781,7 @@ function loadRptJobs(){
 function buildReport(){
  const cid=+document.getElementById('rpt-cust').value;
  const jid=+document.getElementById('rpt-job').value;
- const c=DB.customers.find(x=>x.id===cid);
+ const c=DB.customers.find(x=>x.id===cid||x._fid===cid||String(x.id)===String(cid));
  const j=DB.jobs.find(x=>x.id===jid);
  if(!c||!j){showToast('เลือกลูกค้าและงานก่อน');return;}
  const ac=(c.acs||[])[j.aci||0]||{};
@@ -2935,7 +2949,7 @@ function printPDF(){
   const baseSize=size.replace(' landscape','');
   const cid=+document.getElementById('rpt-cust').value;
   const jid=+document.getElementById('rpt-job').value;
-  const cu=DB.customers.find(x=>x.id===cid);
+  const cu=DB.customers.find(x=>x.id===cid||x._fid===cid||String(x.id)===String(cid));
   const j=DB.jobs.find(x=>x.id===jid);
   const fname='nexus_'+(cu?.fn||'report').replace(/\s/g,'_')+'_JOB'+String(j?.id||0).padStart(4,'0')+'.html';
   const html='<!DOCTYPE html><html><head><meta charset="UTF-8">'
@@ -2980,7 +2994,7 @@ function saveReportAsImage(){
     document.body.removeChild(clone);
     const cid=+document.getElementById('rpt-cust').value;
     const jid=+document.getElementById('rpt-job').value;
-    const cu=DB.customers.find(x=>x.id===cid);
+    const cu=DB.customers.find(x=>x.id===cid||x._fid===cid||String(x.id)===String(cid));
     const j=DB.jobs.find(x=>x.id===jid);
     const fname='nexus_'+(cu?.fn||'report').replace(/\s/g,'_')+'_JOB'+String(j?.id||0).padStart(4,'0')+'.png';
     canvas.toBlob(blob=>{
@@ -3018,7 +3032,7 @@ function popAllSels(){
  setOpt('rpt-cust','<option value="">— เลือกลูกค้า —</option>'+custOpts());
  // Also refresh job customer select if open
  const sj=document.getElementById('sj-cust');
- if(sj){sj.innerHTML=DB.customers.map(c=>`<option value="${c.id}">${c.fn} ${c.ln}</option>`).join('');updateJobACSel();}
+ if(sj){sj.innerHTML=DB.customers.map(c=>`<option value="${c._fid||c.id}">${c.fn} ${c.ln}</option>`).join('');updateJobACSel();}
 }
 function popSimSel(){popAllSels();}
 function popTestSel(){popAllSels();buildChecklist();}
@@ -3063,46 +3077,35 @@ function openAddJobFor(cid){
 // ══════════════════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════════════════
-lDB();popAllSels();popJobCustSel();
-renderDash();buildChecklist();initRoomCanvas();
+// Initialize app with Firebase auth
+initRoomCanvas();
+buildChecklist();
 document.getElementById('sj-date').value=new Date().toISOString().slice(0,10);
-setTimeout(()=>{drawRoom();},100);
 window.addEventListener('resize',()=>{drawRoom();if(_curPage==='home')drawDashChart();});
-setInterval(()=>{sDB();},30000);
+// Start Firebase auth observer (handles login/logout/data loading)
+startAuthObserver();
 
 // ── PORTAL: detect #p/ hash ──────────────────────────────────────
 // Run immediately - hide login and app shell if this is a customer portal link
+// Portal check runs after all DOM is ready (end of body scripts)
 (function checkPortal(){
   const h=location.hash;
   const m=h.match(/^#p\/(.+)$/);
   if(!m)return;
-  
-  // IMMEDIATELY hide the staff login and app shell
-  // so customer never sees the PIN screen
-  const loginEl=document.getElementById('login-screen');
-  const shellEl=document.getElementById('shell');
-  if(loginEl)loginEl.style.display='none';
-  if(shellEl)shellEl.style.display='none';
-  
-  // Show portal overlay immediately (empty, will fill shortly)
-  const ov=document.getElementById('portal-ov');
-  if(ov){
-    ov.style.display='block';
-    const body=document.getElementById('portal-body');
-    if(body)body.innerHTML='<div style="text-align:center;padding:60px 20px;"><div style="font-size:13px;color:#999;">กำลังโหลด...</div></div>';
-  }
-  
+  // CSS already hides shell+login via html.is-portal class (set in <head>)
+  // Now decode and show portal content
   try{
     const b64=m[1].replace(/-/g,'+').replace(/_/g,'/');
     const json=decodeURIComponent(escape(atob(b64)));
     const parsed=JSON.parse(json);
     const payload=parsed.v===2?expandPayload(parsed):parsed;
-    // Small delay to let DOM settle
-    setTimeout(()=>showPortalStandalone(payload),100);
+    showPortalStandalone(payload);
   }catch(e){
-    // If can't decode payload, show error message (not login screen)
+    // Can't decode - show friendly error in portal overlay
+    const ov=document.getElementById('portal-ov');
     const body=document.getElementById('portal-body');
-    if(body)body.innerHTML='<div style="text-align:center;padding:60px 20px;"><div style="font-size:15px;color:#666;margin-bottom:8px;">ลิงก์หมดอายุ</div><div style="font-size:12px;color:#aaa;">ขอรับ QR ใหม่จากช่าง</div></div>';
+    if(ov)ov.style.display='block';
+    if(body)body.innerHTML='<div style="text-align:center;padding:80px 20px;"><div style="font-size:16px;font-weight:600;color:#555;margin-bottom:8px;">ลิงก์หมดอายุ</div><div style="font-size:13px;color:#aaa;">กรุณาขอ QR ใหม่จากช่าง</div></div>';
   }
 })();
 </script>
@@ -3142,7 +3145,7 @@ function decodePortalToken(tok){
   }catch(e){return null;}
 }
 function getPortalURL(cid){
-  const c=DB.customers.find(x=>x.id===cid);
+  const c=DB.customers.find(x=>x.id===cid||x._fid===cid||String(x.id)===String(cid));
   if(!c)return location.href.split('#')[0]+'#p/'+getPortalToken(cid);
   const s=DB.settings||{};
   const jobs=DB.jobs.filter(j=>j.cid===cid).sort((a,b)=>b.date.localeCompare(a.date));
@@ -3201,7 +3204,7 @@ function expandPayload(raw){
 }
 
 function openPortal(cid){
-  const c=DB.customers.find(x=>x.id===cid);
+  const c=DB.customers.find(x=>x.id===cid||x._fid===cid||String(x.id)===String(cid));
   if(!c){showToast('ไม่พบข้อมูลลูกค้า');return;}
   const ov=document.getElementById('portal-ov');
   const body=document.getElementById('portal-body');
@@ -3397,7 +3400,7 @@ function startPortalSim(cid){
 }
 
 function runPortalSim(cid){
-  const c=DB.customers.find(x=>x.id===cid);if(!c)return;
+  const c=DB.customers.find(x=>x.id===cid||x._fid===cid||String(x.id)===String(cid));if(!c)return;
   const ai=+(document.querySelector('input[name="portal-ac"]:checked')?.value)||0;
   const ac=(c.acs||[])[ai];if(!ac)return;
   const Tout=+document.getElementById('portal-tout').value||35;
@@ -3582,11 +3585,12 @@ function showPortalStandalone(payload){
    }
    <div style="text-align:center;font-size:10px;color:#ccc;padding:10px 0 24px;">${coName}${s.tel?' · '+s.tel:''}</div>`;
 
-  // Hide everything staff-facing
+  // Hide everything staff-facing (CSS may already handle this via html.is-portal)
+  document.documentElement.classList.add('is-portal');
   const loginSc=document.getElementById('login-screen');
   const shellEl=document.getElementById('shell');
-  if(loginSc){loginSc.style.display='none';}
-  if(shellEl){shellEl.style.display='none';}
+  if(loginSc)loginSc.style.display='none';
+  if(shellEl)shellEl.style.display='none';
   
   // Show portal
   ov.style.display='block';
@@ -3688,7 +3692,7 @@ function getPortalQR(cid){
 
 <script>
 function showQRSheet(cid){
-  const c=DB.customers.find(x=>x.id===cid);
+  const c=DB.customers.find(x=>x.id===cid||x._fid===cid||String(x.id)===String(cid));
   if(!c){showToast('ไม่พบลูกค้า');return;}
   // Update sheet
   const nameEl=document.getElementById('qr-cust-name');
