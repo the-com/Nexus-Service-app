@@ -3328,6 +3328,148 @@ _startAuth(); // starts Firebase auth observer → loads data → shows app
     if(body)body.innerHTML='<div style="text-align:center;padding:80px 20px;"><div style="font-size:16px;font-weight:600;color:#555;margin-bottom:8px;">ลิงก์หมดอายุ</div><div style="font-size:13px;color:#aaa;">กรุณาขอ QR ใหม่จากช่าง</div></div>';
   }
 })();
+
+
+function showQRSheet(cid){
+  const c=_cBy(cid);
+  if(!c){showToast('ไม่พบลูกค้า');return;}
+  const nameEl=document.getElementById('qr-cust-name');
+  const statusEl=document.getElementById('qr-status');
+  const imgEl=document.getElementById('qr-img');
+  const urlEl=document.getElementById('qr-short-url');
+  // Use customer app URL instead of portal
+  const custUrl='https://the-com.github.io/Nexus-Service-app/customer.html';
+  if(nameEl)nameEl.textContent=c.fn+' '+c.ln;
+  if(statusEl)statusEl.textContent='สแกนเพื่อเข้าแอปลูกค้า';
+  if(urlEl)urlEl.textContent=custUrl;
+  // Generate QR from customer app URL
+  const qrSrc='https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=12&ecc=M&data='+encodeURIComponent(custUrl);
+  if(imgEl){imgEl.src=qrSrc;imgEl.style.opacity='1';}
+  openSheet('sh-qr');
+}
+
+// ══════════════════════════════════════════════════════
+// DARK MODE + FONT SIZE + LANGUAGE
+// ══════════════════════════════════════════════════════
+function toggleDarkMode(on){
+  document.documentElement.setAttribute('data-theme', on?'dark':'');
+  localStorage.setItem('nx_dark', on?'1':'');
+  const ui=document.getElementById('dark-toggle-ui');
+  const knob=document.getElementById('dark-toggle-knob');
+  if(ui)ui.style.background=on?'var(--acc)':'var(--border2)';
+  if(knob)knob.style.left=on?'23px':'3px';
+  // Update meta theme-color
+  const meta=document.querySelector('meta[name="theme-color"]');
+  if(meta)meta.content=on?'#111110':'#ffffff';
+}
+
+function setFontSize(px){
+  document.documentElement.style.setProperty('--fs', px+'px');
+  localStorage.setItem('nx_fs', px);
+  const lbl=document.getElementById('font-size-label');
+  const names={13:'เล็ก (13px)',15:'ปกติ (15px)',17:'ใหญ่ (17px)'};
+  if(lbl)lbl.textContent=names[px]||px+'px';
+}
+
+function setLanguage(lang){
+  localStorage.setItem('nx_lang', lang);
+  showToast(lang==='en'?'Language: English':'ภาษา: ไทย');
+}
+
+function loadDisplaySettings(){
+  // Dark mode
+  const dark=localStorage.getItem('nx_dark')==='1';
+  if(dark){
+    document.documentElement.setAttribute('data-theme','dark');
+    const cb=document.getElementById('set-dark');
+    if(cb)cb.checked=true;
+    toggleDarkMode(true);
+  }
+  // Font size
+  const fs=localStorage.getItem('nx_fs');
+  if(fs){setFontSize(+fs);}
+  // Language
+  const lang=localStorage.getItem('nx_lang')||'th';
+  const sel=document.getElementById('set-lang');
+  if(sel)sel.value=lang;
+}
+
+function syncDisplaySettings(){
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  const cb=document.getElementById('set-dark');
+  const ui=document.getElementById('dark-toggle-ui');
+  const knob=document.getElementById('dark-toggle-knob');
+  if(cb)cb.checked=isDark;
+  if(ui)ui.style.background=isDark?'var(--acc)':'var(--border2)';
+  if(knob)knob.style.left=isDark?'23px':'3px';
+  const fs=localStorage.getItem('nx_fs')||'15';
+  const lbl=document.getElementById('font-size-label');
+  const names={'13':'เล็ก (13px)','15':'ปกติ (15px)','17':'ใหญ่ (17px)'};
+  if(lbl)lbl.textContent=names[fs]||fs+'px';
+  const lang=localStorage.getItem('nx_lang')||'th';
+  const sel=document.getElementById('set-lang');
+  if(sel)sel.value=lang;
+}
+
+// ── Login tab switch ──────────────────────────────────
+function switchLoginTab(tab){
+  const loginForm=document.getElementById('login-form');
+  const regForm=document.getElementById('register-form');
+  const ltLogin=document.getElementById('ltab-login');
+  const ltReg=document.getElementById('ltab-reg');
+  if(tab==='login'){
+    if(loginForm)loginForm.style.display='block';
+    if(regForm)regForm.style.display='none';
+    if(ltLogin){ltLogin.style.borderBottomColor='#fff';ltLogin.style.color='#fff';}
+    if(ltReg){ltReg.style.borderBottomColor='transparent';ltReg.style.color='rgba(255,255,255,.4)';}
+  }else{
+    if(loginForm)loginForm.style.display='none';
+    if(regForm)regForm.style.display='block';
+    if(ltReg){ltReg.style.borderBottomColor='#fff';ltReg.style.color='#fff';}
+    if(ltLogin){ltLogin.style.borderBottomColor='transparent';ltLogin.style.color='rgba(255,255,255,.4)';}
+  }
+}
+
+// ── Staff Registration ────────────────────────────────
+async function fbRegister(){
+  const fn=(document.getElementById('r-fn')?.value||'').trim();
+  const ln=(document.getElementById('r-ln')?.value||'').trim();
+  const email=(document.getElementById('r-email')?.value||'').trim();
+  const tel=(document.getElementById('r-tel')?.value||'').trim();
+  const pass=document.getElementById('r-pass')?.value||'';
+  const errEl=document.getElementById('register-err');
+  const btn=document.getElementById('register-btn');
+  if(errEl)errEl.textContent='';
+  if(!fn||!email||!pass){if(errEl)errEl.textContent='กรุณากรอกข้อมูลให้ครบ';return;}
+  if(pass.length<6){if(errEl)errEl.textContent='รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';return;}
+  if(btn){btn.disabled=true;btn.textContent='กำลังสมัคร...';}
+  try{
+    await _loadFBSdks();
+    const cred=await _auth.createUserWithEmailAndPassword(email,pass);
+    // Save staff profile to Firestore
+    if(_db){
+      await _db.collection('staff').doc(cred.user.uid).set({
+        fn,ln,email,tel,
+        role:'technician',
+        createdAt:new Date().toISOString()
+      });
+    }
+    showToast('สมัครสมาชิกพนักงานสำเร็จ!');
+    switchLoginTab('login');
+    const emailInput=document.getElementById('l-email');
+    if(emailInput)emailInput.value=email;
+  }catch(e){
+    const msgs={'auth/email-already-in-use':'Email นี้มีบัญชีอยู่แล้ว','auth/invalid-email':'Email ไม่ถูกต้อง','auth/weak-password':'รหัสผ่านไม่ปลอดภัยพอ'};
+    if(errEl)errEl.textContent=msgs[e.code]||e.message;
+    if(btn){btn.disabled=false;btn.textContent='สมัครสมาชิกพนักงาน';}
+  }
+}
+
+// Init display settings on load
+document.addEventListener('DOMContentLoaded',()=>{
+  loadDisplaySettings();
+});
+
 </script>
 
 <!-- ══ CUSTOMER PORTAL OVERLAY ═══════════════════════════════════ -->
@@ -3900,147 +4042,7 @@ function createJobFromBooking(fid){
  </div>
 </div>
 
-<script>
-function showQRSheet(cid){
-  const c=_cBy(cid);
-  if(!c){showToast('ไม่พบลูกค้า');return;}
-  const nameEl=document.getElementById('qr-cust-name');
-  const statusEl=document.getElementById('qr-status');
-  const imgEl=document.getElementById('qr-img');
-  const urlEl=document.getElementById('qr-short-url');
-  // Use customer app URL instead of portal
-  const custUrl='https://the-com.github.io/Nexus-Service-app/customer.html';
-  if(nameEl)nameEl.textContent=c.fn+' '+c.ln;
-  if(statusEl)statusEl.textContent='สแกนเพื่อเข้าแอปลูกค้า';
-  if(urlEl)urlEl.textContent=custUrl;
-  // Generate QR from customer app URL
-  const qrSrc='https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=12&ecc=M&data='+encodeURIComponent(custUrl);
-  if(imgEl){imgEl.src=qrSrc;imgEl.style.opacity='1';}
-  openSheet('sh-qr');
-}
 
-// ══════════════════════════════════════════════════════
-// DARK MODE + FONT SIZE + LANGUAGE
-// ══════════════════════════════════════════════════════
-function toggleDarkMode(on){
-  document.documentElement.setAttribute('data-theme', on?'dark':'');
-  localStorage.setItem('nx_dark', on?'1':'');
-  const ui=document.getElementById('dark-toggle-ui');
-  const knob=document.getElementById('dark-toggle-knob');
-  if(ui)ui.style.background=on?'var(--acc)':'var(--border2)';
-  if(knob)knob.style.left=on?'23px':'3px';
-  // Update meta theme-color
-  const meta=document.querySelector('meta[name="theme-color"]');
-  if(meta)meta.content=on?'#111110':'#ffffff';
-}
-
-function setFontSize(px){
-  document.documentElement.style.setProperty('--fs', px+'px');
-  localStorage.setItem('nx_fs', px);
-  const lbl=document.getElementById('font-size-label');
-  const names={13:'เล็ก (13px)',15:'ปกติ (15px)',17:'ใหญ่ (17px)'};
-  if(lbl)lbl.textContent=names[px]||px+'px';
-}
-
-function setLanguage(lang){
-  localStorage.setItem('nx_lang', lang);
-  showToast(lang==='en'?'Language: English':'ภาษา: ไทย');
-}
-
-function loadDisplaySettings(){
-  // Dark mode
-  const dark=localStorage.getItem('nx_dark')==='1';
-  if(dark){
-    document.documentElement.setAttribute('data-theme','dark');
-    const cb=document.getElementById('set-dark');
-    if(cb)cb.checked=true;
-    toggleDarkMode(true);
-  }
-  // Font size
-  const fs=localStorage.getItem('nx_fs');
-  if(fs){setFontSize(+fs);}
-  // Language
-  const lang=localStorage.getItem('nx_lang')||'th';
-  const sel=document.getElementById('set-lang');
-  if(sel)sel.value=lang;
-}
-
-function syncDisplaySettings(){
-  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
-  const cb=document.getElementById('set-dark');
-  const ui=document.getElementById('dark-toggle-ui');
-  const knob=document.getElementById('dark-toggle-knob');
-  if(cb)cb.checked=isDark;
-  if(ui)ui.style.background=isDark?'var(--acc)':'var(--border2)';
-  if(knob)knob.style.left=isDark?'23px':'3px';
-  const fs=localStorage.getItem('nx_fs')||'15';
-  const lbl=document.getElementById('font-size-label');
-  const names={'13':'เล็ก (13px)','15':'ปกติ (15px)','17':'ใหญ่ (17px)'};
-  if(lbl)lbl.textContent=names[fs]||fs+'px';
-  const lang=localStorage.getItem('nx_lang')||'th';
-  const sel=document.getElementById('set-lang');
-  if(sel)sel.value=lang;
-}
-
-// ── Login tab switch ──────────────────────────────────
-function switchLoginTab(tab){
-  const loginForm=document.getElementById('login-form');
-  const regForm=document.getElementById('register-form');
-  const ltLogin=document.getElementById('ltab-login');
-  const ltReg=document.getElementById('ltab-reg');
-  if(tab==='login'){
-    if(loginForm)loginForm.style.display='block';
-    if(regForm)regForm.style.display='none';
-    if(ltLogin){ltLogin.style.borderBottomColor='#fff';ltLogin.style.color='#fff';}
-    if(ltReg){ltReg.style.borderBottomColor='transparent';ltReg.style.color='rgba(255,255,255,.4)';}
-  }else{
-    if(loginForm)loginForm.style.display='none';
-    if(regForm)regForm.style.display='block';
-    if(ltReg){ltReg.style.borderBottomColor='#fff';ltReg.style.color='#fff';}
-    if(ltLogin){ltLogin.style.borderBottomColor='transparent';ltLogin.style.color='rgba(255,255,255,.4)';}
-  }
-}
-
-// ── Staff Registration ────────────────────────────────
-async function fbRegister(){
-  const fn=(document.getElementById('r-fn')?.value||'').trim();
-  const ln=(document.getElementById('r-ln')?.value||'').trim();
-  const email=(document.getElementById('r-email')?.value||'').trim();
-  const tel=(document.getElementById('r-tel')?.value||'').trim();
-  const pass=document.getElementById('r-pass')?.value||'';
-  const errEl=document.getElementById('register-err');
-  const btn=document.getElementById('register-btn');
-  if(errEl)errEl.textContent='';
-  if(!fn||!email||!pass){if(errEl)errEl.textContent='กรุณากรอกข้อมูลให้ครบ';return;}
-  if(pass.length<6){if(errEl)errEl.textContent='รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';return;}
-  if(btn){btn.disabled=true;btn.textContent='กำลังสมัคร...';}
-  try{
-    await _loadFBSdks();
-    const cred=await _auth.createUserWithEmailAndPassword(email,pass);
-    // Save staff profile to Firestore
-    if(_db){
-      await _db.collection('staff').doc(cred.user.uid).set({
-        fn,ln,email,tel,
-        role:'technician',
-        createdAt:new Date().toISOString()
-      });
-    }
-    showToast('สมัครสมาชิกพนักงานสำเร็จ!');
-    switchLoginTab('login');
-    const emailInput=document.getElementById('l-email');
-    if(emailInput)emailInput.value=email;
-  }catch(e){
-    const msgs={'auth/email-already-in-use':'Email นี้มีบัญชีอยู่แล้ว','auth/invalid-email':'Email ไม่ถูกต้อง','auth/weak-password':'รหัสผ่านไม่ปลอดภัยพอ'};
-    if(errEl)errEl.textContent=msgs[e.code]||e.message;
-    if(btn){btn.disabled=false;btn.textContent='สมัครสมาชิกพนักงาน';}
-  }
-}
-
-// Init display settings on load
-document.addEventListener('DOMContentLoaded',()=>{
-  loadDisplaySettings();
-});
-</script>
 <!-- ══ SETTINGS SHEET ════════════════════════════════════════════ -->
 <div class="sheet-ov" id="sh-settings">
  <div class="sheet-bd" onclick="closeSheet('sh-settings')"></div>
