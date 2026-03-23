@@ -1362,13 +1362,13 @@ function renderDash(){
   const c=_cBy(j.cid)||{fn:'?',ln:'',acs:[]};
   return`<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)33;">
    <div><div style="font-size:12px;">${jLbl(j.type)} — ${c.fn} ${c.ln}</div>
-    <div style="font-size:9px;color:var(--dim);font-family:'IBM Plex Mono',monospace;">${j.date} · ${j.tech||'—'}</div></div>
+    <div style="font-size:9px;color:var(--dim);font-family:IBM Plex Mono,monospace;">${j.date} · ${j.tech||'—'}</div></div>
    <span class="badge ${sBadge(j.status)}">${sLbl(j.status)}</span></div>`;
  }).join('')||'<div style="color:var(--dim)">ยังไม่มีงาน</div>';
  // Recent custs
  document.getElementById('d-custs').innerHTML=DB.customers.slice(-4).reverse().map(c=>
   `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)33;font-size:11px;">
-   <span>${c.fn} ${c.ln}</span><span style="color:var(--dim);font-family:'IBM Plex Mono',monospace;">${c.ph}</span></div>`
+   <span>${c.fn} ${c.ln}</span><span style="color:var(--dim);font-family:IBM Plex Mono,monospace;">${c.ph}</span></div>`
  ).join('')||'<div style="color:var(--dim)">ยังไม่มีลูกค้า</div>';
  drawDashChart();
 }
@@ -1415,7 +1415,7 @@ function renderCusts(){
      <div style="display:flex;align-items:center;gap:7px;margin-bottom:3px;">
       <div style="font-weight:600;font-size:14px;">${c.fn} ${c.ln}</div>
       ${ptsBadge}
-      ${c.custRegistered?'<span style="font-size:9px;padding:2px 6px;background:rgba(42,74,110,.08);color:var(--blue);border:1px solid rgba(42,74,110,.18);border-radius:3px;font-family:'IBM Plex Mono',monospace;">สมัครเอง</span>':''}
+      ${c.custRegistered?'<span style="font-size:9px;padding:2px 6px;background:rgba(42,74,110,.08);color:var(--blue);border:1px solid rgba(42,74,110,.18);border-radius:3px;font-family:IBM Plex Mono,monospace;">สมัครเอง</span>':''}
      </div>
      <div style="font-size:11px;color:var(--dim);">${c.ph||''}${c.li?' · '+c.li:''}</div>
      <div style="font-size:10px;color:var(--dim);margin-top:2px;">${(c.acs||[]).length} เครื่อง · ${jobCount} งาน${c.ad?' · '+c.ad.slice(0,25):''}${c.ad&&c.ad.length>25?'…':''}</div>
@@ -1482,20 +1482,20 @@ function viewCust(id){
  document.getElementById('sh-cd-name').textContent=`${c.fn} ${c.ln}`;
  document.getElementById('sh-cd-body').innerHTML=`
   <div class="frow g2" style="margin-bottom:10px;">
-   <div class="stat"><div class="stat-l">โทรศัพท์</div><div style="font-size:14px;font-family:'IBM Plex Mono',monospace;color:var(--blue);">${c.ph}</div></div>
+   <div class="stat"><div class="stat-l">โทรศัพท์</div><div style="font-size:14px;font-family:IBM Plex Mono,monospace;color:var(--blue);">${c.ph}</div></div>
    <div class="stat"><div class="stat-l">LINE</div><div style="font-size:13px;color:var(--dim);">${c.li||'—'}</div></div>
   </div>
   <div class="card" style="background:var(--bg);margin-bottom:8px;padding:10px 12px;">
    <div style="display:flex;justify-content:space-between;align-items:center;">
-     <div style="font-size:9px;color:var(--dim);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.1em;">PIN แอปลูกค้า</div>
-     <div style="font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;letter-spacing:.2em;color:var(--acc);">${c.custPin||'ไม่มี PIN'}</div>
+     <div style="font-size:9px;color:var(--dim);font-family:IBM Plex Mono,monospace;text-transform:uppercase;letter-spacing:.1em;">PIN แอปลูกค้า</div>
+     <div style="font-size:18px;font-weight:700;font-family:IBM Plex Mono,monospace;letter-spacing:.2em;color:var(--acc);">${c.custPin||'ไม่มี PIN'}</div>
    </div>
    <div style="font-size:9px;color:var(--dim);margin-top:3px;">ลูกค้าใช้ ${c.ph} + PIN นี้ เพื่อ login แอปลูกค้า</div>
   </div>
   <div class="card" style="background:var(--bg);margin-bottom:8px;">
    <div style="font-size:9px;color:var(--dim);margin-bottom:4px;"> ที่อยู่</div>
    <div style="font-size:12px;">${c.ad||'ไม่ระบุ'}</div>
-   ${c.lat&&c.lng?`<div style="font-size:9px;color:var(--dim);font-family:'IBM Plex Mono',monospace;margin-top:4px;">${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}</div>
+   ${c.lat&&c.lng?`<div style="font-size:9px;color:var(--dim);font-family:IBM Plex Mono,monospace;margin-top:4px;">${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}</div>
    <button class="sm-btn" style="margin-top:6px;" onclick="openGmap(${c.lat},${c.lng})">เปิดใน Google Maps</button>`:''}
   </div>
   <div class="sec-hd">Test เครื่องแอร์ (${(c.acs||[]).length})</div>
@@ -1614,7 +1614,7 @@ function renderAcRows(){
  document.getElementById('sc-acs').innerHTML=_shACs.map((ac,i)=>`
   <div class="card" style="background:var(--bg);margin-bottom:6px;padding:8px;">
    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-    <span style="font-size:9px;color:var(--dim);font-family:'IBM Plex Mono',monospace;">เครื่องที่ ${i+1}</span>
+    <span style="font-size:9px;color:var(--dim);font-family:IBM Plex Mono,monospace;">เครื่องที่ ${i+1}</span>
     <div style="display:flex;gap:5px;">
      <button class="sm-btn" style="border-color:var(--blue);color:var(--blue);" onclick="scanACNameplate(${i})">
       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:3px;"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>ถ่ายป้าย AI
@@ -1758,7 +1758,7 @@ function renderJobs(){
    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
     <div>
      <div style="font-weight:600;font-size:13px;">${jLbl(j.type)} — ${c.fn} ${c.ln}</div>
-     <div style="font-size:9px;color:var(--dim);font-family:'IBM Plex Mono',monospace;">${j.date} ${j.time} · ${j.tech||'—'}</div>
+     <div style="font-size:9px;color:var(--dim);font-family:IBM Plex Mono,monospace;">${j.date} ${j.time} · ${j.tech||'—'}</div>
      ${ac?`<div style="font-size:10px;color:var(--dim);">Test ${ac.br} ${ac.md}</div>`:''}
     </div>
     <div style="text-align:right;">
@@ -2337,9 +2337,9 @@ function showObjEd(){
     </select></div>`;
 
   let h=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-    <span style="font-size:10px;font-weight:700;color:${col};font-family:'IBM Plex Mono',monospace;letter-spacing:.06em;">${o.type.toUpperCase()} #${o.id%1000}</span>
+    <span style="font-size:10px;font-weight:700;color:${col};font-family:IBM Plex Mono,monospace;letter-spacing:.06em;">${o.type.toUpperCase()} #${o.id%1000}</span>
     <div style="display:flex;gap:4px;">
-      <span style="font-size:9px;color:var(--dim);font-family:'IBM Plex Mono',monospace;padding:2px 6px;border:1px solid var(--border2);border-radius:4px;">${o.type==='door'?{top:'→S',bottom:'→N',left:'→E',right:'→W'}[o.data._wall||'top']:(o.data._wall||o.data.dir||'—')}</span>
+      <span style="font-size:9px;color:var(--dim);font-family:IBM Plex Mono,monospace;padding:2px 6px;border:1px solid var(--border2);border-radius:4px;">${o.type==='door'?{top:'→S',bottom:'→N',left:'→E',right:'→W'}[o.data._wall||'top']:(o.data._wall||o.data.dir||'—')}</span>
       <button class="sm-btn" style="border-color:var(--red);color:var(--red);" onclick="simObjs=simObjs.filter(x=>x!==simSel);simSel=null;drawRoom();document.getElementById('obj-editor').style.display='none'">Del</button>
     </div>
    </div><div class="frow g2" style="gap:5px;">`;
@@ -2349,12 +2349,12 @@ function showObjEd(){
       <button onclick="simSel.data.isOpen=!simSel.data.isOpen;showObjEd();drawRoom()"
        style="width:100%;padding:5px;border:1px solid ${o.data.isOpen?'var(--green)':'var(--dim)'};border-radius:5px;
               background:${o.data.isOpen?'rgba(45,122,78,.1)':'transparent'};color:${o.data.isOpen?'var(--green)':'var(--dim)'};
-              font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;">
+              font-size:11px;font-family:IBM Plex Mono,monospace;cursor:pointer;">
         ${o.data.isOpen?'OPEN — คลิกปิด':'CLOSED — คลิกเปิด'}
       </button></div>`;
     h+=inp('winW','กว้าง (m)',o.data.winW||1.2,'number');
     h+=inp('winH','สูง (m)',o.data.winH||1.0,'number');
-    h+=`<div class="fld"><label>ทิศ (auto)</label><span style="font-size:12px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--acc);padding:6px 8px;border:1px solid var(--border2);border-radius:5px;display:block;text-align:center;">${o.data.dir||o.data._wall||'N'}</span></div>`;
+    h+=`<div class="fld"><label>ทิศ (auto)</label><span style="font-size:12px;font-weight:700;font-family:IBM Plex Mono,monospace;color:var(--acc);padding:6px 8px;border:1px solid var(--border2);border-radius:5px;display:block;text-align:center;">${o.data.dir||o.data._wall||'N'}</span></div>`;
 
   } else if(o.type==='door'){
     const inwardDirLabel={top:'S (เปิดเข้าใต้)',bottom:'N (เปิดเข้าเหนือ)',left:'E (เปิดเข้าตะวันออก)',right:'W (เปิดเข้าตะวันตก)'};
@@ -2364,21 +2364,21 @@ function showObjEd(){
       <button onclick="simSel.data.isOpen=!simSel.data.isOpen;showObjEd();drawRoom()"
        style="width:100%;padding:5px;border:1px solid ${o.data.isOpen?'var(--green)':'var(--dim)'};border-radius:5px;
               background:${o.data.isOpen?'rgba(45,122,78,.1)':'transparent'};color:${o.data.isOpen?'var(--green)':'var(--dim)'};
-              font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;">
+              font-size:11px;font-family:IBM Plex Mono,monospace;cursor:pointer;">
         ${o.data.isOpen?'OPEN — กำลังปล่อยความร้อนเข้า':'CLOSED — ปิดสนิท'}
       </button></div>`;
     h+=inp('wW','กว้าง (m)',o.data.wW||0.9,'number');
-    h+=`<div class="fld"><label>ทิศเปิดเข้าห้อง</label><span style="font-size:11px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--acc);padding:5px 8px;border:1px solid var(--border2);border-radius:5px;display:block;text-align:center;">${inwardDirLabel[wall2]||wall2}</span></div>`;
+    h+=`<div class="fld"><label>ทิศเปิดเข้าห้อง</label><span style="font-size:11px;font-weight:700;font-family:IBM Plex Mono,monospace;color:var(--acc);padding:5px 8px;border:1px solid var(--border2);border-radius:5px;display:block;text-align:center;">${inwardDirLabel[wall2]||wall2}</span></div>`;
     h+=`<div class="fld" style="grid-column:span 2;"><label>บานพับอยู่ทาง</label>
       <div style="display:flex;gap:4px;">
         <button onclick="simSel.data.hingeSide='left';showObjEd();drawRoom()"
           style="flex:1;padding:5px;border:1px solid ${hs==='left'?'var(--acc)':'var(--border2)'};border-radius:5px;
                  background:${hs==='left'?'rgba(139,32,32,.1)':'transparent'};color:${hs==='left'?'var(--acc)':'var(--fg2)'};
-                 font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;">← ซ้าย</button>
+                 font-size:11px;font-family:IBM Plex Mono,monospace;cursor:pointer;">← ซ้าย</button>
         <button onclick="simSel.data.hingeSide='right';showObjEd();drawRoom()"
           style="flex:1;padding:5px;border:1px solid ${hs==='right'?'var(--acc)':'var(--border2)'};border-radius:5px;
                  background:${hs==='right'?'rgba(139,32,32,.1)':'transparent'};color:${hs==='right'?'var(--acc)':'var(--fg2)'};
-                 font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;">ขวา →</button>
+                 font-size:11px;font-family:IBM Plex Mono,monospace;cursor:pointer;">ขวา →</button>
       </div></div>`;
 
   } else if(o.type==='ac'){
@@ -2386,7 +2386,7 @@ function showObjEd(){
     h+=inp('setT','Setpoint °C',o.data.setT||25);
     h+=inp('cop','COP',o.data.cop||3.5,'number','step=".1"');
     h+=sel2('acType','ประเภท',[['inverter','Inverter'],['fixed','Fixed Speed']],o.data.acType||'inverter');
-    h+=`<div class="fld"><label>ทิศเป่าลม (auto)</label><span style="font-size:12px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--red);padding:6px 8px;border:1px solid var(--border2);border-radius:5px;display:block;text-align:center;">${o.data.dir||'S'}</span></div>`;
+    h+=`<div class="fld"><label>ทิศเป่าลม (auto)</label><span style="font-size:12px;font-weight:700;font-family:IBM Plex Mono,monospace;color:var(--red);padding:6px 8px;border:1px solid var(--border2);border-radius:5px;display:block;text-align:center;">${o.data.dir||'S'}</span></div>`;
 
   } else if(o.type==='person'){
     h+=inp('count','จำนวนคน',o.data.count||1);
@@ -2489,7 +2489,7 @@ function runSim(){
   ${[['ผนัง',ld.Q_wall,'#1a5c8b'],['หลังคา',ld.Q_roof,'#2d7a4e'],['หน้าต่าง/ประตู',ld.Q_win,'#7a5800'],['คน',ld.Q_ppl,'#8b2020'],['ไฟ/อุปกรณ์',ld.equip_total,'#5c2d8b'],['Infiltration',ld.Q_inf,'#666']].map(([l,v,c])=>
    `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
      <span style="font-size:9px;color:var(--dim);">${l}</span>
-     <span style="font-size:10px;font-family:'IBM Plex Mono',monospace;">${v.toFixed(0)} W</span></div>
+     <span style="font-size:10px;font-family:IBM Plex Mono,monospace;">${v.toFixed(0)} W</span></div>
     <div style="height:4px;background:var(--border);border-radius:2px;margin-bottom:5px;overflow:hidden;">
      <div style="height:100%;width:${Math.min(100,Math.max(0,v/Math.max(ld.Q_total,1)*100)).toFixed(0)}%;background:${c};border-radius:2px;"></div></div>`
   ).join('')}`;
@@ -2612,22 +2612,22 @@ function simStep(){
    detEl.innerHTML=`
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;font-size:10px;">
      <div style="background:var(--bar);border:1px solid var(--border);border-radius:6px;padding:7px 9px;">
-      <div style="color:var(--dim);font-size:8px;font-family:'IBM Plex Mono',monospace;margin-bottom:2px;">ค่าไฟสะสม</div>
+      <div style="color:var(--dim);font-size:8px;font-family:IBM Plex Mono,monospace;margin-bottom:2px;">ค่าไฟสะสม</div>
       <div style="font-weight:700;font-size:14px;color:var(--yellow);">฿${costSoFar}</div>
       <div style="font-size:8px;color:var(--dim);">${s.energyKWh.toFixed(3)} kWh</div>
      </div>
      <div style="background:var(--bar);border:1px solid var(--border);border-radius:6px;padding:7px 9px;">
-      <div style="color:var(--dim);font-size:8px;font-family:'IBM Plex Mono',monospace;margin-bottom:2px;">เวลาทำงาน</div>
+      <div style="color:var(--dim);font-size:8px;font-family:IBM Plex Mono,monospace;margin-bottom:2px;">เวลาทำงาน</div>
       <div style="font-weight:700;font-size:14px;color:var(--blue);">${s.t} <span style="font-size:10px;font-weight:400;">นาที</span></div>
       <div style="font-size:8px;color:var(--dim);">${hrsRun} ชั่วโมง</div>
      </div>
      <div style="background:var(--bar);border:1px solid var(--border);border-radius:6px;padding:7px 9px;">
-      <div style="color:var(--dim);font-size:8px;font-family:'IBM Plex Mono',monospace;margin-bottom:2px;">Net Cooling</div>
+      <div style="color:var(--dim);font-size:8px;font-family:IBM Plex Mono,monospace;margin-bottom:2px;">Net Cooling</div>
       <div style="font-weight:700;font-size:14px;color:var(--green);">${(Math.max(0,Q_net)/1000).toFixed(2)} <span style="font-size:10px;font-weight:400;">kW</span></div>
       <div style="font-size:8px;color:var(--dim);">Cooling − Load</div>
      </div>
      <div style="background:var(--bar);border:1px solid var(--border);border-radius:6px;padding:7px 9px;">
-      <div style="color:var(--dim);font-size:8px;font-family:'IBM Plex Mono',monospace;margin-bottom:2px;">อุณหภูมิห้อง</div>
+      <div style="color:var(--dim);font-size:8px;font-family:IBM Plex Mono,monospace;margin-bottom:2px;">อุณหภูมิห้อง</div>
       <div style="font-weight:700;font-size:14px;color:${s.Troom>s.Tin_set+1?'var(--red)':'var(--green)'};">${s.Troom.toFixed(1)} <span style="font-size:10px;font-weight:400;">°C</span></div>
       <div style="font-size:8px;color:var(--dim);">เป้า ${s.Tin_set}°C</div>
      </div>
@@ -2899,7 +2899,7 @@ function renderSched(mode){
    return`<div class="card anim" style="display:flex;justify-content:space-between;padding:10px 12px;margin-bottom:5px;">
     <div><div style="font-weight:600;font-size:12px;">${c.fn} ${c.ln}</div>
      <div style="font-size:10px;color:var(--dim);">${jLbl(j.type)} · ${j.tech||'—'}</div></div>
-    <div style="text-align:right;"><div style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--acc);">${j.date}</div>
+    <div style="text-align:right;"><div style="font-size:12px;font-family:IBM Plex Mono,monospace;color:var(--acc);">${j.date}</div>
      <div style="font-size:10px;color:var(--dim);">${j.time||''}</div></div></div>`;
   }).join('')||'<div style="text-align:center;color:var(--dim);padding:30px;">ไม่มีงานที่รอ</div>';
   return;
@@ -2951,7 +2951,7 @@ function loadMapCustSel(){
    <div>
     <div style="font-size:12px;font-weight:600;">${c.fn} ${c.ln}</div>
     <div style="font-size:10px;color:var(--dim);">${c.ph||''}${c.ad?' · '+c.ad.slice(0,30)+'…':''}</div>
-    <div style="font-size:9px;color:var(--dim);font-family:'IBM Plex Mono',monospace;">${c.lat?.toFixed(5)}, ${c.lng?.toFixed(5)}</div>
+    <div style="font-size:9px;color:var(--dim);font-family:IBM Plex Mono,monospace;">${c.lat?.toFixed(5)}, ${c.lng?.toFixed(5)}</div>
    </div>
    <div style="display:flex;flex-direction:column;gap:4px;">
     <button class="sm-btn" onclick="showMapFrame(${c.lat},${c.lng},'${c.fn} ${c.ln}')">แผนที่</button>
@@ -3040,7 +3040,7 @@ function buildReport(){
      ${coAddr?`<div style="font-size:9px;color:rgba(255,255,255,.4);margin-top:1px;">${coAddr}</div>`:''}
     </div>
     <div style="text-align:right;">
-     <div style="font-size:11px;font-weight:600;color:#fff;font-family:'IBM Plex Mono',monospace;">#${j._fid?(j._fid).slice(-5).toUpperCase():(j.id?String(j.id).padStart(4,'0'):'????')}</div>
+     <div style="font-size:11px;font-weight:600;color:#fff;font-family:IBM Plex Mono,monospace;">#${j._fid?(j._fid).slice(-5).toUpperCase():(j.id?String(j.id).padStart(4,'0'):'????')}</div>
      <div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:3px;">${today}</div>
      <div style="margin-top:8px;display:inline-block;padding:3px 10px;border:1px solid ${statusColor};border-radius:3px;font-size:9px;font-weight:600;color:${statusColor};letter-spacing:.06em;background:rgba(255,255,255,.06);">${sLbl(j.status).toUpperCase()}</div>
     </div>
@@ -3470,12 +3470,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   loadDisplaySettings();
 });
 
-</script>
-
-<!-- ══ CUSTOMER PORTAL OVERLAY ═══════════════════════════════════ -->
 
 
-<script>
 // ══════════════════════════════════════════════════════════════════
 // CUSTOMER PORTAL
 // ══════════════════════════════════════════════════════════════════
@@ -3809,7 +3805,7 @@ function openSlipSheet(jid){
         ${s.tel?`<div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:3px;">โทร. ${s.tel}</div>`:''}
       </div>
       <div style="text-align:right;">
-        <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:rgba(255,255,255,.7);font-weight:600;">#${jobNum}</div>
+        <div style="font-size:11px;font-family:IBM Plex Mono,monospace;color:rgba(255,255,255,.7);font-weight:600;">#${jobNum}</div>
         <div style="font-size:9px;color:rgba(255,255,255,.35);margin-top:3px;">${today}</div>
         <div style="margin-top:5px;display:inline-block;padding:2px 8px;border:1px solid ${statusColor};border-radius:3px;font-size:9px;font-weight:600;color:${statusColor};">${statusTH}</div>
       </div>
@@ -3966,7 +3962,7 @@ function renderBookingsPage(){
      </div>
      <div style="display:flex;flex-direction:column;gap:3px;margin-bottom:8px;">
       <div style="font-size:12px;color:var(--fg2);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="13" height="13" style="display:inline;vertical-align:middle;margin-right:3px;"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg> ${typeTH} · <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="13" height="13" style="display:inline;vertical-align:middle;margin-right:3px;"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg> ${b.qty||'1 เครื่อง'}</div>
-      <div style="font-size:12px;color:var(--fg2);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="13" height="13" style="display:inline;vertical-align:middle;margin-right:3px;"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;">${b.date||'—'}</span> &nbsp;<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="13" height="13" style="display:inline;vertical-align:middle;margin-right:3px;"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg> <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;">${b.time||'—'}</span></div>
+      <div style="font-size:12px;color:var(--fg2);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="13" height="13" style="display:inline;vertical-align:middle;margin-right:3px;"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> <span style="font-family:IBM Plex Mono,monospace;font-size:11px;">${b.date||'—'}</span> &nbsp;<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="13" height="13" style="display:inline;vertical-align:middle;margin-right:3px;"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg> <span style="font-family:IBM Plex Mono,monospace;font-size:11px;">${b.time||'—'}</span></div>
       ${b.addr?`<div style="font-size:11px;color:var(--dim);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="13" height="13" style="display:inline;vertical-align:middle;margin-right:3px;"><path d="M12 21c-4-4-7-7.8-7-11a7 7 0 1114 0c0 3.2-3 7-7 11z"/><circle cx="12" cy="10" r="2"/></svg> ${b.addr}</div>`:''}
       ${b.note?`<div style="font-size:11px;color:var(--fg2);font-style:italic;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="13" height="13" style="display:inline;vertical-align:middle;margin-right:3px;"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg> ${b.note}</div>`:''}
      </div>
@@ -4020,7 +4016,13 @@ function createJobFromBooking(fid){
   },200);
   showToast('โหลดข้อมูลจากนัดหมายแล้ว');
 }
+
 </script>
+
+<!-- ══ CUSTOMER PORTAL OVERLAY ═══════════════════════════════════ -->
+
+
+
 
 <!-- ══ QR SHEET ═══════════════════════════════════════════════ -->
 <div class="sheet-ov" id="sh-qr">
