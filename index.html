@@ -1105,7 +1105,8 @@ let _db=null,_auth=null,_user=null,_unsubs=[];
 
 function _loadFBSdks(){
   return new Promise((res,rej)=>{
-    if(window.firebase){res();return;}
+    if(window.firebase&&_auth&&_db){res();return;}
+    if(window.firebase){try{firebase.app();}catch(e){firebase.initializeApp(_FB);}  _auth=firebase.auth();_db=firebase.firestore();res();return;}
     let n=0;
     ['https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js',
      'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js',
