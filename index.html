@@ -27,6 +27,7 @@
     display:flex;
     flex-direction:column;
     height:100vh;
+    height:100dvh;
     overflow:hidden;
   }
   ::-webkit-scrollbar{width:8px;}
@@ -83,6 +84,49 @@
     transition:.15s;
   }
   .invite-btn:hover{background:var(--red-bright);}
+
+  /* ---------- VOICE BAR ---------- */
+  #voice-bar{
+    background:var(--panel);
+    border-bottom:1px solid var(--border);
+    padding:10px 20px;
+    display:flex;align-items:center;gap:14px;
+    flex-shrink:0;flex-wrap:wrap;
+  }
+  .voice-label{
+    display:flex;align-items:center;gap:8px;
+    font-size:12px;font-weight:700;color:var(--muted);
+    letter-spacing:.5px;text-transform:uppercase;
+  }
+  .voice-dot{width:7px;height:7px;border-radius:50%;background:var(--online);}
+  #voice-members{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .voice-chip{
+    display:flex;align-items:center;gap:6px;
+    background:var(--panel-2);border:1px solid var(--border);
+    border-radius:20px;padding:4px 10px 4px 4px;
+    font-size:12.5px;transition:.15s;
+  }
+  .voice-chip.speaking{border-color:var(--online);box-shadow:0 0 0 2px rgba(63,174,106,.25);}
+  .voice-chip .mini-avatar{
+    width:22px;height:22px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Bebas Neue',sans-serif;font-size:11px;color:#fff;flex-shrink:0;
+  }
+  .voice-chip .muted-icon{color:var(--red-bright);font-size:11px;}
+  #voice-join-btn{
+    background:var(--online);border:none;color:#fff;
+    font-weight:700;font-size:12.5px;padding:8px 16px;border-radius:8px;
+    cursor:pointer;display:flex;align-items:center;gap:6px;transition:.15s;
+    margin-left:auto;
+  }
+  #voice-join-btn:hover{opacity:.85;}
+  #voice-join-btn.active{background:var(--red);}
+  #voice-mute-btn{
+    background:var(--panel-2);border:1px solid var(--border);color:var(--text);
+    width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+    cursor:pointer;transition:.15s;display:none;
+  }
+  #voice-mute-btn.muted{border-color:var(--red);color:var(--red-bright);}
 
   /* ---------- MESSAGES ---------- */
   #messages{
@@ -179,8 +223,10 @@
   /* ---------- NICKNAME MODAL ---------- */
   #nick-overlay{
     position:fixed;inset:0;background:rgba(5,5,6,.85);
+    width:100vw;height:100vh;height:100dvh;
     display:flex;align-items:center;justify-content:center;
     z-index:50;backdrop-filter:blur(4px);
+    overflow-y:auto;padding:20px;
   }
   #nick-card{
     background:var(--panel);border:1px solid var(--border);
@@ -241,6 +287,18 @@
     </button>
   </div>
 </header>
+
+<div id="voice-bar">
+  <div class="voice-label"><span class="voice-dot"></span>ห้องเสียง</div>
+  <div id="voice-members"></div>
+  <button id="voice-mute-btn" title="ปิด/เปิดไมค์">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+  </button>
+  <button id="voice-join-btn">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+    <span id="voice-join-label">เข้าร่วมเสียง</span>
+  </button>
+</div>
 
 <div id="messages">
   <div class="empty-state">
@@ -477,6 +535,220 @@ function renderMessage(m){
   row.appendChild(body);
   return row;
 }
+
+// ---------- VOICE CHANNEL (WebRTC mesh) ----------
+const ICE_CONFIG = { iceServers: [
+  { urls: ['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302'] }
+]};
+const myPeerId = 'p_' + Math.random().toString(36).slice(2,10);
+let localStream = null;
+let inVoice = false;
+let isMuted = false;
+const peerConnections = {}; // peerId -> RTCPeerConnection
+const remoteAudioEls = {};  // peerId -> <audio>
+const analysers = {};       // peerId -> {analyser, data}
+let voicePeersUnsub = null;
+let voiceSignalsUnsub = null;
+let speakingInterval = null;
+
+const voicePeersCol = () => db.collection('rooms').doc(roomId).collection('voicePeers');
+const voiceSignalsCol = () => db.collection('rooms').doc(roomId).collection('voiceSignals');
+
+const voiceJoinBtn = document.getElementById('voice-join-btn');
+const voiceJoinLabel = document.getElementById('voice-join-label');
+const voiceMuteBtn = document.getElementById('voice-mute-btn');
+const voiceMembersEl = document.getElementById('voice-members');
+
+voiceJoinBtn.onclick = ()=> inVoice ? leaveVoice() : joinVoice();
+voiceMuteBtn.onclick = toggleMute;
+
+async function joinVoice(){
+  if(!myNick){ overlay.style.display='flex'; nickInput.focus(); return; }
+  try{
+    localStream = await navigator.mediaDevices.getUserMedia({audio:true});
+  }catch(err){
+    showToast('เปิดไมค์ไม่ได้ — ตรวจสอบสิทธิ์การใช้ไมโครโฟน');
+    return;
+  }
+  inVoice = true;
+  voiceJoinBtn.classList.add('active');
+  voiceJoinLabel.textContent = 'ออกจากเสียง';
+  voiceMuteBtn.style.display = 'flex';
+  setupLocalAnalyser();
+
+  // Find who's already here BEFORE announcing myself
+  const existingSnap = await voicePeersCol().get();
+  const existingIds = new Set(existingSnap.docs.map(d=>d.id));
+
+  await voicePeersCol().doc(myPeerId).set({
+    nick: myNick, color: colorFor(myNick), ts: firebase.firestore.FieldValue.serverTimestamp()
+  });
+
+  voicePeersUnsub = voicePeersCol().onSnapshot(snap=>{
+    snap.docChanges().forEach(change=>{
+      const pid = change.doc.id;
+      if(pid === myPeerId) return;
+      if(change.type === 'added' && !peerConnections[pid]){
+        createPeerConnection(pid, existingIds.has(pid));
+      }
+      if(change.type === 'removed'){
+        closePeerConnection(pid);
+      }
+    });
+    renderVoiceMembers(snap);
+  });
+
+  voiceSignalsUnsub = voiceSignalsCol().where('to','==',myPeerId).onSnapshot(snap=>{
+    snap.docChanges().forEach(async change=>{
+      if(change.type === 'added'){
+        await handleSignal(change.doc.data());
+        change.doc.ref.delete().catch(()=>{});
+      }
+    });
+  });
+
+  speakingInterval = setInterval(updateSpeakingIndicators, 200);
+  showToast('เข้าร่วมห้องเสียงแล้ว');
+}
+
+async function leaveVoice(){
+  inVoice = false;
+  voiceJoinBtn.classList.remove('active');
+  voiceJoinLabel.textContent = 'เข้าร่วมเสียง';
+  voiceMuteBtn.style.display = 'none';
+  voiceMuteBtn.classList.remove('muted');
+  isMuted = false;
+
+  Object.keys(peerConnections).forEach(closePeerConnection);
+  if(localStream) localStream.getTracks().forEach(t=>t.stop());
+  localStream = null;
+
+  if(voicePeersUnsub) voicePeersUnsub();
+  if(voiceSignalsUnsub) voiceSignalsUnsub();
+  if(speakingInterval) clearInterval(speakingInterval);
+  voiceMembersEl.innerHTML = '';
+
+  try{ await voicePeersCol().doc(myPeerId).delete(); }catch(e){}
+}
+
+function toggleMute(){
+  if(!localStream) return;
+  isMuted = !isMuted;
+  localStream.getAudioTracks().forEach(t=> t.enabled = !isMuted);
+  voiceMuteBtn.classList.toggle('muted', isMuted);
+}
+
+function createPeerConnection(peerId, iAmInitiator){
+  const pc = new RTCPeerConnection(ICE_CONFIG);
+  peerConnections[peerId] = pc;
+
+  localStream.getTracks().forEach(t=> pc.addTrack(t, localStream));
+
+  pc.onicecandidate = e=>{
+    if(e.candidate) sendSignal(peerId, 'candidate', JSON.stringify(e.candidate));
+  };
+  pc.ontrack = e=>{
+    let audioEl = remoteAudioEls[peerId];
+    if(!audioEl){
+      audioEl = document.createElement('audio');
+      audioEl.autoplay = true;
+      document.body.appendChild(audioEl);
+      remoteAudioEls[peerId] = audioEl;
+    }
+    audioEl.srcObject = e.streams[0];
+    setupRemoteAnalyser(peerId, e.streams[0]);
+  };
+
+  if(iAmInitiator){
+    pc.onnegotiationneeded = async ()=>{
+      try{
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        sendSignal(peerId, 'offer', JSON.stringify(offer));
+      }catch(e){ console.error(e); }
+    };
+  }
+  return pc;
+}
+
+function closePeerConnection(peerId){
+  const pc = peerConnections[peerId];
+  if(pc){ pc.close(); delete peerConnections[peerId]; }
+  const audioEl = remoteAudioEls[peerId];
+  if(audioEl){ audioEl.remove(); delete remoteAudioEls[peerId]; }
+  delete analysers[peerId];
+}
+
+function sendSignal(to, type, payload){
+  voiceSignalsCol().add({
+    from: myPeerId, to, type, payload, ts: firebase.firestore.FieldValue.serverTimestamp()
+  });
+}
+
+async function handleSignal(data){
+  const { from, type, payload } = data;
+  let pc = peerConnections[from];
+  if(!pc) pc = createPeerConnection(from, false);
+  if(type === 'offer'){
+    await pc.setRemoteDescription(JSON.parse(payload));
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+    sendSignal(from, 'answer', JSON.stringify(answer));
+  } else if(type === 'answer'){
+    await pc.setRemoteDescription(JSON.parse(payload));
+  } else if(type === 'candidate'){
+    try{ await pc.addIceCandidate(JSON.parse(payload)); }catch(e){}
+  }
+}
+
+function renderVoiceMembers(snap){
+  voiceMembersEl.innerHTML = '';
+  snap.forEach(doc=>{
+    const d = doc.data();
+    const chip = document.createElement('div');
+    chip.className = 'voice-chip';
+    chip.dataset.peerId = doc.id;
+    chip.innerHTML = `<span class="mini-avatar" style="background:${d.color||'#8a3238'}">${(d.nick||'?').slice(0,2).toUpperCase()}</span><span>${d.nick||'ไม่ทราบชื่อ'}${doc.id===myPeerId?' (คุณ)':''}</span>`;
+    voiceMembersEl.appendChild(chip);
+  });
+}
+
+// ---- speaking indicator via Web Audio analyser ----
+let audioCtx = null;
+function getAudioCtx(){
+  if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  return audioCtx;
+}
+function setupLocalAnalyser(){
+  if(!localStream) return;
+  const ctx = getAudioCtx();
+  const source = ctx.createMediaStreamSource(localStream);
+  const analyser = ctx.createAnalyser();
+  analyser.fftSize = 512;
+  source.connect(analyser);
+  analysers[myPeerId] = { analyser, data: new Uint8Array(analyser.frequencyBinCount) };
+}
+function setupRemoteAnalyser(peerId, stream){
+  const ctx = getAudioCtx();
+  const source = ctx.createMediaStreamSource(stream);
+  const analyser = ctx.createAnalyser();
+  analyser.fftSize = 512;
+  source.connect(analyser);
+  analysers[peerId] = { analyser, data: new Uint8Array(analyser.frequencyBinCount) };
+}
+function updateSpeakingIndicators(){
+  Object.keys(analysers).forEach(peerId=>{
+    const { analyser, data } = analysers[peerId];
+    analyser.getByteFrequencyData(data);
+    const avg = data.reduce((a,b)=>a+b,0) / data.length;
+    const chip = voiceMembersEl.querySelector(`[data-peer-id="${peerId}"]`);
+    if(chip) chip.classList.toggle('speaking', avg > 12);
+  });
+}
+
+window.addEventListener('pagehide', ()=>{
+  if(inVoice){ voicePeersCol().doc(myPeerId).delete().catch(()=>{}); }
+});
 </script>
 </body>
 </html>
