@@ -4,11 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>NEXUS CHAT</title>
-<meta name="theme-color" content="#0a0a0c">
-<meta name="description" content="NEXUS CHAT — ห้องแชทกลุ่มพร้อมเสียงและไฟล์แนบ">
-<link rel="manifest" href="manifest.json">
-<link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -228,21 +223,82 @@
     cursor:pointer;transition:.15s;
   }
   #voice-settings-btn:hover{border-color:var(--red);}
-  #voice-settings-overlay, #profile-settings-overlay, #room-expiry-overlay{
-    position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:70;
-    display:flex;align-items:center;justify-content:center;padding:20px;
-    overflow-y:auto;
+  #voice-settings-overlay, #profile-settings-overlay{
+    position:fixed;inset:0;background:rgba(8,8,10,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+    z-index:70;display:flex;align-items:center;justify-content:center;padding:20px;
+    overflow-y:auto;animation:overlay-fade .18s ease;
   }
+  @keyframes overlay-fade{from{opacity:0;}to{opacity:1;}}
+  @keyframes card-pop{from{opacity:0;transform:translateY(6px) scale(.97);}to{opacity:1;transform:translateY(0) scale(1);}}
   .voice-settings-card{
-    background:var(--panel);border:1px solid var(--border);border-radius:14px;
-    padding:24px;width:100%;max-width:360px;
+    position:relative;background:linear-gradient(180deg,var(--panel-2),var(--panel));
+    border:1px solid var(--border);border-radius:16px;
+    padding:26px;width:100%;max-width:380px;
+    box-shadow:0 20px 50px rgba(0,0,0,.45);
+    animation:card-pop .2s cubic-bezier(.2,.8,.3,1);
   }
-  .voice-settings-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:16px;}
+  .settings-close{
+    position:absolute;top:16px;right:16px;width:28px;height:28px;border-radius:8px;
+    background:var(--panel-2);border:1px solid var(--border);color:var(--muted);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s;
+  }
+  .settings-close:hover{border-color:var(--red);color:var(--text);}
+  .settings-header{display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-right:30px;}
+  .settings-icon{
+    width:34px;height:34px;border-radius:9px;flex-shrink:0;
+    background:rgba(138,50,56,.18);border:1px solid rgba(138,50,56,.4);
+    display:flex;align-items:center;justify-content:center;color:var(--red-bright);
+  }
+  .voice-settings-title{font-size:15px;font-weight:700;color:var(--text);line-height:1.2;}
+  .settings-subtitle{font-size:11.5px;color:var(--muted);margin-top:2px;}
+  .settings-divider{height:1px;background:var(--border);margin:18px 0;}
+  .select-wrap{position:relative;}
   .voice-settings-card select{
     width:100%;background:var(--void);border:1px solid var(--border);color:var(--text);
-    font-size:13.5px;padding:9px 10px;border-radius:8px;outline:none;font-family:'Inter',sans-serif;
+    font-size:13.5px;padding:10px 32px 10px 12px;border-radius:9px;outline:none;
+    font-family:'Inter',sans-serif;appearance:none;-webkit-appearance:none;cursor:pointer;transition:.15s;
   }
+  .voice-settings-card select:hover{border-color:#3a3a40;}
   .voice-settings-card select:focus{border-color:var(--red);}
+  .select-wrap::after{
+    content:'';position:absolute;right:12px;top:50%;width:8px;height:8px;pointer-events:none;
+    border-right:1.6px solid var(--muted);border-bottom:1.6px solid var(--muted);
+    transform:translateY(-70%) rotate(45deg);
+  }
+  .mic-meter{
+    display:flex;align-items:center;gap:8px;margin-top:10px;padding:9px 11px;
+    background:var(--void);border:1px solid var(--border);border-radius:9px;
+  }
+  .mic-meter svg{color:var(--muted);flex-shrink:0;}
+  .mic-meter-track{flex:1;height:6px;border-radius:4px;background:var(--panel-2);overflow:hidden;}
+  .mic-meter-fill{height:100%;width:0%;background:var(--online);border-radius:4px;transition:width .07s linear;}
+  .mic-meter-label{font-size:10.5px;color:var(--muted);white-space:nowrap;}
+  .avatar-drop{
+    position:relative;width:64px;height:64px;border-radius:50%;cursor:pointer;flex-shrink:0;
+  }
+  .avatar-drop .avatar-hover{
+    position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,.55);
+    display:flex;align-items:center;justify-content:center;opacity:0;transition:.15s;color:#fff;
+  }
+  .avatar-drop:hover .avatar-hover{opacity:1;}
+  .avatar-hint{font-size:11px;color:var(--muted);margin-top:6px;}
+  .avatar-hint b{color:var(--muted);font-weight:600;}
+  .swatch-btn{
+    width:30px;height:30px;border-radius:9px;cursor:pointer;padding:0;position:relative;
+    transition:.15s;border:2px solid transparent;
+  }
+  .swatch-btn:hover{transform:translateY(-1px);}
+  .swatch-btn.selected{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.15);}
+  .swatch-btn.selected::after{
+    content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    color:#fff;font-size:13px;font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.5);
+  }
+  .settings-actions{display:flex;gap:8px;margin-top:22px;}
+  .settings-actions .btn-primary{margin-top:0;}
+  .btn-ghost{
+    background:var(--panel-2)!important;border:1px solid var(--border)!important;color:var(--text)!important;
+  }
+  .btn-ghost:hover{border-color:#3a3a40!important;background:#202024!important;}
 
   /* ---------- MESSAGES ---------- */
   #messages{
@@ -393,9 +449,7 @@
       <span class="mini-avatar" id="lobby-avatar" style="background:#8a3238">--</span>
       <span id="lobby-username">-</span>
     </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;">
-      <button class="logout-btn hidden" id="install-app-btn">📲 ติดตั้งแอป</button>
-      <button class="logout-btn" id="notif-toggle-btn">🔔 แจ้งเตือน</button>
+    <div style="display:flex;gap:8px;">
       <button class="logout-btn" id="profile-settings-btn">โปรไฟล์</button>
       <button class="logout-btn" id="logout-btn">ออกจากระบบ</button>
     </div>
@@ -425,66 +479,49 @@
 <!-- ================= PROFILE SETTINGS MODAL ================= -->
 <div class="hidden" id="profile-settings-overlay">
   <div class="voice-settings-card">
-    <div class="voice-settings-title">ตั้งค่าโปรไฟล์</div>
+    <button class="settings-close" id="profile-settings-x" type="button" title="ปิด">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+    </button>
+    <div class="settings-header">
+      <div class="settings-icon">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div>
+        <div class="voice-settings-title">ตั้งค่าโปรไฟล์</div>
+        <div class="settings-subtitle">ปรับชื่อและรูปที่คนอื่นเห็นในแชท</div>
+      </div>
+    </div>
     <div class="auth-error hidden" id="profile-error"></div>
 
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
-      <span class="mini-avatar" id="profile-avatar-preview" style="width:52px;height:52px;font-size:20px;background:#8a3238;">--</span>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:6px;">
+      <div class="avatar-drop" id="profile-avatar-dropzone" title="เปลี่ยนรูปโปรไฟล์">
+        <span class="mini-avatar" id="profile-avatar-preview" style="width:64px;height:64px;font-size:22px;background:#8a3238;">--</span>
+        <div class="avatar-hover">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </div>
+      </div>
       <div>
-        <button class="logout-btn" id="profile-avatar-upload-btn" type="button">อัปโหลดรูปโปรไฟล์</button>
+        <button class="logout-btn" id="profile-avatar-upload-btn" type="button">เปลี่ยนรูปโปรไฟล์</button>
         <input type="file" id="profile-avatar-input" accept="image/*" class="hidden">
-        <div style="font-size:11px;color:var(--muted);margin-top:6px;">ไม่บังคับ — ถ้าไม่ใส่รูปจะใช้ตัวอักษรย่อแทน</div>
+        <div class="avatar-hint">ไม่บังคับ — ถ้าไม่ใส่รูปจะใช้<b>ตัวอักษรย่อ</b>แทน</div>
       </div>
     </div>
 
-    <div class="field">
-      <label>ชื่อที่แสดงในแชท</label>
-      <input id="profile-display-name" placeholder="ชื่อที่คนอื่นจะเห็น" style="font-family:'Inter',sans-serif;">
-    </div>
+    <div class="settings-divider"></div>
 
     <div class="field">
+      <label>ชื่อที่แสดงในแชท</label>
+      <input id="profile-display-name" placeholder="ชื่อที่คนอื่นจะเห็น" style="font-family:'Inter',sans-serif;" maxlength="24">
+    </div>
+
+    <div class="field" style="margin-bottom:0;">
       <label>สีอวตาร์ (ใช้ตอนไม่มีรูปโปรไฟล์)</label>
       <div id="profile-color-swatches" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
     </div>
 
-    <div style="border-top:1px solid var(--border);margin:18px 0 14px;padding-top:14px;">
-      <div style="font-size:12.5px;color:var(--muted);margin-bottom:10px;">บัญชีผู้ใช้</div>
-      <div class="field">
-        <label>ชื่อผู้ใช้ (สำหรับเข้าสู่ระบบ)</label>
-        <input id="profile-username" placeholder="ชื่อผู้ใช้" style="font-family:'Inter',sans-serif;">
-      </div>
-      <div class="field">
-        <label>รหัสผ่านใหม่ (เว้นว่างถ้าไม่เปลี่ยน)</label>
-        <input id="profile-new-password" type="password" placeholder="อย่างน้อย 6 ตัว" style="font-family:'Inter',sans-serif;">
-      </div>
-      <div class="field">
-        <label>ยืนยันรหัสผ่านใหม่</label>
-        <input id="profile-new-password-confirm" type="password" placeholder="พิมพ์รหัสผ่านใหม่อีกครั้ง" style="font-family:'Inter',sans-serif;">
-      </div>
-    </div>
-
-    <div style="display:flex;gap:8px;margin-top:6px;">
-      <button class="btn-primary" id="profile-settings-cancel" style="margin-top:0;background:var(--panel-2);border:1px solid var(--border);">ยกเลิก</button>
-      <button class="btn-primary" id="profile-settings-save" style="margin-top:0;">บันทึก</button>
-    </div>
-  </div>
-</div>
-
-<!-- ================= ROOM EXPIRY SETTINGS MODAL ================= -->
-<div class="hidden" id="room-expiry-overlay">
-  <div class="voice-settings-card">
-    <div class="voice-settings-title">ตั้งเวลาหายของข้อความในห้องนี้</div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">
-      ใช้กับข้อความตัวอักษรล้วนที่ไม่มีไฟล์แนบ และไม่ได้ถูกกด "จำ" เท่านั้น — รูป/ไฟล์แนบ และข้อความที่กดจำจะอยู่ถาวรเสมอ
-    </div>
-    <div id="expiry-presets" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;"></div>
-    <div class="field">
-      <label>หรือกำหนดเอง (นาที)</label>
-      <input id="expiry-custom-minutes" type="number" min="0" placeholder="เช่น 60" style="font-family:'Inter',sans-serif;">
-    </div>
-    <div style="display:flex;gap:8px;margin-top:6px;">
-      <button class="btn-primary" id="room-expiry-cancel" style="margin-top:0;background:var(--panel-2);border:1px solid var(--border);">ยกเลิก</button>
-      <button class="btn-primary" id="room-expiry-save" style="margin-top:0;">บันทึก</button>
+    <div class="settings-actions">
+      <button class="btn-primary btn-ghost" id="profile-settings-cancel" style="flex:1;">ยกเลิก</button>
+      <button class="btn-primary" id="profile-settings-save" style="flex:1;">บันทึก</button>
     </div>
   </div>
 </div>
@@ -498,7 +535,6 @@
       </button>
       <span class="brand-mark" id="chat-room-name">NEXUS<span>CHAT</span></span>
       <div class="room-chip" id="room-chip">ROOM · ------</div>
-      <div class="room-chip" id="room-expiry-chip" title="ตั้งค่าเวลาหมดอายุข้อความ" style="cursor:pointer;"></div>
     </div>
     <div class="header-right">
       <button class="invite-btn" id="invite-btn">
@@ -525,17 +561,34 @@
 
   <div class="hidden" id="voice-settings-overlay">
     <div class="voice-settings-card">
-      <div class="voice-settings-title">ตั้งค่าไมค์ / ลำโพง</div>
+      <button class="settings-close" id="voice-settings-x" type="button" title="ปิด">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+      </button>
+      <div class="settings-header">
+        <div class="settings-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+        <div>
+          <div class="voice-settings-title">ตั้งค่าไมค์ / ลำโพง</div>
+          <div class="settings-subtitle">เลือกอุปกรณ์เสียงสำหรับห้องเสียง</div>
+        </div>
+      </div>
+
       <div class="field">
         <label>ไมโครโฟน</label>
-        <select id="mic-select"></select>
+        <div class="select-wrap"><select id="mic-select"></select></div>
+        <div class="mic-meter">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+          <div class="mic-meter-track"><div class="mic-meter-fill" id="mic-meter-fill"></div></div>
+          <span class="mic-meter-label" id="mic-meter-label">ทดสอบไมค์</span>
+        </div>
       </div>
       <div class="field" id="speaker-field">
         <label>ลำโพง / หูฟัง</label>
-        <select id="speaker-select"></select>
+        <div class="select-wrap"><select id="speaker-select"></select></div>
       </div>
-      <div style="display:flex;gap:8px;margin-top:6px;">
-        <button class="btn-primary" id="voice-settings-close" style="margin-top:0;">เสร็จสิ้น</button>
+      <div class="settings-actions">
+        <button class="btn-primary" id="voice-settings-close" style="flex:1;">เสร็จสิ้น</button>
       </div>
     </div>
   </div>
@@ -572,9 +625,7 @@ const SUPABASE_ANON_KEY = "sb_publishable_bDSB6Z1s1Q75Zdi0-hlU8g_N-_xA1rn";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // อายุข้อความข้อความล้วน (ไม่มีรูป/ไฟล์แนบ และไม่ได้ถูกกดให้จำ) ก่อนถูกลบอัตโนมัติ
-// ตอนนี้ตั้งค่าได้ต่อห้อง (ดู currentRoomExpiryMinutes) — ค่านี้ใช้เป็นค่าเริ่มต้นตอนสร้างห้องใหม่เท่านั้น
-const DEFAULT_EXPIRY_MINUTES = 1440; // 24 ชั่วโมง
-let currentRoomExpiryMinutes = DEFAULT_EXPIRY_MINUTES; // 0 = ไม่หมดอายุเลย
+const MESSAGE_TTL_MS = 24 * 60 * 60 * 1000; // 24 ชั่วโมง
 
 function showToast(msg){
   const t = document.getElementById('toast');
@@ -615,7 +666,6 @@ let myUid = null;
 let myNick = null;
 let myAvatarColor = null;
 let myAvatarUrl = null;
-let myUsername = null;
 
 document.getElementById('auth-switch-btn').onclick = ()=>{
   authMode = authMode === 'login' ? 'signup' : 'login';
@@ -651,16 +701,14 @@ authSubmit.onclick = async ()=>{
   const password = passwordInput.value;
   authError.classList.add('hidden');
   if(!username || !password){ showAuthError('กรอกชื่อผู้ใช้และรหัสผ่านให้ครบ'); return; }
+  const fakeEmail = usernameToFakeEmail(username);
   authSubmit.disabled = true;
   try{
     if(authMode === 'signup'){
-      const fakeEmail = usernameToFakeEmail(username);
       const { data, error } = await sb.auth.signUp({ email: fakeEmail, password });
       if(error) throw error;
       if(!data.user) throw { message: 'กรุณายืนยันอีเมล (ปิด Confirm email ใน Supabase Auth settings เพื่อข้ามขั้นตอนนี้)' };
-      const { error: profErr } = await sb.from('profiles').insert({
-        id: data.user.id, username, display_name: username, auth_email: fakeEmail
-      });
+      const { error: profErr } = await sb.from('profiles').insert({ id: data.user.id, username, display_name: username });
       if(profErr) throw profErr;
       // signUp บางครั้งไม่สร้าง session ทันที ถ้ายังไม่ login ให้ลอง sign in ต่อ
       if(!data.session){
@@ -668,13 +716,7 @@ authSubmit.onclick = async ()=>{
         if(signInErr) throw signInErr;
       }
     } else {
-      // ชื่อผู้ใช้ตอนล็อกอินอาจถูกเปลี่ยนไปแล้วจากในหน้าโปรไฟล์ จึงต้องค้นหาอีเมลจริงที่ผูกกับ Supabase Auth ก่อน
-      const { data: prof, error: lookupErr } = await sb.from('profiles')
-        .select('auth_email').eq('username', username).single();
-      if(lookupErr || !prof || !prof.auth_email){
-        throw { message: 'ไม่พบชื่อผู้ใช้นี้' };
-      }
-      const { error } = await sb.auth.signInWithPassword({ email: prof.auth_email, password });
+      const { error } = await sb.auth.signInWithPassword({ email: fakeEmail, password });
       if(error) throw error;
     }
   }catch(err){
@@ -706,11 +748,10 @@ async function handleSession(session){
   if(user){
     myUid = user.id;
     const { data: profile } = await sb.from('profiles')
-      .select('username,display_name,avatar_color,avatar_url,auth_email').eq('id', user.id).single();
+      .select('username,display_name,avatar_color,avatar_url').eq('id', user.id).single();
     myNick = profile ? (profile.display_name || profile.username) : (user.email||'').split('@')[0];
     myAvatarColor = (profile && profile.avatar_color) || colorFor(myNick);
     myAvatarUrl = (profile && profile.avatar_url) || null;
-    myUsername = profile ? profile.username : null;
     authScreen.classList.add('hidden');
     styleAvatarEl(document.getElementById('lobby-avatar'), myNick, myAvatarColor, myAvatarUrl);
     document.getElementById('lobby-username').textContent = myNick;
@@ -721,7 +762,7 @@ async function handleSession(session){
       lobbyScreen.classList.remove('hidden');
     }
   } else {
-    myUid = null; myNick = null; myAvatarColor = null; myAvatarUrl = null; myUsername = null;
+    myUid = null; myNick = null; myAvatarColor = null; myAvatarUrl = null;
     lobbyScreen.classList.add('hidden');
     chatScreen.classList.add('hidden');
     authScreen.classList.remove('hidden');
@@ -765,7 +806,7 @@ async function refreshRecentRooms(){
 document.getElementById('create-room-btn').onclick = async ()=>{
   const name = document.getElementById('create-room-name').value.trim() || 'ห้องไม่มีชื่อ';
   const roomId = makeRoomId();
-  await sb.from('rooms').insert({ id: roomId, name, created_by: myUid, expiry_minutes: DEFAULT_EXPIRY_MINUTES });
+  await sb.from('rooms').insert({ id: roomId, name, created_by: myUid });
   await sb.from('user_rooms').upsert({ user_id: myUid, room_id: roomId, name, ts: new Date().toISOString() });
   document.getElementById('create-room-name').value='';
   openRoom(roomId, name);
@@ -788,9 +829,6 @@ const profileDisplayNameInput = document.getElementById('profile-display-name');
 const profileAvatarPreview = document.getElementById('profile-avatar-preview');
 const profileColorSwatches = document.getElementById('profile-color-swatches');
 const profileAvatarInput = document.getElementById('profile-avatar-input');
-const profileUsernameInput = document.getElementById('profile-username');
-const profileNewPasswordInput = document.getElementById('profile-new-password');
-const profileNewPasswordConfirmInput = document.getElementById('profile-new-password-confirm');
 let pendingAvatarFile = null;
 let pickedAvatarColor = null;
 
@@ -799,31 +837,36 @@ function openProfileSettings(){
   pendingAvatarFile = null;
   pickedAvatarColor = myAvatarColor || colorFor(myNick);
   profileDisplayNameInput.value = myNick || '';
-  profileUsernameInput.value = myUsername || '';
-  profileNewPasswordInput.value = '';
-  profileNewPasswordConfirmInput.value = '';
   styleAvatarEl(profileAvatarPreview, myNick, pickedAvatarColor, myAvatarUrl);
 
   profileColorSwatches.innerHTML = '';
   AVATAR_COLORS.forEach(c=>{
     const sw = document.createElement('button');
     sw.type = 'button';
-    sw.style.cssText = `width:28px;height:28px;border-radius:8px;border:2px solid ${c===pickedAvatarColor?'#fff':'transparent'};background:${c};cursor:pointer;padding:0;`;
+    sw.className = 'swatch-btn' + (c===pickedAvatarColor ? ' selected' : '');
+    sw.style.background = c;
     sw.onclick = ()=>{
       pickedAvatarColor = c;
       if(!pendingAvatarFile) styleAvatarEl(profileAvatarPreview, myNick, c, myAvatarUrl);
-      [...profileColorSwatches.children].forEach(el=> el.style.borderColor='transparent');
-      sw.style.borderColor = '#fff';
+      [...profileColorSwatches.children].forEach(el=> el.classList.remove('selected'));
+      sw.classList.add('selected');
     };
     profileColorSwatches.appendChild(sw);
   });
 
   profileOverlay.classList.remove('hidden');
 }
+function closeProfileSettings(){ profileOverlay.classList.add('hidden'); }
 document.getElementById('lobby-user-btn').onclick = openProfileSettings;
 document.getElementById('profile-settings-btn').onclick = openProfileSettings;
-document.getElementById('profile-settings-cancel').onclick = ()=> profileOverlay.classList.add('hidden');
+document.getElementById('profile-settings-cancel').onclick = closeProfileSettings;
+document.getElementById('profile-settings-x').onclick = closeProfileSettings;
+profileOverlay.addEventListener('mousedown', (e)=>{ if(e.target === profileOverlay) closeProfileSettings(); });
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Escape' && !profileOverlay.classList.contains('hidden')) closeProfileSettings();
+});
 
+document.getElementById('profile-avatar-dropzone').onclick = ()=> profileAvatarInput.click();
 document.getElementById('profile-avatar-upload-btn').onclick = ()=> profileAvatarInput.click();
 profileAvatarInput.addEventListener('change', ()=>{
   const f = profileAvatarInput.files[0];
@@ -840,15 +883,7 @@ profileAvatarInput.addEventListener('change', ()=>{
 document.getElementById('profile-settings-save').onclick = async ()=>{
   const saveBtn = document.getElementById('profile-settings-save');
   const newDisplayName = profileDisplayNameInput.value.trim();
-  const newUsername = profileUsernameInput.value.trim();
-  const newPassword = profileNewPasswordInput.value;
-  const newPasswordConfirm = profileNewPasswordConfirmInput.value;
   if(!newDisplayName){ showProfileError('กรอกชื่อที่แสดงให้ครบ'); return; }
-  if(!newUsername){ showProfileError('กรอกชื่อผู้ใช้ให้ครบ'); return; }
-  if(newPassword || newPasswordConfirm){
-    if(newPassword.length < 6){ showProfileError('รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัว'); return; }
-    if(newPassword !== newPasswordConfirm){ showProfileError('ยืนยันรหัสผ่านใหม่ไม่ตรงกัน'); return; }
-  }
   saveBtn.disabled = true;
 
   let newAvatarUrl = myAvatarUrl;
@@ -860,29 +895,16 @@ document.getElementById('profile-settings-save').onclick = async ()=>{
       const { data: pub } = sb.storage.from('avatars').getPublicUrl(path);
       newAvatarUrl = pub.publicUrl;
     }
-
     const { error: updErr } = await sb.from('profiles').update({
-      username: newUsername,
       display_name: newDisplayName,
       avatar_color: pickedAvatarColor,
       avatar_url: newAvatarUrl
     }).eq('id', myUid);
-    if(updErr){
-      if(/duplicate|already exists/i.test(updErr.message||'')) throw { message:'ชื่อผู้ใช้นี้มีคนใช้แล้ว ลองชื่ออื่น' };
-      throw updErr;
-    }
-
-    if(newPassword){
-      const { error: pwErr } = await sb.auth.updateUser({ password: newPassword });
-      if(pwErr) throw pwErr;
-    }
+    if(updErr) throw updErr;
 
     myNick = newDisplayName;
-    myUsername = newUsername;
     myAvatarColor = pickedAvatarColor;
     myAvatarUrl = newAvatarUrl;
-    profileNewPasswordInput.value = '';
-    profileNewPasswordConfirmInput.value = '';
     styleAvatarEl(document.getElementById('lobby-avatar'), myNick, myAvatarColor, myAvatarUrl);
     document.getElementById('lobby-username').textContent = myNick;
     profileOverlay.classList.add('hidden');
@@ -909,21 +931,22 @@ async function openRoom(id, knownName){
   url.searchParams.set('room', roomId);
   history.replaceState({}, '', url);
 
-  const { data: d, error } = await sb.from('rooms').select('name,expiry_minutes').eq('id', roomId).single();
-  if(error || !d){
-    showToast('ไม่พบห้องนี้ ตรวจสอบโค้ดอีกครั้ง');
-    url.searchParams.delete('room');
-    history.replaceState({}, '', url);
-    lobbyScreen.classList.remove('hidden');
-    return;
+  let name = knownName;
+  if(!name){
+    const { data: d, error } = await sb.from('rooms').select('name').eq('id', roomId).single();
+    if(error || !d){
+      showToast('ไม่พบห้องนี้ ตรวจสอบโค้ดอีกครั้ง');
+      url.searchParams.delete('room');
+      history.replaceState({}, '', url);
+      lobbyScreen.classList.remove('hidden');
+      return;
+    }
+    name = d.name;
+    await sb.from('user_rooms').upsert({ user_id: myUid, room_id: roomId, name, ts: new Date().toISOString() });
   }
-  const name = knownName || d.name;
-  currentRoomExpiryMinutes = (d.expiry_minutes === null || d.expiry_minutes === undefined) ? DEFAULT_EXPIRY_MINUTES : d.expiry_minutes;
-  await sb.from('user_rooms').upsert({ user_id: myUid, room_id: roomId, name, ts: new Date().toISOString() });
 
   document.getElementById('chat-room-name').innerHTML = (name||'NEXUS') + '<span></span>';
   document.getElementById('room-chip').textContent = 'ROOM · ' + roomId;
-  updateExpiryLabel();
   lobbyScreen.classList.add('hidden');
   chatScreen.classList.remove('hidden');
   subscribeMessages();
@@ -943,75 +966,6 @@ document.getElementById('back-to-lobby-btn').onclick = ()=>{
 // ---------- INVITE ----------
 document.getElementById('invite-btn').onclick = ()=>{
   navigator.clipboard.writeText(location.href).then(()=>showToast('คัดลอกลิงก์แล้ว ส่งให้เพื่อนได้เลย'));
-};
-
-// ---------- ROOM EXPIRY SETTINGS ----------
-const roomExpiryChip = document.getElementById('room-expiry-chip');
-const roomExpiryOverlay = document.getElementById('room-expiry-overlay');
-const expiryPresetsEl = document.getElementById('expiry-presets');
-const expiryCustomInput = document.getElementById('expiry-custom-minutes');
-const EXPIRY_PRESETS = [
-  { label:'ไม่หมดอายุเลย', minutes: 0 },
-  { label:'10 นาที', minutes: 10 },
-  { label:'1 ชั่วโมง', minutes: 60 },
-  { label:'24 ชั่วโมง', minutes: 1440 },
-  { label:'7 วัน', minutes: 10080 },
-];
-
-function updateExpiryLabel(){
-  const preset = EXPIRY_PRESETS.find(p=>p.minutes === currentRoomExpiryMinutes);
-  roomExpiryChip.textContent = (!currentRoomExpiryMinutes || currentRoomExpiryMinutes<=0)
-    ? 'ข้อความไม่หมดอายุ'
-    : 'หมดอายุใน ' + (preset ? preset.label : currentRoomExpiryMinutes + ' นาที');
-}
-
-roomExpiryChip.onclick = ()=>{
-  expiryCustomInput.value = '';
-  renderExpiryPresets();
-  roomExpiryOverlay.classList.remove('hidden');
-};
-document.getElementById('room-expiry-cancel').onclick = ()=> roomExpiryOverlay.classList.add('hidden');
-
-let pickedExpiryMinutes = null;
-function renderExpiryPresets(){
-  pickedExpiryMinutes = currentRoomExpiryMinutes;
-  expiryPresetsEl.innerHTML = '';
-  EXPIRY_PRESETS.forEach(p=>{
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.textContent = p.label;
-    const active = p.minutes === currentRoomExpiryMinutes;
-    btn.style.cssText = `padding:8px 12px;border-radius:8px;font-size:12.5px;cursor:pointer;` +
-      `background:${active?'var(--red)':'var(--panel-2)'};color:#fff;border:1px solid ${active?'var(--red)':'var(--border)'};`;
-    btn.onclick = ()=>{
-      pickedExpiryMinutes = p.minutes;
-      expiryCustomInput.value = '';
-      [...expiryPresetsEl.children].forEach(el=>{ el.style.background='var(--panel-2)'; el.style.borderColor='var(--border)'; });
-      btn.style.background = 'var(--red)'; btn.style.borderColor = 'var(--red)';
-    };
-    expiryPresetsEl.appendChild(btn);
-  });
-}
-
-expiryCustomInput.addEventListener('input', ()=>{
-  if(expiryCustomInput.value !== ''){
-    [...expiryPresetsEl.children].forEach(el=>{ el.style.background='var(--panel-2)'; el.style.borderColor='var(--border)'; });
-  }
-});
-
-document.getElementById('room-expiry-save').onclick = async ()=>{
-  let minutes = pickedExpiryMinutes;
-  if(expiryCustomInput.value !== ''){
-    const n = parseInt(expiryCustomInput.value, 10);
-    if(isNaN(n) || n < 0){ showToast('กรอกจำนวนนาทีให้ถูกต้อง'); return; }
-    minutes = n;
-  }
-  await sb.from('rooms').update({ expiry_minutes: minutes }).eq('id', roomId);
-  currentRoomExpiryMinutes = minutes;
-  updateExpiryLabel();
-  roomExpiryOverlay.classList.add('hidden');
-  purgeExpiredMessages().then(loadAndRenderMessages);
-  showToast('บันทึกการตั้งค่าเวลาหมดอายุแล้ว');
 };
 
 // ---------- MESSAGES ----------
@@ -1079,7 +1033,6 @@ async function sendMessage(){
 
   await sb.from('messages').insert({
     room_id: roomId,
-    user_id: myUid,
     nick: myNick,
     text: text,
     attachments: attachments,
@@ -1090,11 +1043,10 @@ async function sendMessage(){
   });
 }
 
-// ข้อความข้อความล้วน (ไม่มีไฟล์แนบ) ที่ยังไม่ถูกกด "จำ" และเก่ากว่าเวลาที่ตั้งไว้ของห้องนี้ (currentRoomExpiryMinutes) จะถูกลบทิ้ง
+// ข้อความข้อความล้วน (ไม่มีไฟล์แนบ) ที่ยังไม่ถูกกด "จำ" และเก่ากว่า MESSAGE_TTL_MS จะถูกลบทิ้ง
 // การลบนี้ทำงานฝั่ง client เมื่อมีคนเปิดห้องอยู่ (เว็บนี้ host แบบ static ไม่มีเซิร์ฟเวอร์ตัวเอง)
 async function purgeExpiredMessages(){
-  if(!currentRoomExpiryMinutes || currentRoomExpiryMinutes <= 0) return; // 0/ไม่ตั้งค่า = ไม่หมดอายุ
-  const cutoff = new Date(Date.now() - currentRoomExpiryMinutes*60*1000).toISOString();
+  const cutoff = new Date(Date.now() - MESSAGE_TTL_MS).toISOString();
   await sb.from('messages').delete()
     .eq('room_id', roomId)
     .eq('pinned', false)
@@ -1117,7 +1069,6 @@ async function subscribeMessages(){
         if(emptyState) emptyState.remove();
         messagesEl.appendChild(renderMessage(payload.new));
         scrollBottom();
-        notifyNewMessage(payload.new);
       })
     .on('postgres_changes', { event:'UPDATE', schema:'public', table:'messages', filter:`room_id=eq.${roomId}` },
       payload=>{
@@ -1160,47 +1111,6 @@ async function togglePin(id, currentlyPinned){
   await sb.from('messages').update({ pinned: !currentlyPinned }).eq('id', id);
 }
 
-function startEditMessage(m){
-  const row = messagesEl.querySelector(`[data-id="${m.id}"]`);
-  if(!row) return;
-  const textEl = row.querySelector('.msg-text');
-  if(!textEl || row.querySelector('.msg-edit-box')) return;
-
-  const box = document.createElement('div');
-  box.className = 'msg-edit-box';
-  box.style.cssText = 'display:flex;flex-direction:column;gap:6px;margin-top:4px;';
-
-  const textarea = document.createElement('textarea');
-  textarea.value = m.text || '';
-  textarea.style.cssText = 'width:100%;min-height:60px;background:var(--void);border:1px solid var(--border);' +
-    'color:var(--text);border-radius:8px;padding:8px 10px;font-family:inherit;font-size:14px;resize:vertical;outline:none;';
-  textarea.onfocus = ()=>{ textarea.style.borderColor = 'var(--red)'; };
-
-  const btnRow = document.createElement('div');
-  btnRow.style.cssText = 'display:flex;gap:8px;';
-  const saveBtn = document.createElement('button');
-  saveBtn.className = 'msg-pin-btn pinned';
-  saveBtn.textContent = 'บันทึก';
-  const cancelBtn = document.createElement('button');
-  cancelBtn.className = 'msg-pin-btn';
-  cancelBtn.textContent = 'ยกเลิก';
-
-  saveBtn.onclick = async ()=>{
-    const newText = textarea.value.trim();
-    if(!newText) return;
-    saveBtn.disabled = true;
-    const { error } = await sb.from('messages').update({ text: newText, edited: true }).eq('id', m.id);
-    if(error) showToast('แก้ไขข้อความไม่สำเร็จ');
-    // realtime UPDATE event จะ re-render แถวนี้ให้เองด้วยข้อความใหม่
-  };
-  cancelBtn.onclick = ()=> box.remove();
-
-  btnRow.appendChild(saveBtn); btnRow.appendChild(cancelBtn);
-  box.appendChild(textarea); box.appendChild(btnRow);
-  textEl.after(box);
-  textarea.focus();
-}
-
 function renderMessage(m){
   const row = document.createElement('div');
   row.className = 'msg' + (m.pinned ? ' is-pinned' : '');
@@ -1224,28 +1134,12 @@ function renderMessage(m){
   timeEl.textContent = m.created_at ? new Date(m.created_at).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}) : '';
   meta.appendChild(nickEl); meta.appendChild(timeEl);
 
-  if(m.edited){
-    const editedEl = document.createElement('span');
-    editedEl.className='msg-time';
-    editedEl.textContent = '(แก้ไขแล้ว)';
-    meta.appendChild(editedEl);
-  }
-
   const pinBtn = document.createElement('button');
   pinBtn.className = 'msg-pin-btn' + (m.pinned ? ' pinned' : '');
-  pinBtn.title = m.pinned ? 'เลิกจำข้อความนี้' : 'กดให้จำข้อความนี้ไว้ (ไม่ให้หายอัตโนมัติ)';
+  pinBtn.title = m.pinned ? 'เลิกจำข้อความนี้' : 'กดให้จำข้อความนี้ไว้ (ไม่ให้หายใน 24 ชม.)';
   pinBtn.textContent = m.pinned ? '★ จำแล้ว' : '☆ จำ';
   pinBtn.onclick = ()=> togglePin(m.id, m.pinned);
   meta.appendChild(pinBtn);
-
-  if(m.user_id && m.user_id === myUid && m.text){
-    const editBtn = document.createElement('button');
-    editBtn.className = 'msg-pin-btn';
-    editBtn.title = 'แก้ไขข้อความ';
-    editBtn.textContent = '✎ แก้ไข';
-    editBtn.onclick = ()=> startEditMessage(m);
-    meta.appendChild(editBtn);
-  }
 
   body.appendChild(meta);
 
@@ -1254,6 +1148,13 @@ function renderMessage(m){
     textEl.className='msg-text';
     textEl.textContent = m.text;
     body.appendChild(textEl);
+  }
+
+  if(!m.pinned && !m.has_attachment){
+    const noteEl = document.createElement('div');
+    noteEl.className='msg-expiry-note';
+    noteEl.textContent = 'ข้อความนี้จะหายไปภายใน 24 ชม. หากไม่ถูกกดให้จำ';
+    body.appendChild(noteEl);
   }
 
   (m.attachments||[]).forEach(att=>{
@@ -1332,6 +1233,49 @@ voiceMuteBtn.onclick = toggleMute;
 const supportsSpeakerSelect = typeof HTMLMediaElement !== 'undefined' && !!HTMLMediaElement.prototype.setSinkId;
 if(!supportsSpeakerSelect) speakerField.classList.add('hidden');
 
+let micTestStream = null;
+let micTestCtx = null;
+let micTestRaf = null;
+
+function startMicMeter(streamForTest){
+  const fillEl = document.getElementById('mic-meter-fill');
+  const labelEl = document.getElementById('mic-meter-label');
+  try{
+    micTestCtx = new (window.AudioContext||window.webkitAudioContext)();
+    const source = micTestCtx.createMediaStreamSource(streamForTest);
+    const analyser = micTestCtx.createAnalyser();
+    analyser.fftSize = 512;
+    source.connect(analyser);
+    const data = new Uint8Array(analyser.frequencyBinCount);
+    labelEl.textContent = 'กำลังฟังไมค์...';
+    const tick = ()=>{
+      analyser.getByteFrequencyData(data);
+      const avg = data.reduce((a,b)=>a+b,0)/data.length;
+      const pct = Math.min(100, Math.round((avg/90)*100));
+      fillEl.style.width = pct + '%';
+      micTestRaf = requestAnimationFrame(tick);
+    };
+    tick();
+  }catch(e){
+    labelEl.textContent = 'ทดสอบไมค์ไม่ได้';
+  }
+}
+function stopMicMeter(){
+  if(micTestRaf) cancelAnimationFrame(micTestRaf);
+  micTestRaf = null;
+  if(micTestCtx){ micTestCtx.close().catch(()=>{}); micTestCtx = null; }
+  if(micTestStream){ micTestStream.getTracks().forEach(t=>t.stop()); micTestStream = null; }
+  const fillEl = document.getElementById('mic-meter-fill');
+  const labelEl = document.getElementById('mic-meter-label');
+  if(fillEl) fillEl.style.width = '0%';
+  if(labelEl) labelEl.textContent = 'ทดสอบไมค์';
+}
+
+function closeVoiceSettings(){
+  voiceSettingsOverlay.classList.add('hidden');
+  stopMicMeter();
+}
+
 voiceSettingsBtn.onclick = async ()=>{
   try{
     // ต้องขอสิทธิ์ไมค์ก่อนอย่างน้อยหนึ่งครั้ง ไม่งั้นชื่ออุปกรณ์จะไม่ถูกเปิดเผย
@@ -1345,10 +1289,21 @@ voiceSettingsBtn.onclick = async ()=>{
   }
   await populateDeviceLists();
   voiceSettingsOverlay.classList.remove('hidden');
+
+  // ถ้ายังไม่ได้อยู่ในห้องเสียง เปิดสตรีมชั่วคราวไว้ทดสอบระดับไมค์
+  if(!inVoice){
+    try{
+      micTestStream = await navigator.mediaDevices.getUserMedia({ audio: selectedMicId ? { deviceId: { exact: selectedMicId } } : true });
+      startMicMeter(micTestStream);
+    }catch(e){ /* เงียบไว้ ไม่ต้องรบกวนผู้ใช้ */ }
+  }
 };
-document.getElementById('voice-settings-close').onclick = ()=>{
-  voiceSettingsOverlay.classList.add('hidden');
-};
+document.getElementById('voice-settings-close').onclick = closeVoiceSettings;
+document.getElementById('voice-settings-x').onclick = closeVoiceSettings;
+voiceSettingsOverlay.addEventListener('mousedown', (e)=>{ if(e.target === voiceSettingsOverlay) closeVoiceSettings(); });
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Escape' && !voiceSettingsOverlay.classList.contains('hidden')) closeVoiceSettings();
+});
 
 async function populateDeviceLists(){
   const devices = await navigator.mediaDevices.enumerateDevices();
@@ -1370,7 +1325,15 @@ async function populateDeviceLists(){
 
 micSelect.onchange = async ()=>{
   selectedMicId = micSelect.value;
-  if(inVoice) await switchMicrophone(selectedMicId);
+  if(inVoice){
+    await switchMicrophone(selectedMicId);
+  }else if(micTestStream){
+    stopMicMeter();
+    try{
+      micTestStream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: { exact: selectedMicId } } });
+      startMicMeter(micTestStream);
+    }catch(e){}
+  }
 };
 if(supportsSpeakerSelect){
   speakerSelect.onchange = ()=>{
@@ -1649,69 +1612,6 @@ function playTone(freq, dur, delay=0){
 }
 function playJoinSound(){ playTone(587,110,0); playTone(880,140,90); }
 function playLeaveSound(){ playTone(880,110,0); playTone(523,160,90); }
-
-// ================= PWA: ติดตั้งเป็นแอป =================
-if('serviceWorker' in navigator){
-  window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
-  });
-}
-let deferredInstallPrompt = null;
-const installAppBtn = document.getElementById('install-app-btn');
-window.addEventListener('beforeinstallprompt', (e)=>{
-  e.preventDefault();
-  deferredInstallPrompt = e;
-  installAppBtn.classList.remove('hidden');
-});
-installAppBtn.onclick = async ()=>{
-  if(!deferredInstallPrompt) return;
-  deferredInstallPrompt.prompt();
-  await deferredInstallPrompt.userChoice;
-  deferredInstallPrompt = null;
-  installAppBtn.classList.add('hidden');
-};
-window.addEventListener('appinstalled', ()=>{
-  installAppBtn.classList.add('hidden');
-  showToast('ติดตั้งแอปเรียบร้อยแล้ว');
-});
-
-// ================= การแจ้งเตือน (Notification API) =================
-const notifToggleBtn = document.getElementById('notif-toggle-btn');
-function refreshNotifButton(){
-  if(!('Notification' in window)){
-    notifToggleBtn.classList.add('hidden');
-    return;
-  }
-  notifToggleBtn.textContent = Notification.permission === 'granted' ? '🔔 แจ้งเตือนเปิดอยู่' : '🔔 เปิดการแจ้งเตือน';
-}
-notifToggleBtn.onclick = async ()=>{
-  if(!('Notification' in window)) return;
-  if(Notification.permission === 'granted'){
-    showToast('เปิดการแจ้งเตือนอยู่แล้ว — ปิดได้จากการตั้งค่าเบราว์เซอร์');
-    return;
-  }
-  const perm = await Notification.requestPermission();
-  refreshNotifButton();
-  if(perm === 'granted') showToast('เปิดการแจ้งเตือนแล้ว');
-  else if(perm === 'denied') showToast('ไม่อนุญาตการแจ้งเตือน — เปิดได้จากการตั้งค่าเบราว์เซอร์ภายหลัง');
-};
-refreshNotifButton();
-
-// แจ้งเตือนข้อความใหม่เฉพาะตอนไม่ได้โฟกัสหน้าต่างนี้อยู่ และไม่ใช่ข้อความของตัวเอง
-function notifyNewMessage(m){
-  if(m.nick === myNick) return;
-  if(!('Notification' in window) || Notification.permission !== 'granted') return;
-  if(document.hasFocus() && !document.hidden) return;
-  try{
-    const body = m.text ? m.text.slice(0,120) : (m.attachments && m.attachments.length ? 'ส่งไฟล์แนบ/รูปภาพ' : '');
-    const n = new Notification(m.nick || 'ข้อความใหม่', {
-      body,
-      icon: 'icon-192.png',
-      tag: 'nexuschat-'+roomId
-    });
-    n.onclick = ()=>{ window.focus(); n.close(); };
-  }catch(e){}
-}
 
 window.addEventListener('pagehide', ()=>{
   if(inVoice){ sb.from('voice_peers').delete().eq('room_id', roomId).eq('peer_id', myPeerId).then(()=>{}); }
