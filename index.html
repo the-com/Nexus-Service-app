@@ -353,6 +353,10 @@
     background:rgba(232,177,63,.08);border-left:2px solid #e8b13f;
     padding:6px 8px;border-radius:0 6px 6px 0;
   }
+  .msg.is-ai .msg-text{
+    background:rgba(63,174,174,.08);border-left:2px solid #3faeae;
+    padding:6px 8px;border-radius:0 6px 6px 0;
+  }
   .msg{
     -webkit-tap-highlight-color:transparent;
     user-select:none;-webkit-user-select:none;
@@ -617,6 +621,30 @@
   </div>
 </div>
 
+<!-- ================= AI ASSISTANT (Groq) SETTINGS MODAL ================= -->
+<div class="hidden" id="ai-settings-overlay">
+  <div class="voice-settings-card">
+    <button class="modal-close-x" id="ai-settings-modal-x" type="button"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></button>
+    <div class="voice-settings-title">ตั้งค่าผู้ช่วย AI (Groq) ของห้องนี้</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6;">
+      พิมพ์ <b>/ai คำถาม</b> ในแชท เพื่อถาม AI หรือให้ช่วยค้นหาเนื้อหาจากบทสนทนาล่าสุดในห้องนี้<br>
+      ⚠️ คีย์นี้บันทึกไว้ในห้อง <b>สมาชิกทุกคนในห้องจะมองเห็นและใช้คีย์นี้ได้</b> — ใช้คีย์ฟรีที่ไม่ผูกบัตรเครดิต อย่าใช้คีย์ที่มีวงเงินสำคัญ
+    </div>
+    <div class="field">
+      <label>Groq API Key</label>
+      <input id="ai-groq-key" placeholder="gsk_..." autocomplete="off" style="font-family:'JetBrains Mono',monospace;font-size:12.5px;">
+    </div>
+    <div class="field">
+      <label>โมเดล</label>
+      <input id="ai-groq-model" placeholder="llama-3.3-70b-versatile" style="font-family:'JetBrains Mono',monospace;font-size:12.5px;">
+    </div>
+    <div style="display:flex;gap:8px;margin-top:6px;">
+      <button class="btn-primary" id="ai-settings-cancel" style="margin-top:0;background:var(--panel-2);border:1px solid var(--border);">ยกเลิก</button>
+      <button class="btn-primary" id="ai-settings-save" style="margin-top:0;">บันทึก</button>
+    </div>
+  </div>
+</div>
+
 <!-- ================= CHAT SCREEN ================= -->
 <div class="hidden" id="chat-screen">
   <header>
@@ -625,6 +653,9 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
       </button>
       <span class="brand-mark" id="chat-room-name">NEXUS<span>CHAT</span></span>
+      <button class="icon-btn" id="ai-settings-btn" title="ตั้งค่าผู้ช่วย AI (Groq)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>
+      </button>
       <button class="invite-btn" id="invite-btn" title="คัดลอกลิงก์เชิญ">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0L4.1 13.83a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg>
         <span class="invite-btn-label">คัดลอกลิงก์เชิญ</span>
@@ -718,6 +749,9 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // ตอนนี้ตั้งค่าได้ต่อห้อง (ดู currentRoomExpiryMinutes) — ค่านี้ใช้เป็นค่าเริ่มต้นตอนสร้างห้องใหม่เท่านั้น
 const DEFAULT_EXPIRY_MINUTES = 1440; // 24 ชั่วโมง
 let currentRoomExpiryMinutes = DEFAULT_EXPIRY_MINUTES; // 0 = ไม่หมดอายุเลย
+const DEFAULT_GROQ_MODEL = 'llama-3.3-70b-versatile';
+let currentRoomGroqKey = null;
+let currentRoomGroqModel = DEFAULT_GROQ_MODEL;
 
 function showToast(msg){
   const t = document.getElementById('toast');
@@ -1063,7 +1097,7 @@ async function openRoom(id, knownName){
   url.searchParams.set('room', roomId);
   history.replaceState({}, '', url);
 
-  const { data: d, error } = await sb.from('rooms').select('name,expiry_minutes').eq('id', roomId).single();
+  const { data: d, error } = await sb.from('rooms').select('name,expiry_minutes,groq_api_key,groq_model').eq('id', roomId).single();
   if(error || !d){
     showToast('ไม่พบห้องนี้ ตรวจสอบโค้ดอีกครั้ง');
     url.searchParams.delete('room');
@@ -1073,6 +1107,8 @@ async function openRoom(id, knownName){
   }
   const name = knownName || d.name;
   currentRoomExpiryMinutes = (d.expiry_minutes === null || d.expiry_minutes === undefined) ? DEFAULT_EXPIRY_MINUTES : d.expiry_minutes;
+  currentRoomGroqKey = d.groq_api_key || null;
+  currentRoomGroqModel = d.groq_model || DEFAULT_GROQ_MODEL;
   await sb.from('user_rooms').upsert({ user_id: myUid, room_id: roomId, name, ts: new Date().toISOString() });
 
   document.getElementById('chat-room-name').innerHTML = (name||'NEXUS') + '<span></span>';
@@ -1171,6 +1207,94 @@ document.getElementById('room-expiry-save').onclick = async ()=>{
   setButtonLoading(saveBtn, false);
 };
 
+// ---------- ผู้ช่วย AI (Groq) ต่อห้อง ----------
+const aiSettingsOverlay = document.getElementById('ai-settings-overlay');
+const aiGroqKeyInput = document.getElementById('ai-groq-key');
+const aiGroqModelInput = document.getElementById('ai-groq-model');
+
+document.getElementById('ai-settings-btn').onclick = ()=>{
+  aiGroqKeyInput.value = currentRoomGroqKey || '';
+  aiGroqModelInput.value = currentRoomGroqModel || DEFAULT_GROQ_MODEL;
+  aiSettingsOverlay.classList.remove('hidden');
+};
+
+document.getElementById('ai-settings-save').onclick = async ()=>{
+  const saveBtn = document.getElementById('ai-settings-save');
+  const key = aiGroqKeyInput.value.trim();
+  const model = aiGroqModelInput.value.trim() || DEFAULT_GROQ_MODEL;
+  setButtonLoading(saveBtn, true);
+  const { error } = await sb.from('rooms').update({ groq_api_key: key || null, groq_model: model }).eq('id', roomId);
+  setButtonLoading(saveBtn, false);
+  if(error){ showToast('บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง'); return; }
+  currentRoomGroqKey = key || null;
+  currentRoomGroqModel = model;
+  aiSettingsOverlay.classList.add('hidden');
+  showToast('บันทึกการตั้งค่าผู้ช่วย AI แล้ว');
+};
+
+// เรียก Groq ตอบคำถาม/ช่วยค้นหาแชท โดยอิงบทสนทนาล่าสุดในห้องเป็นบริบท
+async function callGroqAssistant(question){
+  if(!currentRoomGroqKey){
+    showToast('ยังไม่ได้ตั้งค่า Groq API Key สำหรับห้องนี้ — กดไอคอนหุ่นยนต์ที่หัวห้องเพื่อตั้งค่า');
+    return;
+  }
+  const { data: recent } = await sb.from('messages')
+    .select('nick,text,created_at').eq('room_id', roomId)
+    .order('created_at', { ascending:false }).limit(60);
+  const contextLines = (recent||[])
+    .filter(m=> m.text && m.text.trim())
+    .reverse()
+    .map(m=> `${m.nick}: ${m.text}`)
+    .join('\n')
+    .slice(-6000); // กันบริบทยาวเกินไป
+
+  const systemPrompt = 'คุณคือผู้ช่วย AI ในห้องแชทกลุ่มชื่อ NEXUS CHAT ตอบเป็นภาษาไทยแบบกระชับ ตรงประเด็น ' +
+    'ถ้าคำถามเกี่ยวกับเนื้อหาการสนทนาที่ผ่านมาในห้อง ให้ใช้บทสนทนาด้านล่างช่วยหาคำตอบหรือสรุปให้ ' +
+    'ถ้าไม่พบข้อมูลที่เกี่ยวข้องในบทสนทนา ให้บอกตรงๆ ว่าไม่พบ แล้วค่อยตอบจากความรู้ทั่วไปแทน';
+
+  try{
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + currentRoomGroqKey
+      },
+      body: JSON.stringify({
+        model: currentRoomGroqModel || DEFAULT_GROQ_MODEL,
+        messages: [
+          { role:'system', content: systemPrompt },
+          { role:'user', content: `บทสนทนาล่าสุดในห้อง:\n${contextLines || '(ยังไม่มีบทสนทนา)'}\n\nคำถาม: ${question}` }
+        ],
+        temperature: 0.4,
+        max_completion_tokens: 1024
+      })
+    });
+    const data = await res.json();
+    if(!res.ok){
+      showToast('เรียก AI ไม่สำเร็จ: ' + (data?.error?.message || res.status));
+      return;
+    }
+    const answer = data?.choices?.[0]?.message?.content?.trim();
+    if(!answer){ showToast('AI ไม่ตอบกลับข้อมูล ลองใหม่อีกครั้ง'); return; }
+
+    await sb.from('messages').insert({
+      room_id: roomId,
+      user_id: null,
+      nick: 'ผู้ช่วย NEXUS AI',
+      text: answer,
+      attachments: [],
+      has_attachment: false,
+      color: '#3faeae',
+      avatar_url: null,
+      pinned: false,
+      is_ai: true
+    });
+  }catch(err){
+    console.error(err);
+    showToast('เรียก AI ไม่สำเร็จ ตรวจสอบการเชื่อมต่อ/API Key');
+  }
+}
+
 // ---------- MESSAGES ----------
 const messagesEl = document.getElementById('messages');
 const textInput = document.getElementById('text-input');
@@ -1259,9 +1383,17 @@ function updateSendState(){
 sendBtn.onclick = sendMessage;
 
 async function sendMessage(){
-  const text = textInput.value.trim();
+  let text = textInput.value.trim();
   const files = [...pendingFiles];
   if(!text && !files.length) return;
+
+  let aiQuestion = null;
+  if(/^\/ai\s+/i.test(text)){
+    aiQuestion = text.replace(/^\/ai\s+/i, '').trim();
+    if(!aiQuestion){ showToast('พิมพ์คำถามต่อท้าย /ai เช่น "/ai สรุปให้หน่อย"'); return; }
+    text = aiQuestion; // โพสต์แค่คำถามเปล่าๆ ไม่ต้องมี /ai นำหน้าให้ดูเป็นธรรมชาติ
+  }
+
   const replySnapshot = replyingTo; // เก็บสำเนาไว้ก่อนเคลียร์ค่า
   textInput.value=''; textInput.style.height='auto';
   pendingFiles = []; renderPreviews();
@@ -1299,6 +1431,11 @@ async function sendMessage(){
   if(sendErr){ console.error(sendErr); showToast('ส่งข้อความไม่สำเร็จ ลองใหม่อีกครั้ง'); }
 
   sendBtn.disabled = !(textInput.value.trim() || pendingFiles.length);
+
+  if(!sendErr && aiQuestion){
+    showToast('กำลังถาม AI...');
+    callGroqAssistant(aiQuestion);
+  }
 }
 
 // ข้อความข้อความล้วน (ไม่มีไฟล์แนบ) ที่ยังไม่ถูกกด "จำ" และเก่ากว่าเวลาที่ตั้งไว้ของห้องนี้ (currentRoomExpiryMinutes) จะถูกลบทิ้ง
@@ -1343,11 +1480,7 @@ async function subscribeMessages(){
       })
     .on('postgres_changes', { event:'DELETE', schema:'public', table:'messages', filter:`room_id=eq.${roomId}` },
       payload=>{
-        const row = messagesEl.querySelector(`[data-id="${payload.old.id}"]`);
-        if(row) row.remove();
-        if(!messagesEl.children.length){
-          messagesEl.innerHTML = `<div class="empty-state"><div class="big">0000</div><div>ยังไม่มีข้อความในห้องนี้ — เริ่มคุยกันได้เลย</div></div>`;
-        }
+        if(payload.old && payload.old.id != null) removeMessageFromDom(payload.old.id);
       })
     .subscribe();
 
@@ -1404,7 +1537,20 @@ async function togglePin(id, currentlyPinned){
 async function deleteMessage(id){
   if(!confirm('ลบข้อความนี้ถาวรเลยไหม?')) return;
   const { error } = await sb.from('messages').delete().eq('id', id);
-  if(error) showToast('ลบข้อความไม่สำเร็จ');
+  if(error){
+    showToast('ลบข้อความไม่สำเร็จ');
+    return;
+  }
+  // ลบออกจากหน้าจอทันทีสำหรับตัวเอง ไม่ต้องรอ realtime event (เผื่อ event มาช้าหรือไม่มา)
+  removeMessageFromDom(id);
+}
+
+function removeMessageFromDom(id){
+  const row = messagesEl.querySelector(`[data-id="${id}"]`);
+  if(row) row.remove();
+  if(!messagesEl.children.length){
+    messagesEl.innerHTML = `<div class="empty-state"><div class="big">0000</div><div>ยังไม่มีข้อความในห้องนี้ — เริ่มคุยกันได้เลย</div></div>`;
+  }
 }
 
 function startEditMessage(m){
@@ -1455,12 +1601,17 @@ function startEditMessage(m){
 
 function renderMessage(m){
   const row = document.createElement('div');
-  row.className = 'msg' + (m.pinned ? ' is-pinned' : '');
+  row.className = 'msg' + (m.pinned ? ' is-pinned' : '') + (m.is_ai ? ' is-ai' : '');
   row.dataset.id = m.id;
 
   const avatar = document.createElement('div');
   avatar.className='avatar';
-  styleAvatarEl(avatar, m.nick, m.color, m.avatar_url);
+  if(m.is_ai){
+    avatar.style.background = '#1c4a4a';
+    avatar.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3faeae" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>';
+  } else {
+    styleAvatarEl(avatar, m.nick, m.color, m.avatar_url);
+  }
 
   const body = document.createElement('div');
   body.className='msg-body';
@@ -1475,7 +1626,15 @@ function renderMessage(m){
   timeEl.className='msg-time';
   timeEl.textContent = m.created_at ? new Date(m.created_at).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}) : '';
   if(m.created_at) timeEl.title = new Date(m.created_at).toLocaleString('th-TH',{dateStyle:'long', timeStyle:'medium'});
-  meta.appendChild(nickEl); meta.appendChild(timeEl);
+  meta.appendChild(nickEl);
+  if(m.is_ai){
+    const aiBadge = document.createElement('span');
+    aiBadge.className='msg-pin-badge';
+    aiBadge.style.cssText = 'color:#3faeae;';
+    aiBadge.textContent = 'AI';
+    meta.appendChild(aiBadge);
+  }
+  meta.appendChild(timeEl);
 
   if(m.pinned){
     const pinBadge = document.createElement('span');
@@ -2088,7 +2247,7 @@ function notifyNewMessage(m){
 }
 
 // ================= UX: ปิด modal ด้วยปุ่ม X / คลิกพื้นหลัง / กด Esc =================
-const ALL_MODAL_OVERLAY_IDS = ['profile-settings-overlay','room-expiry-overlay','voice-settings-overlay'];
+const ALL_MODAL_OVERLAY_IDS = ['profile-settings-overlay','room-expiry-overlay','voice-settings-overlay','ai-settings-overlay'];
 ALL_MODAL_OVERLAY_IDS.forEach(id=>{
   const overlay = document.getElementById(id);
   if(!overlay) return;
@@ -2099,6 +2258,8 @@ ALL_MODAL_OVERLAY_IDS.forEach(id=>{
 document.getElementById('profile-modal-x').onclick = ()=> profileOverlay.classList.add('hidden');
 document.getElementById('room-expiry-modal-x').onclick = ()=> roomExpiryOverlay.classList.add('hidden');
 document.getElementById('voice-settings-modal-x').onclick = ()=> voiceSettingsOverlay.classList.add('hidden');
+document.getElementById('ai-settings-modal-x').onclick = ()=> aiSettingsOverlay.classList.add('hidden');
+document.getElementById('ai-settings-cancel').onclick = ()=> aiSettingsOverlay.classList.add('hidden');
 window.addEventListener('keydown', (e)=>{
   if(e.key !== 'Escape') return;
   ALL_MODAL_OVERLAY_IDS.forEach(id=>{
