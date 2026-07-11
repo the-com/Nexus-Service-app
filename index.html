@@ -45,6 +45,11 @@
     letter-spacing:3px;
     color:#fff;
     line-height:1;
+    flex:1;
+    min-width:0;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
   }
   .brand-mark span{color:var(--red-bright);}
 
@@ -135,13 +140,24 @@
     background:#0d0d0f;
     border-bottom:1px solid var(--border);
     display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:14px 20px;
+    flex-direction:column;
+    gap:8px;
+    padding:12px 20px;
     flex-shrink:0;
-    gap:10px;
   }
-  .brand{display:flex;align-items:center;gap:12px;min-width:0;}
+  .header-top{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    min-width:0;
+  }
+  .header-chips{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+    padding-left:44px; /* เยื้องให้ตรงกับชื่อห้อง (ความกว้างปุ่มย้อนกลับ + gap) */
+  }
   .back-btn{
     background:var(--panel);border:1px solid var(--border);color:var(--text);
     width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;
@@ -159,7 +175,6 @@
     letter-spacing:1px;
     white-space:nowrap;
   }
-  .header-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
   .icon-btn{
     background:var(--panel);
     border:1px solid var(--border);
@@ -175,10 +190,12 @@
     background:var(--red);
     border:none;color:#fff;
     font-weight:600;font-size:13px;
-    padding:8px 14px;border-radius:8px;
-    cursor:pointer;display:flex;align-items:center;gap:6px;
+    width:36px;height:36px;padding:0;border-radius:8px;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;
     transition:.15s;white-space:nowrap;
+    margin-left:auto;flex-shrink:0;
   }
+  .invite-btn-label{display:none;}
   .invite-btn:hover{background:var(--red-bright);}
 
   /* ---------- VOICE BAR ---------- */
@@ -326,17 +343,35 @@
     background:var(--red);color:#fff;font-family:'JetBrains Mono',monospace;
     font-size:10px;font-weight:700;padding:4px 6px;border-radius:5px;
   }
-  .msg-pin-btn{
-    background:none;border:none;color:var(--muted);cursor:pointer;
-    font-size:12px;padding:2px 4px;border-radius:5px;line-height:1;
+  .msg-pin-badge{
+    color:#e8b13f;font-size:11px;font-weight:700;
   }
-  .msg-pin-btn:hover{color:var(--text);background:var(--panel-2);}
-  .msg-pin-btn.pinned{color:#e8b13f;}
   .msg.is-pinned .msg-text{
     background:rgba(232,177,63,.08);border-left:2px solid #e8b13f;
     padding:6px 8px;border-radius:0 6px 6px 0;
   }
-  .msg-expiry-note{font-size:10.5px;color:var(--muted);margin-top:2px;}
+  .msg{
+    -webkit-tap-highlight-color:transparent;
+    user-select:none;-webkit-user-select:none;
+    border-radius:10px;transition:background-color .15s;
+  }
+  .msg:active{ background:rgba(255,255,255,.04); }
+  #msg-action-menu{
+    position:fixed;z-index:90;min-width:190px;
+    background:linear-gradient(180deg,var(--panel),var(--panel-2) 220%);
+    border:1px solid var(--border);border-radius:12px;
+    box-shadow:0 20px 50px -10px rgba(0,0,0,.65);
+    padding:6px;display:flex;flex-direction:column;gap:2px;
+    animation:cardPop .14s cubic-bezier(.2,.8,.3,1);
+  }
+  .msg-action-item{
+    background:none;border:none;color:var(--text);text-align:left;
+    font-size:13.5px;padding:10px 12px;border-radius:8px;cursor:pointer;
+    font-family:'Inter',sans-serif;transition:background-color .12s;
+  }
+  .msg-action-item:hover{ background:var(--panel-2); }
+  .msg-action-item.danger{ color:var(--red-bright); }
+  .msg-action-item.danger:hover{ background:rgba(179,71,78,.15); }
   .empty-state{
     margin:auto;text-align:center;color:var(--muted);
   }
@@ -427,10 +462,15 @@
   }
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
+  @media(min-width:601px){
+    .invite-btn{ width:auto; padding:8px 14px; }
+    .invite-btn-label{ display:inline; }
+  }
   @media(max-width:600px){
     .brand-mark{font-size:20px;}
     #messages{padding:14px;}
     #composer{padding:10px 14px;}
+    .header-chips{ padding-left:0; }
   }
 </style>
 </head>
@@ -565,19 +605,19 @@
 <!-- ================= CHAT SCREEN ================= -->
 <div class="hidden" id="chat-screen">
   <header>
-    <div class="brand">
+    <div class="header-top">
       <button class="back-btn" id="back-to-lobby-btn" title="กลับหน้าหลัก">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
       </button>
       <span class="brand-mark" id="chat-room-name">NEXUS<span>CHAT</span></span>
+      <button class="invite-btn" id="invite-btn" title="คัดลอกลิงก์เชิญ">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0L4.1 13.83a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg>
+        <span class="invite-btn-label">คัดลอกลิงก์เชิญ</span>
+      </button>
+    </div>
+    <div class="header-chips">
       <div class="room-chip" id="room-chip">ROOM · ------</div>
       <div class="room-chip" id="room-expiry-chip" title="ตั้งค่าเวลาหมดอายุข้อความ" style="cursor:pointer;"></div>
-    </div>
-    <div class="header-right">
-      <button class="invite-btn" id="invite-btn">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0L4.1 13.83a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg>
-        คัดลอกลิงก์เชิญ
-      </button>
     </div>
   </header>
 
@@ -648,6 +688,7 @@
 </div>
 
 <div id="toast"></div>
+<div id="msg-action-menu" class="hidden"></div>
 
 <!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -1345,6 +1386,9 @@ function startEditMessage(m){
   const box = document.createElement('div');
   box.className = 'msg-edit-box';
   box.style.cssText = 'display:flex;flex-direction:column;gap:6px;margin-top:4px;';
+  // กันไม่ให้การแตะ/คลิกในกล่องแก้ไขไปกระตุ้น long-press เมนูของข้อความ
+  box.addEventListener('mousedown', e=> e.stopPropagation());
+  box.addEventListener('touchstart', e=> e.stopPropagation(), {passive:true});
 
   const textarea = document.createElement('textarea');
   textarea.value = m.text || '';
@@ -1355,10 +1399,12 @@ function startEditMessage(m){
   const btnRow = document.createElement('div');
   btnRow.style.cssText = 'display:flex;gap:8px;';
   const saveBtn = document.createElement('button');
-  saveBtn.className = 'msg-pin-btn pinned';
+  saveBtn.className = 'btn-primary';
+  saveBtn.style.cssText = 'margin-top:0;padding:8px 16px;font-size:13px;';
   saveBtn.textContent = 'บันทึก';
   const cancelBtn = document.createElement('button');
-  cancelBtn.className = 'msg-pin-btn';
+  cancelBtn.className = 'btn-primary';
+  cancelBtn.style.cssText = 'margin-top:0;padding:8px 16px;font-size:13px;background:var(--panel-2);border:1px solid var(--border);';
   cancelBtn.textContent = 'ยกเลิก';
 
   saveBtn.onclick = async ()=>{
@@ -1401,43 +1447,18 @@ function renderMessage(m){
   if(m.created_at) timeEl.title = new Date(m.created_at).toLocaleString('th-TH',{dateStyle:'long', timeStyle:'medium'});
   meta.appendChild(nickEl); meta.appendChild(timeEl);
 
+  if(m.pinned){
+    const pinBadge = document.createElement('span');
+    pinBadge.className='msg-pin-badge';
+    pinBadge.title='ข้อความนี้ถูกจำไว้ (ไม่หายอัตโนมัติ)';
+    pinBadge.textContent='★ จำ';
+    meta.appendChild(pinBadge);
+  }
   if(m.edited){
     const editedEl = document.createElement('span');
     editedEl.className='msg-time';
     editedEl.textContent = '(แก้ไขแล้ว)';
     meta.appendChild(editedEl);
-  }
-
-  const pinBtn = document.createElement('button');
-  pinBtn.className = 'msg-pin-btn' + (m.pinned ? ' pinned' : '');
-  pinBtn.title = m.pinned ? 'เลิกจำข้อความนี้' : 'กดให้จำข้อความนี้ไว้ (ไม่ให้หายอัตโนมัติ)';
-  pinBtn.textContent = m.pinned ? '★ จำแล้ว' : '☆ จำ';
-  pinBtn.onclick = ()=> togglePin(m.id, m.pinned);
-  meta.appendChild(pinBtn);
-
-  const replyBtn = document.createElement('button');
-  replyBtn.className = 'msg-pin-btn';
-  replyBtn.title = 'ตอบกลับข้อความนี้';
-  replyBtn.textContent = '↩ ตอบกลับ';
-  replyBtn.onclick = ()=> startReply(m);
-  meta.appendChild(replyBtn);
-
-  if(m.user_id && m.user_id === myUid && m.text){
-    const editBtn = document.createElement('button');
-    editBtn.className = 'msg-pin-btn';
-    editBtn.title = 'แก้ไขข้อความ';
-    editBtn.textContent = '✎ แก้ไข';
-    editBtn.onclick = ()=> startEditMessage(m);
-    meta.appendChild(editBtn);
-  }
-
-  if(m.user_id && m.user_id === myUid){
-    const delBtn = document.createElement('button');
-    delBtn.className = 'msg-pin-btn';
-    delBtn.title = 'ลบข้อความนี้';
-    delBtn.textContent = '🗑 ลบ';
-    delBtn.onclick = ()=> deleteMessage(m.id);
-    meta.appendChild(delBtn);
   }
 
   body.appendChild(meta);
@@ -1482,8 +1503,111 @@ function renderMessage(m){
 
   row.appendChild(avatar);
   row.appendChild(body);
+  attachLongPress(row, (x,y)=> openMessageActionMenu(m, x, y));
   return row;
 }
+
+// ================= เมนูการทำงานกับข้อความ (กดค้าง / คลิกขวา) =================
+// แทนที่แถวปุ่ม จำ/ตอบกลับ/แก้ไข/ลบ ที่เคยโชว์ค้างอยู่ใต้ทุกข้อความตลอดเวลา (ดูรก)
+// ตอนนี้ต้องกดค้างที่ข้อความ (หรือคลิกขวาบนคอมพิวเตอร์) เมนูจะโผล่มาให้เลือกแทน
+function attachLongPress(el, onTrigger){
+  let timer = null;
+  let startX = 0, startY = 0;
+  const MOVE_THRESHOLD = 10;
+  const HOLD_MS = 420;
+
+  function clear(){ if(timer){ clearTimeout(timer); timer = null; } }
+  function suppressNextClick(){
+    el.addEventListener('click', function handler(e){
+      e.stopPropagation();
+      e.preventDefault();
+    }, { capture:true, once:true });
+  }
+  function start(clientX, clientY){
+    startX = clientX; startY = clientY;
+    clear();
+    timer = setTimeout(()=>{
+      timer = null;
+      suppressNextClick();
+      if(navigator.vibrate) navigator.vibrate(12);
+      onTrigger(clientX, clientY);
+    }, HOLD_MS);
+  }
+  function move(clientX, clientY){
+    if(!timer) return;
+    if(Math.abs(clientX-startX) > MOVE_THRESHOLD || Math.abs(clientY-startY) > MOVE_THRESHOLD) clear();
+  }
+
+  el.addEventListener('touchstart', e=>{
+    const t = e.touches[0];
+    start(t.clientX, t.clientY);
+  }, {passive:true});
+  el.addEventListener('touchmove', e=>{
+    const t = e.touches[0];
+    move(t.clientX, t.clientY);
+  }, {passive:true});
+  el.addEventListener('touchend', clear);
+  el.addEventListener('touchcancel', clear);
+
+  el.addEventListener('mousedown', e=> start(e.clientX, e.clientY));
+  el.addEventListener('mousemove', e=> move(e.clientX, e.clientY));
+  el.addEventListener('mouseup', clear);
+  el.addEventListener('mouseleave', clear);
+
+  el.addEventListener('contextmenu', e=>{
+    e.preventDefault();
+    clear();
+    onTrigger(e.clientX, e.clientY);
+  });
+}
+
+const msgActionMenu = document.getElementById('msg-action-menu');
+
+function openMessageActionMenu(m, x, y){
+  msgActionMenu.innerHTML = '';
+
+  function addAction(label, handler, danger){
+    const btn = document.createElement('button');
+    btn.className = 'msg-action-item' + (danger ? ' danger' : '');
+    btn.textContent = label;
+    btn.onclick = ()=>{ closeMessageActionMenu(); handler(); };
+    msgActionMenu.appendChild(btn);
+  }
+
+  addAction(m.pinned ? '★ เลิกจำข้อความนี้' : '☆ จำข้อความนี้ (ไม่ให้หายอัตโนมัติ)', ()=> togglePin(m.id, m.pinned));
+  addAction('↩ ตอบกลับ', ()=> startReply(m));
+  if(m.user_id && m.user_id === myUid && m.text){
+    addAction('✎ แก้ไขข้อความ', ()=> startEditMessage(m));
+  }
+  if(m.user_id && m.user_id === myUid){
+    addAction('🗑 ลบข้อความนี้', ()=> deleteMessage(m.id), true);
+  }
+
+  msgActionMenu.classList.remove('hidden');
+  // จัดตำแหน่งหลังวัดขนาดจริงแล้ว กันล้นขอบจอ
+  requestAnimationFrame(()=>{
+    const rect = msgActionMenu.getBoundingClientRect();
+    let left = x, top = y;
+    if(left + rect.width > window.innerWidth - 10) left = window.innerWidth - rect.width - 10;
+    if(top + rect.height > window.innerHeight - 10) top = window.innerHeight - rect.height - 10;
+    if(left < 10) left = 10;
+    if(top < 10) top = 10;
+    msgActionMenu.style.left = left + 'px';
+    msgActionMenu.style.top = top + 'px';
+  });
+}
+function closeMessageActionMenu(){
+  msgActionMenu.classList.add('hidden');
+}
+document.addEventListener('mousedown', e=>{
+  if(!msgActionMenu.classList.contains('hidden') && !msgActionMenu.contains(e.target)) closeMessageActionMenu();
+});
+document.addEventListener('touchstart', e=>{
+  if(!msgActionMenu.classList.contains('hidden') && !msgActionMenu.contains(e.target)) closeMessageActionMenu();
+}, {passive:true});
+window.addEventListener('keydown', e=>{ if(e.key==='Escape') closeMessageActionMenu(); });
+messagesEl.addEventListener('scroll', closeMessageActionMenu);
+
 
 // ================= VOICE CHANNEL (WebRTC mesh) =================
 // STUN อย่างเดียวมักใช้ไม่ได้ถ้าทั้งสองฝั่งอยู่หลัง NAT/ไฟร์วอลล์ที่เข้มงวด (สาเหตุยอดฮิตของ
