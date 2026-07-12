@@ -400,10 +400,24 @@
   }
   #screen-share-area:empty{display:none;padding:0;}
   .screen-tile{
-    background:#000;border:1px solid var(--border);border-radius:10px;overflow:hidden;
+    background:#000;border:2px solid var(--border);border-radius:12px;overflow:hidden;
     width:260px;flex-shrink:0;cursor:pointer;position:relative;margin-bottom:10px;
+    padding:5px;box-shadow:0 4px 18px rgba(0,0,0,.45);
+    transition:border-color .15s, box-shadow .15s;
   }
-  .screen-tile video{width:100%;display:block;aspect-ratio:16/9;object-fit:contain;background:#000;}
+  .screen-tile:hover{border-color:var(--red);box-shadow:0 4px 18px rgba(179,71,78,.35);}
+  .screen-tile video{
+    width:100%;display:block;aspect-ratio:16/9;object-fit:contain;background:#000;
+    border-radius:7px;
+  }
+  /* มุมกรอบเล็กๆ 4 มุม ให้ดูเหมือนกรอบจอมอนิเตอร์ ไม่ใช่แค่การ์ดเปล่าๆ */
+  .screen-tile::before, .screen-tile::after,
+  .screen-tile .frame-corner-tl, .screen-tile .frame-corner-br{
+    content:'';position:absolute;width:14px;height:14px;pointer-events:none;z-index:2;
+    border-color:var(--red-bright);
+  }
+  .screen-tile::before{top:3px;left:3px;border-top:2px solid var(--red-bright);border-left:2px solid var(--red-bright);border-top-left-radius:6px;}
+  .screen-tile::after{bottom:3px;right:3px;border-bottom:2px solid var(--red-bright);border-right:2px solid var(--red-bright);border-bottom-right-radius:6px;}
   .screen-tile .screen-tile-label{
     position:absolute;left:0;right:0;bottom:0;background:linear-gradient(0deg,rgba(0,0,0,.85),transparent);
     color:#fff;font-size:11px;padding:4px 8px;font-weight:600;
@@ -1722,35 +1736,94 @@ async function openRoom(id, knownName){
 }
 
 // ---------- ROOM META REALTIME (ชื่อห้อง + สถานะดูคลิปด้วยกัน) ----------
+// เดิมระบบนี้พึ่งพา postgres_changes อย่างเดียว ซึ่งบางอุปกรณ์/บางเบราว์เซอร์ (โดยเฉพาะคอมพิวเตอร์บางเครื่อง)
+// เว็บซ็อกเก็ตจะหลุดแบบเงียบๆ โดยไม่ยิง event 'CHANNEL_ERROR'/'CLOSED' ให้รู้ตัวเสมอไป ทำให้ค้างอยู่ที่สถานะเก่า
+// กดอะไรก็ไม่เห็นผล ทั้งที่ตัวเองเป็นคนสั่งเอง — จึงเพิ่ม 3 ชั้นความปลอดภัย:
+//  1) auto-reconnect เมื่อ channel แจ้งสถานะผิดปกติ (มี backoff กันยิงรัว)
+//  2) polling ดึงสถานะล่าสุดมาเทียบเป็นระยะ (สำรองไว้เผื่อ realtime เงียบไปโดยไม่แจ้งสถานะ)
+//  3) รีเช็คทันทีเมื่อกลับมาที่แท็บ (visibilitychange) หรือเน็ตกลับมาต่อ (online)
 let roomMetaChannel = null;
+let roomMetaReconnectTimer = null;
+let roomMetaPollInterval = null;
+let roomMetaReconnectAttempts = 0;
+
+function applyRoomMetaRow(row){
+  if(!row) return;
+  if(row.name && row.name !== currentRoomName){
+    currentRoomName = row.name;
+    document.getElementById('chat-room-name').innerHTML = currentRoomName + '<span></span>';
+    sb.from('user_rooms').upsert({ user_id: myUid, room_id: roomId, name: currentRoomName, ts: new Date().toISOString() }).then(()=>{});
+    showToast('ชื่อห้องถูกเปลี่ยนเป็น "'+currentRoomName+'"');
+  }
+  // ป้องกันไม่ให้คนที่เพิ่งสั่งเองต้องรับ echo ของตัวเอง
+  if(row.watch_updated_by !== myPeerId){
+    applyRemoteWatchState(row);
+  }
+}
+
+// ดึงสถานะห้องล่าสุดจากฐานข้อมูลมาเทียบกับของตัวเอง ใช้เป็นตัวสำรองเวลา realtime event หลุดหายไปแบบเงียบๆ
+async function reconcileRoomMeta(){
+  if(!roomId) return;
+  try{
+    const { data: row, error } = await sb.from('rooms')
+      .select('name,watch_video_id,watch_is_playing,watch_position,watch_updated_at,watch_updated_by,watch_mode,watch_queue')
+      .eq('id', roomId).single();
+    if(error || !row) return;
+    applyRoomMetaRow(row);
+  }catch(e){ console.warn('reconcileRoomMeta failed:', e); }
+}
+
+function scheduleRoomMetaReconnect(){
+  if(roomMetaReconnectTimer) return; // มีคิวรออยู่แล้ว ไม่ต้องซ้อน
+  roomMetaReconnectAttempts++;
+  const delay = Math.min(15000, 1000 * Math.pow(2, roomMetaReconnectAttempts)); // exponential backoff เพดาน 15 วิ
+  roomMetaReconnectTimer = setTimeout(()=>{
+    roomMetaReconnectTimer = null;
+    if(!roomId || chatScreen.classList.contains('hidden')) return; // ออกจากห้องไปแล้ว ไม่ต้องต่อใหม่
+    subscribeRoomMeta();
+  }, delay);
+}
+
 function subscribeRoomMeta(){
   if(roomMetaChannel){ sb.removeChannel(roomMetaChannel); roomMetaChannel = null; }
+  if(roomMetaReconnectTimer){ clearTimeout(roomMetaReconnectTimer); roomMetaReconnectTimer = null; }
   roomMetaChannel = sb.channel('room-meta-'+roomId)
     .on('postgres_changes', { event:'UPDATE', schema:'public', table:'rooms', filter:`id=eq.${roomId}` },
-      payload=>{
-        const row = payload.new;
-        if(row.name && row.name !== currentRoomName){
-          currentRoomName = row.name;
-          document.getElementById('chat-room-name').innerHTML = currentRoomName + '<span></span>';
-          sb.from('user_rooms').upsert({ user_id: myUid, room_id: roomId, name: currentRoomName, ts: new Date().toISOString() }).then(()=>{});
-          showToast('ชื่อห้องถูกเปลี่ยนเป็น "'+currentRoomName+'"');
-        }
-        // ป้องกันไม่ให้คนที่เพิ่งสั่งเองต้องรับ echo ของตัวเอง
-        if(row.watch_updated_by !== myPeerId){
-          applyRemoteWatchState(row);
-        }
-      })
+      payload=> applyRoomMetaRow(payload.new))
     .subscribe((status, err)=>{
-      if(status === 'CHANNEL_ERROR' || status === 'TIMED_OUT'){
+      if(status === 'SUBSCRIBED'){
+        roomMetaReconnectAttempts = 0;
+        // เพิ่งต่อสำเร็จ (หรือเพิ่งกลับมาต่อใหม่หลังหลุด) — ดึงสถานะล่าสุดมาเทียบทันที เผื่อพลาด event ระหว่างที่หลุดไป
+        reconcileRoomMeta();
+      } else if(status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED'){
         console.warn('room-updates channel issue:', status, err);
+        scheduleRoomMetaReconnect();
       }
     });
+  if(roomMetaPollInterval) clearInterval(roomMetaPollInterval);
+  roomMetaPollInterval = setInterval(reconcileRoomMeta, 10000);
 }
+
+// กลับมาที่แท็บ หรือเน็ตกลับมาต่อ — เช็คสถานะทันทีแทนที่จะรอรอบ poll ถัดไป และสมัคร channel ใหม่ให้ชัวร์
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState === 'visible' && roomId && !chatScreen.classList.contains('hidden')){
+    reconcileRoomMeta();
+  }
+});
+window.addEventListener('online', ()=>{
+  if(roomId && !chatScreen.classList.contains('hidden')){
+    reconcileRoomMeta();
+    subscribeRoomMeta();
+  }
+});
 
 document.getElementById('back-to-lobby-btn').onclick = ()=>{
   if(inVoice) leaveVoice();
   if(messagesChannel){ sb.removeChannel(messagesChannel); messagesChannel = null; }
   if(roomMetaChannel){ sb.removeChannel(roomMetaChannel); roomMetaChannel = null; }
+  if(roomMetaReconnectTimer){ clearTimeout(roomMetaReconnectTimer); roomMetaReconnectTimer = null; }
+  if(roomMetaPollInterval){ clearInterval(roomMetaPollInterval); roomMetaPollInterval = null; }
+  roomMetaReconnectAttempts = 0;
   if(purgeInterval){ clearInterval(purgeInterval); purgeInterval = null; }
   unsubscribePresence();
   teardownWatchParty();
@@ -2987,8 +3060,12 @@ let cameraStream = null;
 let isCameraOn = false;
 let currentFacingMode = 'user';
 const remoteCameraEls = {}; // peerId -> { tile, video }
-const pendingVideoKind = {}; // peerId -> queue ของ 'camera'/'screen' รอจับคู่กับ track ที่กำลังจะเข้ามา
-const pendingAudioKind = {}; // peerId -> queue ของ 'mic'/'screen-audio' รอจับคู่กับ audio track ที่กำลังจะเข้ามา
+// เดิมระบบนี้จับคู่ "ชนิด track" (mic/camera/screen/screen-audio) ด้วยคิวเรียงลำดับการมาถึงของสัญญาณ
+// ปัญหาคือสัญญาณบอกชนิด (ส่งผ่านตาราง) กับตัว track จริง (มาผ่าน WebRTC negotiation) ไปคนละทาง
+// ความเร็วไม่เท่ากันเสมอ — เวลาแชร์จอ+ไมค์พร้อมกันหลาย track ชนกัน ลำดับอาจสลับกัน ทำให้จับคู่ผิด
+// (เช่น เสียงไมค์ถูกเข้าใจผิดว่าเป็นเสียงหน้าจอ หรือกลับกัน) จึงเปลี่ยนมาจับคู่ด้วย track.id ที่แน่นอนแทน
+const trackKindByPeer = {};    // peerId -> { [trackId]: kind }  กรณีสัญญาณชนิดมาถึงก่อน track จริง
+const pendingTrackEvents = {}; // peerId -> { [trackId]: RTCTrackEvent }  กรณี track จริงมาถึงก่อนสัญญาณชนิด
 const remoteScreenAudioEls = {}; // peerId -> <audio> element สำหรับเสียงระบบ/แท็บที่แชร์มาพร้อมหน้าจอ
 
 const voiceJoinBtn = document.getElementById('voice-join-btn');
@@ -3460,7 +3537,10 @@ function createPeerConnection(peerId, iAmInitiator){
   pc.__hasWarnedFailure = false;
   peerConnections[peerId] = pc;
 
-  localStream.getTracks().forEach(t=> pc.addTrack(t, localStream));
+  localStream.getTracks().forEach(t=>{
+    sendSignal(peerId, 'audio-kind', 'mic:' + t.id);
+    pc.addTrack(t, localStream);
+  });
   if(cameraStream){
     addKindedVideoTrack(pc, peerId, cameraStream, 'camera');
   }
@@ -3498,42 +3578,23 @@ function createPeerConnection(peerId, iAmInitiator){
     console.warn(`[voice] ${peerId}: ICE candidate error`, e.errorCode, e.errorText, e.url);
   };
   pc.ontrack = e=>{
-    if(e.track.kind === 'video'){
-      const queue = pendingVideoKind[peerId];
-      const kind = (queue && queue.length) ? queue.shift() : 'screen'; // ค่าเริ่มต้นเผื่อไม่มีสัญญาณระบุชนิดมาก่อน
-      if(kind === 'camera') handleRemoteCameraTrack(peerId, e);
-      else handleRemoteScreenTrack(peerId, e);
+    const trackId = e.track.id;
+    const knownKind = trackKindByPeer[peerId] && trackKindByPeer[peerId][trackId];
+    if(knownKind){
+      delete trackKindByPeer[peerId][trackId];
+      resolveTrackKind(peerId, knownKind, e);
       return;
     }
-    // เสียง: แยกระหว่างเสียงไมค์ปกติ กับเสียงระบบ/แท็บที่มาพร้อมการแชร์หน้าจอ
-    const audioQueue = pendingAudioKind[peerId];
-    const audioKind = (audioQueue && audioQueue.length) ? audioQueue.shift() : 'mic';
-    if(audioKind === 'screen-audio'){
-      let screenAudioEl = remoteScreenAudioEls[peerId];
-      if(!screenAudioEl){
-        screenAudioEl = document.createElement('audio');
-        screenAudioEl.autoplay = true;
-        document.body.appendChild(screenAudioEl);
-        remoteScreenAudioEls[peerId] = screenAudioEl;
-        if(supportsSpeakerSelect && selectedSpeakerId){
-          screenAudioEl.setSinkId(selectedSpeakerId).catch(()=>{});
-        }
-      }
-      screenAudioEl.srcObject = e.streams[0];
-      return;
-    }
-    let audioEl = remoteAudioEls[peerId];
-    if(!audioEl){
-      audioEl = document.createElement('audio');
-      audioEl.autoplay = true;
-      document.body.appendChild(audioEl);
-      remoteAudioEls[peerId] = audioEl;
-      if(supportsSpeakerSelect && selectedSpeakerId){
-        audioEl.setSinkId(selectedSpeakerId).catch(()=>{});
-      }
-    }
-    audioEl.srcObject = e.streams[0];
-    setupRemoteAnalyser(peerId, e.streams[0]);
+    // สัญญาณบอกชนิด track ยังมาไม่ถึง (เน็ตช้า/ตารางส่งสัญญาณดีเลย์) — พักไว้ก่อน แล้วรอ handleSignal มาจับคู่ทีหลัง
+    if(!pendingTrackEvents[peerId]) pendingTrackEvents[peerId] = {};
+    pendingTrackEvents[peerId][trackId] = e;
+    setTimeout(()=>{
+      const stillPending = pendingTrackEvents[peerId] && pendingTrackEvents[peerId][trackId];
+      if(!stillPending) return; // จับคู่ได้แล้วระหว่างที่รอ
+      delete pendingTrackEvents[peerId][trackId];
+      // สัญญาณชนิดหายไปจริงๆ (ไม่ใช่แค่ช้า) — ใช้ค่า default ตามชนิด track เป็นทางสำรองสุดท้าย
+      resolveTrackKind(peerId, e.track.kind === 'video' ? 'screen' : 'mic', stillPending);
+    }, 1500);
   };
 
   // ทุกฝั่งต้อง renegotiate ได้เอง ไม่ใช่แค่ฝั่งที่เริ่มก่อน เพราะการแชร์หน้าจอ
@@ -3550,6 +3611,43 @@ function createPeerConnection(peerId, iAmInitiator){
   return pc;
 }
 
+// ประมวลผล track ที่รู้ชนิดแน่ชัดแล้ว (mic/camera/screen/screen-audio) ไปยัง UI/audio element ที่ถูกต้อง
+function resolveTrackKind(peerId, kind, e){
+  if(e.track.kind === 'video'){
+    if(kind === 'camera') handleRemoteCameraTrack(peerId, e);
+    else handleRemoteScreenTrack(peerId, e);
+    return;
+  }
+  // เสียง: แยกระหว่างเสียงไมค์ปกติ กับเสียงระบบ/แท็บที่มาพร้อมการแชร์หน้าจอ ห้ามปนกันเด็ดขาด
+  // (นี่คือจุดที่เคยมีบั๊ก "แชร์จอแล้วมีเสียงไมค์ปนเข้าไปด้วย" เพราะจับคู่ชนิดผิดตอนแข่งกันมาถึง)
+  if(kind === 'screen-audio'){
+    let screenAudioEl = remoteScreenAudioEls[peerId];
+    if(!screenAudioEl){
+      screenAudioEl = document.createElement('audio');
+      screenAudioEl.autoplay = true;
+      document.body.appendChild(screenAudioEl);
+      remoteScreenAudioEls[peerId] = screenAudioEl;
+      if(supportsSpeakerSelect && selectedSpeakerId){
+        screenAudioEl.setSinkId(selectedSpeakerId).catch(()=>{});
+      }
+    }
+    screenAudioEl.srcObject = e.streams[0];
+    return;
+  }
+  let audioEl = remoteAudioEls[peerId];
+  if(!audioEl){
+    audioEl = document.createElement('audio');
+    audioEl.autoplay = true;
+    document.body.appendChild(audioEl);
+    remoteAudioEls[peerId] = audioEl;
+    if(supportsSpeakerSelect && selectedSpeakerId){
+      audioEl.setSinkId(selectedSpeakerId).catch(()=>{});
+    }
+  }
+  audioEl.srcObject = e.streams[0];
+  setupRemoteAnalyser(peerId, e.streams[0]);
+}
+
 function closePeerConnection(peerId){
   const pc = peerConnections[peerId];
   if(pc){ pc.close(); delete peerConnections[peerId]; }
@@ -3558,21 +3656,25 @@ function closePeerConnection(peerId){
   const screenAudioEl = remoteScreenAudioEls[peerId];
   if(screenAudioEl){ screenAudioEl.remove(); delete remoteScreenAudioEls[peerId]; }
   delete analysers[peerId];
-  delete pendingVideoKind[peerId];
-  delete pendingAudioKind[peerId];
+  delete trackKindByPeer[peerId];
+  delete pendingTrackEvents[peerId];
   removeScreenTile(peerId);
   removeCameraTile(peerId);
 }
 
-// ส่งสัญญาณบอกฝั่งรับก่อนเสมอว่า track ที่กำลังจะมาถึงคือชนิดไหน (กล้อง/หน้าจอ/เสียงระบบ)
-// เพราะ WebRTC เองไม่มีทางบอกชนิดของ track จากฝั่งผู้รับได้โดยตรง
+// ส่งสัญญาณบอกฝั่งรับก่อนเสมอว่า track (ระบุด้วย track.id ที่แน่นอน) ที่กำลังจะมาถึงคือชนิดไหน (ไมค์/กล้อง/หน้าจอ/เสียงระบบ)
+// เพราะ WebRTC เองไม่มีทางบอกชนิดของ track จากฝั่งผู้รับได้โดยตรง — ใช้ track.id แทนลำดับการมาถึง กันสัญญาณสลับคิวกัน
 function addKindedVideoTrack(pc, peerId, stream, kind){
-  sendSignal(peerId, 'video-kind', kind);
-  stream.getVideoTracks().forEach(t=> pc.addTrack(t, stream));
+  stream.getVideoTracks().forEach(t=>{
+    sendSignal(peerId, 'video-kind', kind + ':' + t.id);
+    pc.addTrack(t, stream);
+  });
 }
 function addKindedAudioTrack(pc, peerId, stream, kind){
-  sendSignal(peerId, 'audio-kind', kind);
-  stream.getAudioTracks().forEach(t=> pc.addTrack(t, stream));
+  stream.getAudioTracks().forEach(t=>{
+    sendSignal(peerId, 'audio-kind', kind + ':' + t.id);
+    pc.addTrack(t, stream);
+  });
 }
 
 function sendSignal(to, type, payload){
@@ -3583,14 +3685,21 @@ function sendSignal(to, type, payload){
 
 async function handleSignal(data){
   const { from, type, payload } = data;
-  if(type === 'video-kind'){
-    if(!pendingVideoKind[from]) pendingVideoKind[from] = [];
-    pendingVideoKind[from].push(payload);
-    return;
-  }
-  if(type === 'audio-kind'){
-    if(!pendingAudioKind[from]) pendingAudioKind[from] = [];
-    pendingAudioKind[from].push(payload);
+  if(type === 'video-kind' || type === 'audio-kind'){
+    // payload มาในรูปแบบ "kind:trackId" เช่น "screen:a1b2c3" — แยกจาก index สุดท้ายเผื่อ trackId มี ':' ปนได้ยาก แต่กันไว้ก่อน
+    const sep = payload.lastIndexOf(':');
+    const kind = sep === -1 ? payload : payload.slice(0, sep);
+    const trackId = sep === -1 ? null : payload.slice(sep + 1);
+    if(trackId){
+      if(!trackKindByPeer[from]) trackKindByPeer[from] = {};
+      trackKindByPeer[from][trackId] = kind;
+      const pendingEvent = pendingTrackEvents[from] && pendingTrackEvents[from][trackId];
+      if(pendingEvent){
+        delete pendingTrackEvents[from][trackId];
+        delete trackKindByPeer[from][trackId];
+        resolveTrackKind(from, kind, pendingEvent);
+      }
+    }
     return;
   }
   let pc = peerConnections[from];
