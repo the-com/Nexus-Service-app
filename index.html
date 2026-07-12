@@ -415,6 +415,15 @@
   }
   .screen-tile .live-badge .live-dot{width:6px;height:6px;border-radius:50%;background:#fff;animation:liveBlink 1.2s infinite;}
   @keyframes liveBlink{0%,100%{opacity:1;}50%{opacity:.25;}}
+  /* แสดงตอนสัญญาณ track หลุดชั่วคราว (เครือข่ายกระตุก/TURN สะดุด) แทนที่จะลบ tile ทิ้งไปเลย
+     เพราะการหลุดแบบนี้มักกลับมาเองได้ ถ้าลบ tile ทิ้งจะดูเหมือน "อีกฝั่งเลิกแชร์ไปแล้ว" ทั้งที่ยังแชร์อยู่ */
+  .screen-tile.tile-reconnecting video, .camera-tile.tile-reconnecting video{ opacity:.4; filter:grayscale(.5); transition:opacity .2s; }
+  .tile-reconnecting-badge{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:6px;
+    background:rgba(0,0,0,.35); color:#fff; font-size:11px; font-weight:600; text-align:center;
+    padding:0 12px; pointer-events:none;
+  }
+  .tile-reconnecting-badge .live-dot{width:6px;height:6px;border-radius:50%;background:#e0a83c;animation:liveBlink 1s infinite;flex-shrink:0;}
   @media(max-width:640px){
     #screen-share-area{ padding:8px 12px; }
     .screen-tile{ width:100%; }
@@ -2905,25 +2914,51 @@ pinnedOverlay.addEventListener('mousedown', e=>{ if(e.target === pinnedOverlay) 
 
 // ================= VOICE CHANNEL (WebRTC mesh) =================
 // STUN อย่างเดียวมักใช้ไม่ได้ถ้าทั้งสองฝั่งอยู่หลัง NAT/ไฟร์วอลล์ที่เข้มงวด (สาเหตุยอดฮิตของ
-// "ไมค์ขึ้นเขียวแต่อีกฝั่งไม่ได้ยิน") จึงเพิ่ม TURN server ฟรีจาก Open Relay Project เป็นทางสำรอง
-const ICE_CONFIG = { iceServers: [
-  { urls: ['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302'] },
-  {
-    urls: 'turn:openrelay.metered.ca:80',
-    username: 'openrelayproject',
-    credential: 'openrelayproject'
-  },
-  {
-    urls: 'turn:openrelay.metered.ca:443',
-    username: 'openrelayproject',
-    credential: 'openrelayproject'
-  },
-  {
-    urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-    username: 'openrelayproject',
-    credential: 'openrelayproject'
-  }
+// "ไมค์ขึ้นเขียวแต่อีกฝั่งไม่ได้ยิน" / "แชร์จอบางคนเห็นบางคนไม่เห็น") ต้องมี TURN server สำรอง
+//
+// ⚠️ พบสาเหตุจริง: credential แบบ static เดิม (username/credential = 'openrelayproject') ที่ฝังไว้
+// ใช้งานไม่ได้แล้ว — Open Relay Project (metered.ca) เลิกแจก credential ฟรีแบบฝังตรงๆ นี้ไปแล้ว
+// (กันคนเอาไปใช้ฟรีไม่จำกัด) เปลี่ยนไปบังคับสมัครสมาชิกแล้วขอ credential สดผ่าน REST API แทน
+// ผลคือที่ผ่านมา TURN "ดูเหมือนตั้งไว้แล้ว" แต่จริงๆ auth fail เงียบๆ ทุกครั้ง เหลือแค่ STUN ล้วน
+// ซึ่งใช้ไม่ได้กับคนที่อยู่หลัง symmetric NAT / เน็ตมือถือบางเจ้า / ไฟร์วอลล์บริษัท-โรงเรียน
+// นี่คือสาเหตุหลักของอาการ "มีคนได้ยินมีคนไม่ได้ยิน" / "แชร์จอบางคนเห็นบางคนไม่เห็น" ที่รายงานมา
+//
+// วิธีใช้งานถาวร (แผนฟรีให้ 20GB TURN relay/เดือน):
+//   1. สมัครฟรีที่ https://www.metered.ca (หรือ dashboard.metered.ca)
+//   2. สร้าง "App" แล้วคัดลอก App Name + API Key จาก dashboard
+//   3. ใส่ค่าลงตัวแปร METERED_APP_NAME กับ METERED_API_KEY ด้านล่างนี้
+//   (แนะนำ: ถ้า dashboard มีตัวเลือกจำกัด domain ที่ใช้ API key ได้ ให้ตั้งเป็นโดเมนเว็บนี้ กัน key โดนขโมยไปใช้)
+// ระหว่างที่ยังไม่ใส่ค่า ระบบจะ fallback ไปใช้ STUN อย่างเดียวโดยอัตโนมัติ (ใช้ได้แค่บางเครือข่าย ไม่ครบ 100%)
+const METERED_APP_NAME = ''; // ← ใส่ App Name จาก metered.ca dashboard เช่น 'nexuschat'
+const METERED_API_KEY = '';  // ← ใส่ API Key จาก metered.ca dashboard
+
+const STUN_ONLY_CONFIG = { iceServers: [
+  { urls: ['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302','stun:stun2.l.google.com:19302'] }
 ]};
+
+let currentIceConfig = STUN_ONLY_CONFIG; // แทนที่ด้วย TURN credential สดตอนเข้าห้องเสียง (ดู refreshIceConfig)
+
+// ขอ TURN credential ใหม่จาก metered.ca ทุกครั้งที่เข้าห้องเสียง — ต่างจาก static credential เดิม
+// ตรงที่ credential ชุดนี้มีวันหมดอายุ จึงต้องขอสดทุกรอบ ไม่ใช่ฝังไว้ใช้ซ้ำตลอดไป
+async function refreshIceConfig(){
+  if(!METERED_APP_NAME || !METERED_API_KEY){
+    console.warn('[voice] ยังไม่ได้ตั้งค่า METERED_APP_NAME/METERED_API_KEY — ใช้ STUN อย่างเดียว (คนที่อยู่หลัง NAT เข้มงวดจะคุยกันไม่ได้)');
+    currentIceConfig = STUN_ONLY_CONFIG;
+    return currentIceConfig;
+  }
+  try{
+    const res = await fetch(`https://${METERED_APP_NAME}.metered.live/api/v1/turn/credentials?apiKey=${METERED_API_KEY}`);
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const iceServers = await res.json();
+    if(!Array.isArray(iceServers) || !iceServers.length) throw new Error('iceServers ว่างเปล่า');
+    currentIceConfig = { iceServers };
+    console.log('[voice] ได้ TURN credential สดจาก metered.ca แล้ว');
+  }catch(e){
+    console.warn('[voice] ขอ TURN credential จาก metered.ca ไม่สำเร็จ ใช้ STUN อย่างเดียวแทนชั่วคราว:', e);
+    currentIceConfig = STUN_ONLY_CONFIG;
+  }
+  return currentIceConfig;
+}
 let selectedMicId = null;
 let selectedSpeakerId = null;
 // --- Advanced mic settings ---
@@ -3249,6 +3284,7 @@ async function joinVoice(){
     showToast('เปิดไมค์ไม่ได้ — ตรวจสอบสิทธิ์การใช้ไมโครโฟน');
     return;
   }
+  await refreshIceConfig(); // ต้องมี TURN credential พร้อมก่อนเริ่มสร้าง peer connection ใดๆ
   inVoice = true;
   voiceJoinBtn.classList.add('active');
   voiceJoinLabel.textContent = 'ออกจากเสียง';
@@ -3417,9 +3453,11 @@ function toggleMute(){
 }
 
 function createPeerConnection(peerId, iAmInitiator){
-  const pc = new RTCPeerConnection(ICE_CONFIG);
+  const pc = new RTCPeerConnection(currentIceConfig);
   pc.__polite = !iAmInitiator; // ฝั่งที่ไม่ได้เริ่มก่อน จะเป็นฝ่าย "ใจดี" ยอมถอย offer ตัวเองเวลาชนกัน (perfect negotiation)
   pc.__makingOffer = false;
+  pc.__iceRestartCount = 0;
+  pc.__hasWarnedFailure = false;
   peerConnections[peerId] = pc;
 
   localStream.getTracks().forEach(t=> pc.addTrack(t, localStream));
@@ -3435,6 +3473,29 @@ function createPeerConnection(peerId, iAmInitiator){
 
   pc.onicecandidate = e=>{
     if(e.candidate) sendSignal(peerId, 'candidate', JSON.stringify(e.candidate));
+  };
+  // เดิมไม่มีการตรวจสถานะ ICE เลย — ถ้าเชื่อมต่อไม่ติด (เช่น TURN ใช้ไม่ได้) จะเงียบไปตลอดแบบไม่มีใครรู้
+  // และไม่มีการลองเชื่อมใหม่ ผู้ใช้ต้องออกแล้วเข้าห้องเสียงใหม่เองเท่านั้นถึงจะมีโอกาสหาย
+  pc.oniceconnectionstatechange = ()=>{
+    console.log(`[voice] ${peerId}: iceConnectionState = ${pc.iceConnectionState}`);
+    if(pc.iceConnectionState === 'failed' && pc.__iceRestartCount < 3){
+      pc.__iceRestartCount++;
+      console.warn(`[voice] ${peerId}: ICE ล้มเหลว กำลังลอง restartIce() ครั้งที่ ${pc.__iceRestartCount}`);
+      try{ if(typeof pc.restartIce === 'function') pc.restartIce(); }catch(err){ console.warn('[voice] restartIce ล้มเหลว:', err); }
+    }
+  };
+  pc.onconnectionstatechange = ()=>{
+    if(pc.connectionState === 'failed' && !pc.__hasWarnedFailure){
+      pc.__hasWarnedFailure = true;
+      const nick = (voicePeersMap.get(peerId)||{}).nick || 'สมาชิกคนหนึ่ง';
+      showToast(`การเชื่อมต่อเสียงกับ ${nick} มีปัญหา กำลังลองเชื่อมต่อใหม่...`);
+    } else if(pc.connectionState === 'connected'){
+      pc.__hasWarnedFailure = false;
+    }
+  };
+  pc.onicecandidateerror = e=>{
+    // errorCode 401 = credential ผิด/หมดอายุ (สัญญาณสำคัญว่า TURN ตั้งค่าไม่ถูก), 701 = เข้า TURN server ไม่ได้เลย
+    console.warn(`[voice] ${peerId}: ICE candidate error`, e.errorCode, e.errorText, e.url);
   };
   pc.ontrack = e=>{
     if(e.track.kind === 'video'){
@@ -3680,17 +3741,24 @@ function handleRemoteScreenTrack(peerId, e){
     label.className = 'screen-tile-label';
     const peerInfo = voicePeersMap.get(peerId);
     label.textContent = (peerInfo && peerInfo.nick ? peerInfo.nick : 'ไม่ทราบชื่อ') + ' กำลังแชร์หน้าจอ — แตะเพื่อดูเต็มจอ';
-    tile.appendChild(video); tile.appendChild(badge); tile.appendChild(label);
+    const reconnectBadge = document.createElement('div');
+    reconnectBadge.className = 'tile-reconnecting-badge hidden';
+    reconnectBadge.innerHTML = '<span class="live-dot"></span>สัญญาณหลุด กำลังเชื่อมต่อใหม่...';
+    tile.appendChild(video); tile.appendChild(badge); tile.appendChild(label); tile.appendChild(reconnectBadge);
     tile.onclick = ()=> openScreenView(video.srcObject);
     screenShareArea.appendChild(tile);
-    entry = { tile, video };
+    entry = { tile, video, reconnectBadge };
     remoteScreenEls[peerId] = entry;
   }
   entry.video.srcObject = stream;
   forcePlayVideo(entry.video);
-  // เมื่ออีกฝั่งหยุดแชร์ (track ถูกปิด/เอาออก) ให้เอาช่องนี้ออก
+  // onended = อีกฝั่งหยุดแชร์จริงๆ (ถาวร) -> เอา tile ออก
+  // onmute = สัญญาณหลุดชั่วคราว (เน็ตกระตุก/TURN สะดุด) ไม่ใช่การเลิกแชร์ — เดิมโค้ดนี้ปฏิบัติกับ
+  // onmute เหมือน onended ทำให้ tile หายไปเงียบๆ ทั้งที่อีกฝั่งยังแชร์อยู่จริง (สาเหตุของอาการ
+  // "แชร์จอแล้วบางคนเห็นบางคนไม่เห็น") จึงเปลี่ยนมาแค่โชว์ badge บอกสถานะแทน แล้วรอ onunmute เพื่อกลับมาปกติ
   e.track.onended = ()=> removeScreenTile(peerId);
-  e.track.onmute = ()=> removeScreenTile(peerId);
+  e.track.onmute = ()=> { if(entry.reconnectBadge){ entry.tile.classList.add('tile-reconnecting'); entry.reconnectBadge.classList.remove('hidden'); } };
+  e.track.onunmute = ()=> { if(entry.reconnectBadge){ entry.tile.classList.remove('tile-reconnecting'); entry.reconnectBadge.classList.add('hidden'); } };
 }
 
 function removeScreenTile(peerId){
@@ -3829,15 +3897,20 @@ function handleRemoteCameraTrack(peerId, e){
     label.className = 'camera-tile-label';
     const peerInfo = voicePeersMap.get(peerId);
     label.textContent = (peerInfo && peerInfo.nick) ? peerInfo.nick : 'ไม่ทราบชื่อ';
-    tile.appendChild(video); tile.appendChild(label);
+    const reconnectBadge = document.createElement('div');
+    reconnectBadge.className = 'tile-reconnecting-badge hidden';
+    reconnectBadge.innerHTML = '<span class="live-dot"></span>สัญญาณหลุด';
+    tile.appendChild(video); tile.appendChild(label); tile.appendChild(reconnectBadge);
     cameraGridArea.appendChild(tile);
-    entry = { tile, video };
+    entry = { tile, video, reconnectBadge };
     remoteCameraEls[peerId] = entry;
   }
   entry.video.srcObject = stream;
   forcePlayVideo(entry.video);
+  // เหตุผลเดียวกับฝั่งแชร์จอ: onmute คือสัญญาณหลุดชั่วคราว ไม่ใช่การปิดกล้อง ไม่ควรลบ tile ทิ้ง
   e.track.onended = ()=> removeCameraTile(peerId);
-  e.track.onmute = ()=> removeCameraTile(peerId);
+  e.track.onmute = ()=> { if(entry.reconnectBadge){ entry.tile.classList.add('tile-reconnecting'); entry.reconnectBadge.classList.remove('hidden'); } };
+  e.track.onunmute = ()=> { if(entry.reconnectBadge){ entry.tile.classList.remove('tile-reconnecting'); entry.reconnectBadge.classList.add('hidden'); } };
 }
 
 function removeCameraTile(peerId){
