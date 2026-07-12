@@ -2946,6 +2946,7 @@ let voiceSignalsChannel = null;
 let speakingInterval = null;
 let heartbeatInterval = null;
 let cleanupInterval = null;
+let voiceResyncInterval = null;
 let voicePeersMap = new Map();
 let cameraStream = null;
 let isCameraOn = false;
@@ -3266,6 +3267,16 @@ async function joinVoice(){
   voicePeersMap.set(myPeerId, { room_id: roomId, peer_id: myPeerId, nick: myNick, color: myAvatarColor || colorFor(myNick), avatar_url: myAvatarUrl, ts: nowIso });
   renderVoiceMembers();
 
+  // สำคัญ: อย่ารอให้อีกฝั่งเห็น event การ upsert ของเราแล้วเป็นฝ่ายเริ่มเชื่อมต่อมาเท่านั้น
+  // เพราะถ้า realtime channel ของอีกฝั่งมีปัญหาชั่วคราว (ตัดชั่วครู่/reconnect) event นั้นอาจไม่ถึง
+  // ทำให้ไม่มีใครเริ่มเชื่อมต่อเลย (อาการ "เข้าห้องเสียงแล้วแต่ไม่ได้ยินเสียงกันเลย")
+  // ฝั่งเราจึงเป็นฝ่ายเริ่มเชื่อมต่อไปหาทุกคนที่อยู่ในห้องอยู่แล้วเองเลย ไม่ต้องรอ
+  existingIds.forEach(pid=>{
+    if(pid !== myPeerId && !peerConnections[pid]){
+      createPeerConnection(pid, true);
+    }
+  });
+
   voicePeersChannel = sb.channel('voice-peers-'+roomId)
     .on('postgres_changes', { event:'*', schema:'public', table:'voice_peers', filter:`room_id=eq.${roomId}` },
       payload=>{
@@ -3291,6 +3302,8 @@ async function joinVoice(){
     .subscribe((status, err)=>{
       if(status === 'CHANNEL_ERROR' || status === 'TIMED_OUT'){
         console.warn('voice-peers channel issue:', status, err);
+        // ถ้า channel หลุดกลางคัน ลอง sync สถานะห้องเสียงใหม่ทั้งหมดเผื่อพลาด event ระหว่างที่หลุด
+        if(inVoice) resyncVoicePeers();
       }
     });
 
@@ -3313,6 +3326,7 @@ async function joinVoice(){
     sb.from('voice_peers').update({ ts: new Date().toISOString() }).eq('room_id', roomId).eq('peer_id', myPeerId).then(()=>{});
   }, 15000);
   cleanupInterval = setInterval(cleanupStalePeers, 10000);
+  voiceResyncInterval = setInterval(resyncVoicePeers, 20000);
   requestWakeLock(); // กันจอดับระหว่างอยู่ในห้องเสียง ลดโอกาสหลุดสายตอนพับจอ
   playJoinSound();
   showToast('เข้าร่วมห้องเสียงแล้ว');
@@ -3326,6 +3340,27 @@ function cleanupStalePeers(){
       sb.from('voice_peers').delete().eq('room_id', roomId).eq('peer_id', pid).then(()=>{});
     }
   });
+}
+
+// ตาข่ายกันพลาด: ดึงรายชื่อคนในห้องเสียงมาเทียบกับ peerConnections ที่มีอยู่จริงเป็นระยะ
+// เผื่อ realtime event หลุดหายไปตอน channel มีปัญหาชั่วคราว จะได้ไม่ค้างสภาพ "เข้าห้องเสียงแล้วแต่ไม่ได้ยินใครเลย"
+async function resyncVoicePeers(){
+  if(!inVoice) return;
+  try{
+    const { data: current } = await sb.from('voice_peers').select('*').eq('room_id', roomId);
+    (current||[]).forEach(p=>{
+      voicePeersMap.set(p.peer_id, p);
+      if(p.peer_id !== myPeerId && !peerConnections[p.peer_id]){
+        createPeerConnection(p.peer_id, true);
+      }
+    });
+    // ล้างคนที่ไม่อยู่ในห้องแล้วออกจาก map/เชื่อมต่อ
+    const currentIds = new Set((current||[]).map(p=>p.peer_id));
+    Object.keys(peerConnections).forEach(pid=>{
+      if(!currentIds.has(pid)) closePeerConnection(pid);
+    });
+    renderVoiceMembers();
+  }catch(e){ console.warn('resyncVoicePeers failed:', e); }
 }
 
 async function leaveVoice(){
@@ -3362,6 +3397,7 @@ async function leaveVoice(){
   if(speakingInterval) clearInterval(speakingInterval);
   if(heartbeatInterval) clearInterval(heartbeatInterval);
   if(cleanupInterval) clearInterval(cleanupInterval);
+  if(voiceResyncInterval) clearInterval(voiceResyncInterval);
   releaseWakeLock();
   voicePeersMap = new Map();
   voiceMembersEl.innerHTML = '';
@@ -3616,6 +3652,7 @@ function showMyScreenTile(){
   const video = document.createElement('video');
   video.autoplay = true; video.muted = true; video.playsInline = true;
   video.srcObject = screenStream;
+  forcePlayVideo(video);
   const badge = document.createElement('div');
   badge.className = 'live-badge';
   badge.innerHTML = '<span class="live-dot"></span>กำลังแชร์สด';
@@ -3650,6 +3687,7 @@ function handleRemoteScreenTrack(peerId, e){
     remoteScreenEls[peerId] = entry;
   }
   entry.video.srcObject = stream;
+  forcePlayVideo(entry.video);
   // เมื่ออีกฝั่งหยุดแชร์ (track ถูกปิด/เอาออก) ให้เอาช่องนี้ออก
   e.track.onended = ()=> removeScreenTile(peerId);
   e.track.onmute = ()=> removeScreenTile(peerId);
@@ -3723,6 +3761,7 @@ function showMyCameraTile(){
   const video = document.createElement('video');
   video.autoplay = true; video.muted = true; video.playsInline = true;
   video.srcObject = cameraStream;
+  forcePlayVideo(video);
   const label = document.createElement('div');
   label.className = 'camera-tile-label';
   label.textContent = 'คุณ';
@@ -3772,6 +3811,7 @@ async function flipCamera(){
   const entry = remoteCameraEls[myPeerId];
   if(entry){
     entry.video.srcObject = cameraStream;
+    forcePlayVideo(entry.video);
     entry.tile.classList.toggle('mirror', currentFacingMode === 'user');
   }
   showToast(currentFacingMode === 'user' ? 'สลับเป็นกล้องหน้าแล้ว' : 'สลับเป็นกล้องหลังแล้ว');
@@ -3795,6 +3835,7 @@ function handleRemoteCameraTrack(peerId, e){
     remoteCameraEls[peerId] = entry;
   }
   entry.video.srcObject = stream;
+  forcePlayVideo(entry.video);
   e.track.onended = ()=> removeCameraTile(peerId);
   e.track.onmute = ()=> removeCameraTile(peerId);
 }
@@ -3806,8 +3847,23 @@ function removeCameraTile(peerId){
   delete remoteCameraEls[peerId];
 }
 
+// autoplay attribute เฉยๆ ไม่พอสำหรับหลายเบราว์เซอร์มือถือ เวลาตั้ง srcObject แบบ programmatic
+// (โดยเฉพาะ Safari/Chrome บนมือถือ) ทำให้ video ค้างเป็นจอมืด/เฟรมแรกค้าง ต้องสั่ง .play() เองอีกที
+function forcePlayVideo(videoEl){
+  const p = videoEl.play();
+  if(p && typeof p.catch === 'function'){
+    p.catch(()=>{
+      // ถ้าโดนบล็อกเพราะ autoplay policy ให้ลองอีกครั้งตอนผู้ใช้แตะหน้าจอ (ทำครั้งเดียวพอ)
+      const retry = ()=>{ videoEl.play().catch(()=>{}); document.removeEventListener('touchstart', retry); document.removeEventListener('click', retry); };
+      document.addEventListener('touchstart', retry, { once:true });
+      document.addEventListener('click', retry, { once:true });
+    });
+  }
+}
+
 function openScreenView(stream){
   screenViewVideo.srcObject = stream;
+  forcePlayVideo(screenViewVideo);
   screenViewOverlay.classList.remove('hidden');
 }
 document.getElementById('screen-view-close-x').onclick = ()=>{
@@ -4411,6 +4467,8 @@ document.addEventListener('visibilitychange', async ()=>{
       if(voiceSignalsChannel){ try{ sb.removeChannel(voiceSignalsChannel); }catch(e){} }
       resubscribeVoiceChannels();
     }
+    // ไม่ว่าจะต้อง resubscribe channel ใหม่หรือไม่ ก็ควรเช็คด้วยว่ามีใครที่พลาดการเชื่อมต่อไประหว่างจอดับหรือเปล่า
+    resyncVoicePeers();
   }
 
   // ห้องแชท/room-meta ก็เช็คเช่นกัน
